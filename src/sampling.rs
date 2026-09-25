@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 mod linear;
 type PatinaFloat = f64;
 
