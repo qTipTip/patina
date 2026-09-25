@@ -6,3 +6,15 @@ fn lerp(x: PatinaFloat, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat {
 
     (1.0 - x) * a + x * b
 }
+
+#[cfg(test)]
+mod test {
+    use approx::assert_relative_eq;
+
+    use crate::sampling::lerp;
+
+    #[test]
+    fn linear_interpolation() {
+        assert_relative_eq!(0.5, lerp(0.5, 0.0, 1.0));
+    }
+}
