@@ -29,7 +29,7 @@ fn sample_linear(u: PatinaFloat, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat 
     if !(0.0..=1.0).contains(&u) {
         0.0
     } else {
-        let x = u * (a + b) / (a + lerp(u, a.sqrt(), b.sqrt()));
+        let x = u * (a + b) / (a + lerp(u, a * a, b * b).sqrt());
         // Make sure we're not returning anything outside [0, 1).
         x.min(1.0 - PatinaFloat::EPSILON)
     }
@@ -52,6 +52,11 @@ mod test {
         assert_relative_eq!(0.5, lerp(0.5, 0.0, 1.0));
     }
 
+    #[should_panic]
+    #[test]
+    fn linear_interpolation_outofbounds() {
+        lerp(1.1, 0.0, 1.0);
+    }
     #[test]
     fn test_linear_pdf() {
         assert_relative_eq!(1.0, linear_pdf(0.5, 0.0, 1.0))
