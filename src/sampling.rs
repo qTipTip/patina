@@ -4,6 +4,8 @@ type PatinaFloat = f64;
 // Given a set of values (not normalized) {x_1, x_2, ..., x_n}, a uniform random sample u, return the index of one
 // of the values with propability proportional to it's value. This is used for sampling a discrete
 // set. Returns None if there are no values.
+//
+// TODO: Compute and return PMF and a remapped u, if needed.
 fn sample_discrete(values: &[PatinaFloat], u: PatinaFloat) -> Option<usize> {
     if values.is_empty() {
         return None;
