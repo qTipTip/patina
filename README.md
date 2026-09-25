@@ -1,7 +1,7 @@
 # Patina
 
-> _Patina_: 
-    - a usually green film formed naturally on copper and bronze by long exposure
+> _Patina_
+>   - a usually green film formed naturally on copper and bronze by long exposure
 >     or artificially (as by acids) and often valued aesthetically for its color
 >   - a surface appearance of something grown beautiful especially with age or use
 
