@@ -40,4 +40,9 @@ mod test {
         let sample = sample_discrete(&values, u).unwrap();
         assert_eq!(sample, 0);
     }
+
+    #[test]
+    fn test_sample_empty() {
+        assert!(sample_discrete(&[], 0.0).is_none());
+    }
 }
