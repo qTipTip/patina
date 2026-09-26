@@ -15,7 +15,7 @@ pub(crate) fn lerp(x: PatinaFloat, a: PatinaFloat, b: PatinaFloat) -> PatinaFloa
 }
 
 // Return the probability distribution of the linear interpolation.
-fn linear_pdf(x: PatinaFloat, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat {
+pub fn linear_pdf(x: PatinaFloat, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat {
     // If we're outside the domain of lerp, return 0
     if !(0.0..=1.0).contains(&x) {
         0.0
@@ -24,7 +24,7 @@ fn linear_pdf(x: PatinaFloat, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat {
     }
 }
 // Return a sample of the linear distribution, in the range [0, 1).
-pub(crate) fn sample_linear(u: PatinaFloat, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat {
+pub fn sample_linear(u: PatinaFloat, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat {
     // If we're outside the domain of lerp, return 0
     if !(0.0..=1.0).contains(&u) {
         0.0

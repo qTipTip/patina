@@ -1,6 +1,6 @@
 mod integration;
 mod math;
-mod sampling;
+pub(crate) mod sampling;
 
 fn main() {
     println!("Hello, world!");
