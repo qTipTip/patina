@@ -1,4 +1,4 @@
-use crate::sampling::PatinaFloat;
+use crate::math::PatinaFloat;
 
 /// Sampling using the inversion method.
 ///
@@ -8,7 +8,7 @@ use crate::sampling::PatinaFloat;
 /// integrate it to find the cumulative distribution (CDF). We can then obtain a uniformly
 /// distributed random number x. Then we generate a sample by solving the equation x = P(X) for X.
 // Return the linear interpolation between a and b, with 0 <= x <= 1.
-fn lerp(x: PatinaFloat, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat {
+pub(crate) fn lerp(x: PatinaFloat, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat {
     debug_assert!((0.0..=1.0).contains(&x));
 
     (1.0 - x) * a + x * b
@@ -24,7 +24,7 @@ fn linear_pdf(x: PatinaFloat, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat {
     }
 }
 // Return a sample of the linear distribution, in the range [0, 1).
-fn sample_linear(u: PatinaFloat, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat {
+pub(crate) fn sample_linear(u: PatinaFloat, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat {
     // If we're outside the domain of lerp, return 0
     if !(0.0..=1.0).contains(&u) {
         0.0
@@ -37,7 +37,7 @@ fn sample_linear(u: PatinaFloat, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat 
 
 // Return the random sample u that corresponds to the random sample x. This corresponds to
 // evaluating the CDF.
-fn invert_linear_sample(x: PatinaFloat, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat {
+pub(crate) fn invert_linear_sample(x: PatinaFloat, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat {
     x * (a * (2.0 - x) + b * x) / (a + b)
 }
 

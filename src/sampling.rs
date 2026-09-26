@@ -1,7 +1,8 @@
 #![allow(dead_code)]
+
+use crate::math::PatinaFloat;
 mod bilinear;
 mod linear;
-type PatinaFloat = f64;
 
 // Given a set of values (not normalized) {x_1, x_2, ..., x_n}, a uniform random sample u, return the index of one
 // of the values with propability proportional to it's value. This is used for sampling a discrete
