@@ -1,5 +1,12 @@
 use crate::math::PatinaFloat;
 
+// Returns n uniformly spaced values between a and b, inclusive.
+fn linspace(n: usize, a: PatinaFloat, b: PatinaFloat) -> Vec<PatinaFloat> {
+    (0..n)
+        .map(|i| a + i as PatinaFloat * (b - a) / (n as PatinaFloat - 1.0))
+        .collect()
+}
+
 // Integrate the function f from a to b using n monte carlo samples.
 fn integrate_mc<F>(n: usize, f: F, a: PatinaFloat, b: PatinaFloat)
 where
@@ -15,9 +22,9 @@ where
 
 #[cfg(test)]
 mod test {
-    use approx::{assert_relative_eq, assert_relative_ne};
+    use approx::assert_relative_eq;
 
-    use crate::math::PatinaFloat;
+    use crate::{integration::monte_carlo::linspace, math::PatinaFloat};
 
     #[test]
     fn fk4_x_squared() {
@@ -27,9 +34,7 @@ mod test {
 
         let f = |x: &PatinaFloat| -> PatinaFloat { x * x };
 
-        let x: Vec<PatinaFloat> = (0..n)
-            .map(|i| a + i as PatinaFloat * (b - a) / (n as PatinaFloat - 1.0))
-            .collect();
+        let x = linspace(n, a, b);
         let y: Vec<PatinaFloat> = x.iter().map(f).collect();
 
         assert_eq!(x.len(), n);
