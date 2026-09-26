@@ -1,3 +1,4 @@
+mod integration;
 mod math;
 mod sampling;
 
