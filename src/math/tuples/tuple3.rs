@@ -1,4 +1,4 @@
-use std::ops::{self, AddAssign, DivAssign, Index, IndexMut, MulAssign, SubAssign};
+use std::ops::{self, AddAssign, DivAssign, Index, IndexMut, MulAssign, Sub, SubAssign};
 
 use num_traits::Float;
 
@@ -37,6 +37,11 @@ impl<T: Float> Tuple3<T> {
 
     pub fn floor(&self) -> Self {
         Self::new(self.x.floor(), self.y.floor(), self.z.floor())
+    }
+
+    // Performs the linear interpolation between two tuples a and b.
+    pub fn lerp(t: T, a: Self, b: Self) -> Self {
+        a * (T::one() - t) + b * t
     }
 }
 
@@ -281,5 +286,18 @@ mod test_tuple3_functions {
         let t = Tuple3::<PatinaFloat>::new(-1.3, 1.1, 2.8);
         assert_eq!(t.ceil(), Tuple3::<PatinaFloat>::new(-1.0, 2.0, 3.0));
         assert_eq!(t.floor(), Tuple3::<PatinaFloat>::new(-2.0, 1.0, 2.0));
+    }
+
+    #[test]
+    fn test_lerp() {
+        let a = Tuple3::<PatinaFloat>::zero();
+        let b = Tuple3::<PatinaFloat>::new(1.0, 1.0, 1.0);
+
+        assert_eq!(Tuple3::lerp(0.0, a, b), a);
+        assert_eq!(Tuple3::lerp(1.0, a, b), b);
+        assert_eq!(
+            Tuple3::lerp(0.5, a, b),
+            Tuple3::<PatinaFloat>::new(0.5, 0.5, 0.5)
+        );
     }
 }
