@@ -31,9 +31,14 @@ where
             f(&x)
         })
         .sum::<PatinaFloat>()
-        / (n as PatinaFloat * (b - a))
+        / (n as PatinaFloat)
+        * (b - a)
 }
 
+// While `uniform_integrate_mc` assumes the uniform distribution of the sampled values, using
+// importance sampling, we can sample _more_ points where the function f is large, and less
+// elsewhere. This is a variance reduction technique. The probability distribution `pdf` can be
+// chosen arbitrarily, but is usually chosen to "look like" f.
 fn integrate_mc_importance_sampling<F>(
     n: usize,
     f: F,
@@ -44,6 +49,7 @@ fn integrate_mc_importance_sampling<F>(
 where
     F: Fn(&PatinaFloat) -> PatinaFloat,
 {
+    let mut rng = rand::rng();
     0.0
 }
 
@@ -74,9 +80,9 @@ mod test {
 
     #[test]
     fn mc_x_squared() {
-        let n = 10000;
+        let n = 1000000;
         let a = 0.0;
-        let b = 1.0;
+        let b = 2.0;
 
         let f = |x: &PatinaFloat| -> PatinaFloat { x * x };
 
@@ -85,26 +91,26 @@ mod test {
 
         assert_eq!(x.len(), n);
         assert_relative_eq!(y[0], 0.0);
-        assert_relative_eq!(y[y.len() - 1], 1.0);
+        assert_relative_eq!(y[y.len() - 1], 4.0);
 
         assert_relative_eq!(
             uniform_integrate_mc(n, f, a, b),
-            1.0 / 3.0,
+            8.0 / 3.0,
             epsilon = 1.0e-2
         );
     }
 
     #[test]
     fn tpz_x_squared() {
-        let n = 10000;
+        let n = 100000;
         let a = 0.0;
-        let b = 1.0;
+        let b = 2.0;
 
         let f = |x: &PatinaFloat| -> PatinaFloat { x * x };
 
         assert_relative_eq!(
             integrate_trapezoidal(n, f, a, b),
-            1.0 / 3.0,
+            8.0 / 3.0,
             epsilon = 1.0e-5
         );
     }
