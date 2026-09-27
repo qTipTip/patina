@@ -1,4 +1,4 @@
-use std::ops::{self, AddAssign, Index, IndexMut};
+use std::ops::{self, AddAssign, Index, IndexMut, SubAssign};
 
 use num_traits::Float;
 
@@ -92,6 +92,14 @@ impl<T: Float> ops::Sub for Tuple3<T> {
     }
 }
 
+impl<T: Float + SubAssign> ops::SubAssign for Tuple3<T> {
+    fn sub_assign(&mut self, rhs: Self) {
+        self.x -= rhs.x;
+        self.y -= rhs.y;
+        self.z -= rhs.z;
+    }
+}
+
 #[cfg(test)]
 mod test_construction {
     use approx::assert_relative_eq;
@@ -144,12 +152,14 @@ mod test_operations {
         let mut t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
         let r = Tuple3::<PatinaFloat>::new(1.5, 3.0, 2.0);
         t += r;
+
         assert_eq!(t, Tuple3::<PatinaFloat>::new(1.5, 4.0, 4.0));
     }
 
     #[test]
     fn test_negation() {
         let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+
         assert_eq!(-t, Tuple3::<PatinaFloat>::new(0.0, -1.0, -2.0));
     }
 
@@ -159,5 +169,13 @@ mod test_operations {
         let r = Tuple3::<PatinaFloat>::new(1.5, 3.0, 2.0);
 
         assert_eq!(t - r, Tuple3::<PatinaFloat>::new(-1.5, -2.0, 0.0));
+    }
+
+    #[test]
+    fn test_subassign() {
+        let mut t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        t -= t;
+
+        assert_eq!(t, Tuple3::<PatinaFloat>::zero());
     }
 }
