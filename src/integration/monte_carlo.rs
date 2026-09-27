@@ -17,8 +17,8 @@ fn linspace(n: usize, a: PatinaFloat, b: PatinaFloat) -> (Vec<PatinaFloat>, Pati
 // distributed points x_i in the interval [a, b].
 // - We then compute the integral of f from a to b by
 // computing the value of f(x_i) at each point
-    // - Finally, compute the average and scale it by (b - a), the reciprocal of the
-    // uniform density p(x) = 1 / (b - a).
+// - Finally, compute the average and scale it by (b - a), the reciprocal of the
+// uniform density p(x) = 1 / (b - a).
 fn uniform_integrate_mc<F>(n: usize, f: F, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat
 where
     F: Fn(&PatinaFloat) -> PatinaFloat,
