@@ -1,6 +1,7 @@
 use std::ops::{self, AddAssign, DivAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign};
 
 use num_traits::Float;
+use rand::seq::index;
 
 #[derive(Clone, Copy, PartialEq, PartialOrd, Debug)]
 pub(crate) struct Tuple3<T>
@@ -57,6 +58,35 @@ impl<T: Float> Tuple3<T> {
     // Performs the componentwise max between two tuples
     pub fn max(a: Self, b: Self) -> Self {
         Self::new(a.x.max(b.x), a.y.max(b.y), a.z.max(b.z))
+    }
+
+    // Returns the minimum component of the tuple
+    pub fn min_component(&self) -> T {
+        self.x.min(self.y.min(self.z))
+    }
+    // Returns the maximum component of the tuple
+    pub fn max_component(&self) -> T {
+        self.x.max(self.y.max(self.z))
+    }
+
+    pub fn min_component_index(&self) -> usize {
+        if self[0] <= self[1] && self[0] <= self[2] {
+            0
+        } else if self[1] <= self[2] {
+            1
+        } else {
+            2
+        }
+    }
+
+    pub fn max_component_index(&self) -> usize {
+        if self[0] >= self[1] && self[0] >= self[2] {
+            0
+        } else if self[1] >= self[2] {
+            1
+        } else {
+            2
+        }
     }
 }
 
@@ -393,5 +423,19 @@ mod test_tuple3_functions {
             Tuple3::min(a, b),
             Tuple3::<PatinaFloat>::new(-15.0, 810.0, 1.0)
         );
+    }
+
+    #[test]
+    fn test_comp_min_max() {
+        let a = Tuple3::<PatinaFloat>::new(-15.0, 999.0, 1.0);
+        assert_eq!(a.min_component(), -15.0);
+        assert_eq!(a.max_component(), 999.0);
+    }
+
+    #[test]
+    fn test_comp_min_max_index() {
+        let a = Tuple3::<PatinaFloat>::new(-15.0, 999.0, 1.0);
+        assert_eq!(a.min_component_index(), 0);
+        assert_eq!(a.max_component_index(), 1);
     }
 }
