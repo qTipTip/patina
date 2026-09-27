@@ -88,6 +88,14 @@ impl<T: Float> Tuple3<T> {
             2
         }
     }
+
+    pub fn permute(&self, perm_indices: &[usize; 3]) -> Self {
+        Self::new(
+            self[perm_indices[0]],
+            self[perm_indices[1]],
+            self[perm_indices[2]],
+        )
+    }
 }
 
 impl<T: Float> Index<usize> for Tuple3<T> {
@@ -437,5 +445,14 @@ mod test_tuple3_functions {
         let a = Tuple3::<PatinaFloat>::new(-15.0, 999.0, 1.0);
         assert_eq!(a.min_component_index(), 0);
         assert_eq!(a.max_component_index(), 1);
+    }
+
+    #[test]
+    fn test_permute() {
+        let a = Tuple3::<PatinaFloat>::new(-15.0, 999.0, 1.0);
+        assert_eq!(
+            a.permute(&[1, 2, 0]),
+            Tuple3::<PatinaFloat>::new(999.0, 1.0, -15.0)
+        )
     }
 }
