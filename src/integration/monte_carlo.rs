@@ -35,12 +35,19 @@ where
         / (b - a)
 }
 
-fn integrate_rk4<F>(n: usize, f: F, a: PatinaFloat, b: PatinaFloat)
+fn integrate_trapezoidal<F>(n: usize, f: F, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat
 where
-    F: Fn(PatinaFloat) -> PatinaFloat,
+    F: Fn(&PatinaFloat) -> PatinaFloat,
 {
-    let x_vals = linspace(n, a, b);
-    let f_vals = x_vals.iter().map(|&x| f(x));
+    let (x_vals, delta) = linspace(n, a, b);
+    let f_vals: Vec<PatinaFloat> = x_vals.iter().map(f).collect();
+
+    let mut sum = 0.0;
+    for i in 0..n - 1 {
+        sum += f_vals[i + 1] + f_vals[i]
+    }
+
+    sum * delta / 2.0
 }
 
 #[cfg(test)]
@@ -48,7 +55,7 @@ mod test {
     use approx::assert_relative_eq;
 
     use crate::{
-        integration::monte_carlo::{linspace, uniform_integrate_mc},
+        integration::monte_carlo::{integrate_trapezoidal, linspace, uniform_integrate_mc},
         math::PatinaFloat,
     };
 
@@ -60,13 +67,24 @@ mod test {
 
         let f = |x: &PatinaFloat| -> PatinaFloat { x * x };
 
-        let x = linspace(n, a, b);
+        let (x, _) = linspace(n, a, b);
         let y: Vec<PatinaFloat> = x.iter().map(f).collect();
 
         assert_eq!(x.len(), n);
         assert_relative_eq!(y[0], 0.0);
         assert_relative_eq!(y[y.len() - 1], 1.0);
 
-        assert_relative_eq!(uniform_integrate_mc(1000, f, a, b), 1.0 / 3.0);
+        assert_relative_eq!(uniform_integrate_mc(n, f, a, b), 1.0 / 3.0);
+    }
+
+    #[test]
+    fn tpz_x_squared() {
+        let n = 1000;
+        let a = 0.0;
+        let b = 1.0;
+
+        let f = |x: &PatinaFloat| -> PatinaFloat { x * x };
+
+        assert_relative_eq!(integrate_trapezoidal(n, f, a, b), 1.0 / 3.0);
     }
 }
