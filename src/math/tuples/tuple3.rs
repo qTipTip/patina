@@ -131,6 +131,7 @@ mod test_operations {
         assert_eq!(t + r, Tuple3::<PatinaFloat>::new(1.5, 4.0, 4.0));
     }
 
+    #[test]
     fn test_additive_identity() {
         let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
         let o = Tuple3::<PatinaFloat>::zero();
@@ -138,6 +139,7 @@ mod test_operations {
         assert_eq!(t + o, t);
     }
 
+    #[test]
     fn test_add_assign() {
         let mut t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
         let r = Tuple3::<PatinaFloat>::new(1.5, 3.0, 2.0);
@@ -145,11 +147,13 @@ mod test_operations {
         assert_eq!(t, Tuple3::<PatinaFloat>::new(1.5, 4.0, 4.0));
     }
 
+    #[test]
     fn test_negation() {
         let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
         assert_eq!(-t, Tuple3::<PatinaFloat>::new(0.0, -1.0, -2.0));
     }
 
+    #[test]
     fn test_subtraction() {
         let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
         let r = Tuple3::<PatinaFloat>::new(1.5, 3.0, 2.0);
