@@ -1,4 +1,4 @@
-use std::ops::{self, AddAssign, DivAssign, Index, IndexMut, MulAssign, Sub, SubAssign};
+use std::ops::{self, AddAssign, DivAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign};
 
 use num_traits::Float;
 
@@ -42,6 +42,11 @@ impl<T: Float> Tuple3<T> {
     // Performs the linear interpolation between two tuples a and b.
     pub fn lerp(t: T, a: Self, b: Self) -> Self {
         a * (T::one() - t) + b * t
+    }
+
+    // Performs the fused multiply add a * b + c
+    pub fn fma(a: Self, b: Self, c: Self) -> Self {
+        a * b + c
     }
 }
 
@@ -129,6 +134,38 @@ impl<T: Float + MulAssign> ops::MulAssign<T> for Tuple3<T> {
         self.x *= rhs;
         self.y *= rhs;
         self.z *= rhs;
+    }
+}
+
+impl<T: Float> ops::Mul<Tuple3<T>> for Tuple3<T> {
+    type Output = Self;
+
+    fn mul(self, rhs: Tuple3<T>) -> Self::Output {
+        Self::new(self.x * rhs.x, self.y * rhs.y, self.z * rhs.z)
+    }
+}
+
+impl<T: Float + MulAssign> ops::MulAssign<Tuple3<T>> for Tuple3<T> {
+    fn mul_assign(&mut self, rhs: Tuple3<T>) {
+        self.x *= rhs.x;
+        self.y *= rhs.y;
+        self.z *= rhs.z;
+    }
+}
+
+impl<T: Float> ops::Div<Tuple3<T>> for Tuple3<T> {
+    type Output = Self;
+
+    fn div(self, rhs: Tuple3<T>) -> Self::Output {
+        Self::new(self.x / rhs.x, self.y / rhs.y, self.z / rhs.z)
+    }
+}
+
+impl<T: Float + DivAssign> ops::DivAssign<Tuple3<T>> for Tuple3<T> {
+    fn div_assign(&mut self, rhs: Tuple3<T>) {
+        self.x /= rhs.x;
+        self.y /= rhs.y;
+        self.z /= rhs.z;
     }
 }
 
@@ -268,6 +305,38 @@ mod test_operations {
     fn test_div_assign_by_zero_panics() {
         let mut t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
         t /= 0.0;
+    }
+
+    #[test]
+    fn test_componentwise_mult() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        let r = Tuple3::<PatinaFloat>::new(1.0, 4.0, 3.5);
+
+        assert_eq!(t * r, Tuple3::<PatinaFloat>::new(0.0, 4.0, 7.0));
+    }
+
+    #[test]
+    fn test_componentwise_mult_assign() {
+        let mut t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        let r = Tuple3::<PatinaFloat>::new(1.0, 4.0, 3.5);
+
+        t *= r;
+        assert_eq!(t, Tuple3::<PatinaFloat>::new(0.0, 4.0, 7.0));
+    }
+
+    #[test]
+    fn test_componentwise_div() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        let r = Tuple3::<PatinaFloat>::new(1.0, 4.0, 3.0);
+
+        assert_eq!(t / r, Tuple3::<PatinaFloat>::new(0.0, 0.25, 2.0 / 3.0));
+    }
+    #[test]
+    fn test_componentwise_div_assign() {
+        let mut t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        let r = Tuple3::<PatinaFloat>::new(1.0, 4.0, 3.0);
+        t /= r;
+        assert_eq!(t, Tuple3::<PatinaFloat>::new(0.0, 0.25, 2.0 / 3.0));
     }
 }
 
