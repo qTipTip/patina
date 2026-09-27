@@ -3,6 +3,11 @@ name = "patina"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "patina"
+path = "src/lib.rs"
+crate-type = ["lib"]
+
 [dependencies]
 num-traits = "0.2.19"
 rand = "0.10.3"
