@@ -1,4 +1,4 @@
-use std::ops::{self, AddAssign, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign};
+use std::ops::{self, AddAssign, DivAssign, Index, IndexMut, MulAssign, Neg, SubAssign};
 
 use num_traits::{Float, Num, float::FloatCore};
 
