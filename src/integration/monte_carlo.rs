@@ -93,7 +93,7 @@ mod test {
         assert_relative_eq!(
             integrate_trapezoidal(n, f, a, b),
             1.0 / 3.0,
-            epsilon = 1.0e-2
+            epsilon = 1.0e-5
         );
     }
 }
