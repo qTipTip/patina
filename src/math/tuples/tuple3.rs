@@ -149,4 +149,11 @@ mod test_operations {
         let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
         assert_eq!(-t, Tuple3::<PatinaFloat>::new(0.0, -1.0, -2.0));
     }
+
+    fn test_subtraction() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        let r = Tuple3::<PatinaFloat>::new(1.5, 3.0, 2.0);
+
+        assert_eq!(t - r, Tuple3::<PatinaFloat>::new(-1.5, -2.0, 0.0));
+    }
 }
