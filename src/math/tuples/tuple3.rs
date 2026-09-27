@@ -110,4 +110,11 @@ mod test_operations {
 
         assert_eq!(t + r, Tuple3::<PatinaFloat>::new(1.5, 4.0, 4.0));
     }
+
+    fn test_additive_identity() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        let o = Tuple3::<PatinaFloat>::zero();
+
+        assert_eq!(t + o, t);
+    }
 }
