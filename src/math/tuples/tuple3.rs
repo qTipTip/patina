@@ -351,3 +351,16 @@ mod test_tuple3_functions {
         assert_eq!(a.hprod(), -20.0);
     }
 }
+
+#[cfg(test)]
+mod test_integer_tuples {
+    use crate::math::{PatinaInt, tuples::tuple3::Tuple3};
+
+    #[test]
+    fn test_integer_tuples_work() {
+        let t = Tuple3::<PatinaInt>::new(-10, 2, 1);
+        let r = Tuple3::<PatinaInt>::new(-10, 2, 5);
+
+        assert_eq!(t * r, Tuple3::<PatinaInt>::new(100, 4, 5));
+    }
+}
