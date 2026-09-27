@@ -35,6 +35,19 @@ where
         / (b - a)
 }
 
+fn integrate_mc_importance_sampling<F>(
+    n: usize,
+    f: F,
+    a: PatinaFloat,
+    b: PatinaFloat,
+    pdf: F,
+) -> PatinaFloat
+where
+    F: Fn(&PatinaFloat) -> PatinaFloat,
+{
+    0.0
+}
+
 // Integrate the function f from a to b using n uniformly spaced values, and the trapezoidal rule.
 fn integrate_trapezoidal<F>(n: usize, f: F, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat
 where
