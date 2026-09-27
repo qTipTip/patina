@@ -10,29 +10,30 @@ fn linspace(n: usize, a: PatinaFloat, b: PatinaFloat) -> Vec<PatinaFloat> {
         .collect()
 }
 
-// Integrate the function f from a to b using n monte carlo samples.
-fn integrate_mc<F>(n: usize, f: F, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat
+// Integrate the function f from a to b using n uniform monte carlo samples. Not to be confused
+// with monte carlo integration with importance sampling.
+//
+// Here, we draw N uniformly distributed samples from [0, 1].
+// - We use these to sample N uniformly
+// distributed points x_i in the interval [a, b].
+// - We then compute the integral of f from a to b by
+// computing the value of f(x_i) at each point
+// - Finally, computing the average by summing and then scaling by (1 / (b -
+// a)) (which is the constant p(x) from the uniform distribution).
+fn uniform_integrate_mc<F>(n: usize, f: F, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat
 where
     F: Fn(&PatinaFloat) -> PatinaFloat,
 {
     let mut rng = rand::rng();
-
-    // Generate n canonically uniformly distributed random variables, and sample the linear
-    // distribution. Also keep track of the probability of sampling that particular value.
-    let samples: Vec<(PatinaFloat, PatinaFloat)> = (0..n)
+    let uniform_dist = rand::distr::Uniform::new(a, b).unwrap();
+    (0..n)
         .map(|_| {
-            let u = rng.random();
-
-            let x = sample_linear(u, a, b);
-            let p = linear_pdf(x, a, b);
-            (x, p)
+            let x = rng.sample(uniform_dist);
+            f(&x)
         })
-        .collect();
-
-    // We can then compute the monte carlo estimator to f by evaluating f at each sampled point,
-    // divide it by the probability of choosing that particular point, and average all values at
-    // the end.
-    samples.iter().map(|(x, p)| f(x) / p).sum::<PatinaFloat>() / n as PatinaFloat
+        .sum::<PatinaFloat>()
+        / n as PatinaFloat
+        / (b - a)
 }
 
 fn integrate_rk4<F>(n: usize, f: F, a: PatinaFloat, b: PatinaFloat)
@@ -46,15 +47,15 @@ mod test {
     use approx::assert_relative_eq;
 
     use crate::{
-        integration::monte_carlo::{integrate_mc, linspace},
+        integration::monte_carlo::{linspace, uniform_integrate_mc},
         math::PatinaFloat,
     };
 
     #[test]
-    fn fk4_x_squared() {
+    fn mc_x_squared() {
         let n = 1000;
-        let a = -2.0;
-        let b = 3.0;
+        let a = 0.0;
+        let b = 1.0;
 
         let f = |x: &PatinaFloat| -> PatinaFloat { x * x };
 
@@ -62,9 +63,9 @@ mod test {
         let y: Vec<PatinaFloat> = x.iter().map(f).collect();
 
         assert_eq!(x.len(), n);
-        assert_relative_eq!(y[0], 4.0);
-        assert_relative_eq!(y[y.len() - 1], 9.0);
+        assert_relative_eq!(y[0], 0.0);
+        assert_relative_eq!(y[y.len() - 1], 1.0);
 
-        assert_relative_eq!(integrate_mc(1000, f, a, b), 2.0 / 3.0);
+        assert_relative_eq!(uniform_integrate_mc(1000, f, a, b), 1.0 / 3.0);
     }
 }
