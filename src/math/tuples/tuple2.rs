@@ -1,211 +1,245 @@
-use std::ops::{self, AddAssign, DivAssign, Index, IndexMut, MulAssign, SubAssign};
+use std::ops::{self, AddAssign, DivAssign, Index, IndexMut, MulAssign, Neg, SubAssign};
 
-use num_traits::Float;
+use num_traits::{Float, Num, float::FloatCore};
+pub trait CheckNan {
+    fn is_nan_val(&self) -> bool;
+}
+
+impl CheckNan for f32 {
+    #[inline]
+    fn is_nan_val(&self) -> bool {
+        self.is_nan()
+    }
+}
+impl CheckNan for f64 {
+    #[inline]
+    fn is_nan_val(&self) -> bool {
+        self.is_nan()
+    }
+}
+
+pub trait IsNotFloat {}
+impl IsNotFloat for i8 {}
+impl IsNotFloat for i16 {}
+impl IsNotFloat for i32 {}
+impl IsNotFloat for i64 {}
+impl IsNotFloat for isize {}
+impl IsNotFloat for u8 {}
+impl IsNotFloat for u16 {}
+impl IsNotFloat for u32 {}
+impl IsNotFloat for u64 {}
+impl IsNotFloat for usize {}
+
+impl<T: IsNotFloat> CheckNan for T {
+    #[inline]
+    fn is_nan_val(&self) -> bool {
+        false
+    }
+}
 
 #[derive(Clone, Copy, PartialEq, PartialOrd, Debug)]
-pub(crate) struct Tuple2<T>
-where
-    T: Float,
-{
+pub(crate) struct Tuple2<T> {
     pub x: T,
     pub y: T,
 }
 
-impl<T: Float> Tuple2<T> {
+impl<T: Num + CheckNan + Copy> Tuple2<T> {
     pub fn new(x: T, y: T) -> Self {
-        let t = Self { x, y };
-        debug_assert!(!t.has_nan());
-        t
+        debug_assert!(
+            !x.is_nan_val() && !y.is_nan_val(),
+            "Tuple2 components cannot be NaN!"
+        );
+        Self { x, y }
     }
 
     pub fn zero() -> Self {
         Self::new(T::zero(), T::zero())
     }
 
-    pub fn has_nan(&self) -> bool {
-        T::is_nan(self.x) || T::is_nan(self.y)
-    }
-
-    pub fn abs(&self) -> Self {
-        Self::new(self.x.abs(), self.y.abs())
-    }
-
-    pub fn ceil(&self) -> Self {
-        Self::new(self.x.ceil(), self.y.ceil())
-    }
-
-    pub fn floor(&self) -> Self {
-        Self::new(self.x.floor(), self.y.floor())
-    }
-
-    // Performs the linear interpolation between two tuples a and b.
     pub fn lerp(t: T, a: Self, b: Self) -> Self {
         a * (T::one() - t) + b * t
-    }
-
-    // Performs the fused multiply add a * b + c
-    pub fn fma(a: Self, b: Self, c: Self) -> Self {
-        a * b + c
-    }
-
-    // Performs the componentwise min between two tuples
-    pub fn min(a: Self, b: Self) -> Self {
-        Self::new(a.x.min(b.x), a.y.min(b.y))
-    }
-
-    // Performs the componentwise max between two tuples
-    pub fn max(a: Self, b: Self) -> Self {
-        Self::new(a.x.max(b.x), a.y.max(b.y))
-    }
-
-    // Returns the minimum component of the tuple
-    pub fn min_component(&self) -> T {
-        self.x.min(self.y)
-    }
-    // Returns the maximum component of the tuple
-    pub fn max_component(&self) -> T {
-        self.x.max(self.y)
-    }
-
-    pub fn min_component_index(&self) -> usize {
-        if self[0] <= self[1] { 0 } else { 1 }
-    }
-
-    pub fn max_component_index(&self) -> usize {
-        if self[0] >= self[1] { 0 } else { 1 }
-    }
-
-    pub fn permute(&self, perm_indices: &[usize; 2]) -> Self {
-        Self::new(self[perm_indices[0]], self[perm_indices[1]])
     }
 
     pub fn hprod(&self) -> T {
         self.x * self.y
     }
+
+    pub fn permute(&self, perm_indices: &[usize; 2]) -> Self {
+        Self::new(self[perm_indices[0]], self[perm_indices[1]])
+    }
 }
 
-impl<T: Float> Index<usize> for Tuple2<T> {
+impl<T: Num + CheckNan + Copy + PartialOrd> Tuple2<T> {
+    pub fn min(a: Self, b: Self) -> Self {
+        Self::new(
+            if a.x <= b.x { a.x } else { b.x },
+            if a.y <= b.y { a.y } else { b.y },
+        )
+    }
+
+    pub fn max(a: Self, b: Self) -> Self {
+        Self::new(
+            if a.x >= b.x { a.x } else { b.x },
+            if a.y >= b.y { a.y } else { b.y },
+        )
+    }
+
+    pub fn min_component(&self) -> T {
+        if self.x <= self.y { self.x } else { self.y }
+    }
+
+    pub fn max_component(&self) -> T {
+        if self.x >= self.y { self.x } else { self.y }
+    }
+
+    pub fn min_component_index(&self) -> usize {
+        if self.x <= self.y { 0 } else { 1 }
+    }
+
+    pub fn max_component_index(&self) -> usize {
+        if self.x >= self.y { 0 } else { 1 }
+    }
+}
+
+impl<T: num_traits::Signed + CheckNan + Copy> Tuple2<T> {
+    pub fn abs(&self) -> Self {
+        Self::new(self.x.abs(), self.y.abs())
+    }
+}
+
+impl<T: Num + FloatCore + CheckNan + Copy> Tuple2<T> {
+    pub fn ceil(&self) -> Self {
+        Self::new(self.x.ceil(), self.y.ceil())
+    }
+    pub fn floor(&self) -> Self {
+        Self::new(self.x.floor(), self.y.floor())
+    }
+}
+
+impl<T: Float + CheckNan> Tuple2<T> {
+    pub fn has_nan(&self) -> bool {
+        self.x.is_nan() || self.y.is_nan()
+    }
+
+    pub fn fma(a: Self, b: Self, c: Self) -> Self {
+        a * b + c
+    }
+}
+
+impl<T> Index<usize> for Tuple2<T> {
     type Output = T;
-
     fn index(&self, index: usize) -> &Self::Output {
-        if index == 0 {
-            return &self.x;
-        };
-        if index == 1 {
-            return &self.y;
-        };
-        panic!("Indexing into item with length 2, with index {index}")
+        match index {
+            0 => &self.x,
+            1 => &self.y,
+            _ => panic!("Indexing into item with length 2, with index {index}"),
+        }
     }
 }
 
-impl<T: Float> IndexMut<usize> for Tuple2<T> {
+impl<T> IndexMut<usize> for Tuple2<T> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        if index == 0 {
-            return &mut self.x;
+        match index {
+            0 => &mut self.x,
+            1 => &mut self.y,
+            _ => panic!("Indexing into item with length 2, with index {index}"),
         }
-        if index == 1 {
-            return &mut self.y;
-        }
-        panic!("Indexing into item with length 2, with index {index}")
     }
 }
 
-impl<T: Float> ops::Add for Tuple2<T> {
+impl<T: Num + CheckNan + Copy> ops::Add for Tuple2<T> {
     type Output = Self;
-
     fn add(self, rhs: Self) -> Self::Output {
         Self::new(self.x + rhs.x, self.y + rhs.y)
     }
 }
 
-impl<T: Float + AddAssign> ops::AddAssign for Tuple2<T> {
+impl<T: AddAssign> ops::AddAssign for Tuple2<T> {
     fn add_assign(&mut self, rhs: Self) {
         self.x += rhs.x;
         self.y += rhs.y;
     }
 }
 
-impl<T: Float> ops::Neg for Tuple2<T> {
+impl<T: Num + Neg<Output = T> + CheckNan + Copy> ops::Neg for Tuple2<T> {
     type Output = Self;
-
     fn neg(self) -> Self::Output {
         Self::new(-self.x, -self.y)
     }
 }
 
-impl<T: Float> ops::Sub for Tuple2<T> {
+impl<T: Num + Neg<Output = T> + CheckNan + Copy> ops::Sub for Tuple2<T> {
     type Output = Self;
-
     fn sub(self, rhs: Self) -> Self::Output {
         self + (-rhs)
     }
 }
 
-impl<T: Float + SubAssign> ops::SubAssign for Tuple2<T> {
+impl<T: SubAssign> ops::SubAssign for Tuple2<T> {
     fn sub_assign(&mut self, rhs: Self) {
         self.x -= rhs.x;
         self.y -= rhs.y;
     }
 }
 
-impl<T: Float> ops::Mul<T> for Tuple2<T> {
+impl<T: Num + CheckNan + Copy> ops::Mul<T> for Tuple2<T> {
     type Output = Self;
-
     fn mul(self, rhs: T) -> Self::Output {
         Self::new(self.x * rhs, self.y * rhs)
     }
 }
-impl<T: Float + MulAssign> ops::MulAssign<T> for Tuple2<T> {
+
+impl<T: MulAssign + Copy> ops::MulAssign<T> for Tuple2<T> {
     fn mul_assign(&mut self, rhs: T) {
         self.x *= rhs;
         self.y *= rhs;
     }
 }
 
-impl<T: Float> ops::Mul<Tuple2<T>> for Tuple2<T> {
+impl<T: Num + CheckNan + Copy> ops::Mul<Tuple2<T>> for Tuple2<T> {
     type Output = Self;
-
     fn mul(self, rhs: Tuple2<T>) -> Self::Output {
         Self::new(self.x * rhs.x, self.y * rhs.y)
     }
 }
 
-impl<T: Float + MulAssign> ops::MulAssign<Tuple2<T>> for Tuple2<T> {
+impl<T: MulAssign> ops::MulAssign<Tuple2<T>> for Tuple2<T> {
     fn mul_assign(&mut self, rhs: Tuple2<T>) {
         self.x *= rhs.x;
         self.y *= rhs.y;
     }
 }
 
-impl<T: Float> ops::Div<Tuple2<T>> for Tuple2<T> {
+impl<T: Num + CheckNan + Copy> ops::Div<Tuple2<T>> for Tuple2<T> {
     type Output = Self;
-
     fn div(self, rhs: Tuple2<T>) -> Self::Output {
         Self::new(self.x / rhs.x, self.y / rhs.y)
     }
 }
 
-impl<T: Float + DivAssign> ops::DivAssign<Tuple2<T>> for Tuple2<T> {
+impl<T: DivAssign> ops::DivAssign<Tuple2<T>> for Tuple2<T> {
     fn div_assign(&mut self, rhs: Tuple2<T>) {
         self.x /= rhs.x;
         self.y /= rhs.y;
     }
 }
 
-impl<T: Float> ops::Div<T> for Tuple2<T> {
+impl<T: Num + CheckNan + Copy> ops::Div<T> for Tuple2<T> {
     type Output = Self;
-
     fn div(self, rhs: T) -> Self::Output {
         Self::new(self.x / rhs, self.y / rhs)
     }
 }
 
-impl<T: Float + DivAssign> ops::DivAssign<T> for Tuple2<T> {
+impl<T: DivAssign + Copy + CheckNan> ops::DivAssign<T> for Tuple2<T> {
     fn div_assign(&mut self, rhs: T) {
         self.x /= rhs;
         self.y /= rhs;
 
-        debug_assert!(!self.has_nan())
+        debug_assert!(
+            !self.x.is_nan_val() && !self.y.is_nan_val(),
+            "Division resulted in NaN!"
+        );
     }
 }
 
