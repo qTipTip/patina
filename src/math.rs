@@ -1,4 +1,5 @@
 mod tuples;
+mod vectors;
 
 pub(crate) type PatinaFloat = f64;
 
