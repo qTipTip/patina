@@ -1,13 +1,12 @@
-use crate::{
-    math::PatinaFloat,
-    sampling::linear::{linear_pdf, sample_linear},
-};
+use crate::math::PatinaFloat;
 use rand::{self, RngExt};
 // Returns n uniformly spaced values between a and b, inclusive.
-fn linspace(n: usize, a: PatinaFloat, b: PatinaFloat) -> Vec<PatinaFloat> {
-    (0..n)
-        .map(|i| a + i as PatinaFloat * (b - a) / (n as PatinaFloat - 1.0))
-        .collect()
+fn linspace(n: usize, a: PatinaFloat, b: PatinaFloat) -> (Vec<PatinaFloat>, PatinaFloat) {
+    let delta = (b - a) / (n as PatinaFloat - 1.0);
+    (
+        (0..n).map(|i| a + i as PatinaFloat * delta).collect(),
+        delta,
+    )
 }
 
 // Integrate the function f from a to b using n uniform monte carlo samples. Not to be confused
@@ -40,6 +39,8 @@ fn integrate_rk4<F>(n: usize, f: F, a: PatinaFloat, b: PatinaFloat)
 where
     F: Fn(PatinaFloat) -> PatinaFloat,
 {
+    let x_vals = linspace(n, a, b);
+    let f_vals = x_vals.iter().map(|&x| f(x));
 }
 
 #[cfg(test)]
