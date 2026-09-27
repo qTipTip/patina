@@ -61,7 +61,7 @@ impl<T: Float> IndexMut<usize> for Tuple3<T> {
 }
 
 #[cfg(test)]
-mod test {
+mod test_construction {
     use approx::assert_relative_eq;
 
     use crate::math::{PatinaFloat, tuples::tuple3::Tuple3};
@@ -70,10 +70,19 @@ mod test {
     fn test_tuples_3() {
         let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
         assert!(!t.has_nan());
-        assert_relative_eq!(t[0], 0.0);
 
         assert_relative_eq!(t[0], 0.0);
         assert_relative_eq!(t[1], 1.0);
         assert_relative_eq!(t[2], 2.0);
+    }
+
+    #[test]
+    fn test_tuples_3_zero() {
+        let t = Tuple3::<PatinaFloat>::zero();
+        assert!(!t.has_nan());
+
+        assert_relative_eq!(t[0], 0.0);
+        assert_relative_eq!(t[1], 0.0);
+        assert_relative_eq!(t[2], 0.0);
     }
 }
