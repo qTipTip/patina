@@ -1,7 +1,6 @@
 use std::ops::{self, AddAssign, DivAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign};
 
 use num_traits::Float;
-use rand::seq::index;
 
 #[derive(Clone, Copy, PartialEq, PartialOrd, Debug)]
 pub(crate) struct Tuple3<T>
