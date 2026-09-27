@@ -1,0 +1,79 @@
+use std::ops::{Index, IndexMut};
+
+use num_traits::Float;
+
+#[derive(Clone, Copy)]
+pub(crate) struct Tuple3<T>
+where
+    T: Float,
+{
+    pub x: T,
+    pub y: T,
+    pub z: T,
+}
+
+impl<T: Float> Tuple3<T> {
+    pub fn new(x: T, y: T, z: T) -> Self {
+        let t = Self { x, y, z };
+        debug_assert!(!t.has_nan());
+        t
+    }
+
+    pub fn zero() -> Self {
+        Self::new(T::zero(), T::zero(), T::zero())
+    }
+
+    pub fn has_nan(&self) -> bool {
+        T::is_nan(self.x) || T::is_nan(self.y) || T::is_nan(self.z)
+    }
+}
+
+impl<T: Float> Index<usize> for Tuple3<T> {
+    type Output = T;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        if index == 0 {
+            return &self.x;
+        };
+        if index == 1 {
+            return &self.y;
+        };
+        if index == 2 {
+            return &self.z;
+        }
+        panic!("Indexing into item with length 3, with index {index}")
+    }
+}
+
+impl<T: Float> IndexMut<usize> for Tuple3<T> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        if index == 0 {
+            return &mut self.x;
+        }
+        if index == 1 {
+            return &mut self.y;
+        }
+        if index == 2 {
+            return &mut self.z;
+        }
+        panic!("Indexing into item with length 3, with index {index}")
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use approx::assert_relative_eq;
+
+    use crate::math::{PatinaFloat, tuples::tuple3::Tuple3};
+
+    #[test]
+    fn test_tuples_3() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        assert!(!t.has_nan());
+        assert_relative_eq!(t[0], 0.0);
+
+        assert_relative_eq!(t[0], 0.0);
+        assert_relative_eq!(t[1], 1.0);
+        assert_relative_eq!(t[2], 2.0);
+    }
+}
