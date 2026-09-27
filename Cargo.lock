@@ -75,6 +75,7 @@ name = "patina"
 version = "0.1.0"
 dependencies = [
  "approx",
+ "num-traits",
  "rand",
 ]
 
