@@ -11,7 +11,7 @@ fn bi_lerp(p: Point2D, weights: &[PatinaFloat]) -> PatinaFloat {
 }
 
 /// The bilinear function f(x, y) interpolates between four values $w_i$ at the four corners of the
-/// unit square [0, 1]**2. The corresponding pdf for f(x, y) is p(x, y) = 4f(x) / (w_0 + w_1 + w_2
+/// unit square [0, 1]**2. The corresponding pdf for f(x, y) is p(x, y) = 4f(x, y) / (w_0 + w_1 + w_2
 /// + w_3).
 fn bilinear_pdf(p: Point2D, weights: &[PatinaFloat]) -> PatinaFloat {
     // If point is outside the unit square, return 0.
