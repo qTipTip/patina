@@ -1,8 +1,8 @@
-mod tuples;
-mod vectors;
+pub mod tuples;
+pub mod vectors;
 
-pub(crate) type PatinaFloat = f64;
-pub(crate) type PatinaInt = i64;
+pub type PatinaFloat = f64;
+pub type PatinaInt = i64;
 
 #[derive(Clone, Copy)]
 pub(crate) struct Point2D<T> {

@@ -1,3 +1,3 @@
 #![allow(dead_code)]
-mod tuple2;
-mod tuple3;
+pub mod tuple2;
+pub mod tuple3;

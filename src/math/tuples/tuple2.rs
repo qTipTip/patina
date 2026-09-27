@@ -38,7 +38,7 @@ impl<T: IsNotFloat> CheckNan for T {
 }
 
 #[derive(Clone, Copy, PartialEq, PartialOrd, Debug)]
-pub(crate) struct Tuple2<T> {
+pub struct Tuple2<T> {
     pub x: T,
     pub y: T,
 }

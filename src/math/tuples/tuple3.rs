@@ -7,7 +7,7 @@ pub trait CheckNan {
 }
 
 #[derive(Clone, Copy, PartialEq, PartialOrd, Debug)]
-pub(crate) struct Tuple3<T> {
+pub struct Tuple3<T> {
     pub x: T,
     pub y: T,
     pub z: T,
