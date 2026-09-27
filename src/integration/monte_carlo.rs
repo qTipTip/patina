@@ -31,8 +31,7 @@ where
             f(&x)
         })
         .sum::<PatinaFloat>()
-        / n as PatinaFloat
-        / (b - a)
+        / (n as PatinaFloat * (b - a))
 }
 
 fn integrate_mc_importance_sampling<F>(
