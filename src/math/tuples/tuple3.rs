@@ -1,4 +1,4 @@
-use std::ops::{self, AddAssign, Index, IndexMut, SubAssign};
+use std::ops::{self, AddAssign, DivAssign, Index, IndexMut, MulAssign, SubAssign};
 
 use num_traits::Float;
 
@@ -100,6 +100,39 @@ impl<T: Float + SubAssign> ops::SubAssign for Tuple3<T> {
     }
 }
 
+impl<T: Float> ops::Mul<T> for Tuple3<T> {
+    type Output = Self;
+
+    fn mul(self, rhs: T) -> Self::Output {
+        Self::new(self.x * rhs, self.y * rhs, self.z * rhs)
+    }
+}
+impl<T: Float + MulAssign> ops::MulAssign<T> for Tuple3<T> {
+    fn mul_assign(&mut self, rhs: T) {
+        self.x *= rhs;
+        self.y *= rhs;
+        self.z *= rhs;
+    }
+}
+
+impl<T: Float> ops::Div<T> for Tuple3<T> {
+    type Output = Self;
+
+    fn div(self, rhs: T) -> Self::Output {
+        Self::new(self.x / rhs, self.y / rhs, self.z / rhs)
+    }
+}
+
+impl<T: Float + DivAssign> ops::DivAssign<T> for Tuple3<T> {
+    fn div_assign(&mut self, rhs: T) {
+        self.x /= rhs;
+        self.y /= rhs;
+        self.z /= rhs;
+
+        debug_assert!(!self.has_nan())
+    }
+}
+
 #[cfg(test)]
 mod test_construction {
     use approx::assert_relative_eq;
@@ -177,5 +210,46 @@ mod test_operations {
         t -= t;
 
         assert_eq!(t, Tuple3::<PatinaFloat>::zero());
+    }
+
+    #[test]
+    fn test_scalar_mult() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        assert_eq!(t * 2.0, Tuple3::<PatinaFloat>::new(0.0, 2.0, 4.0));
+    }
+
+    #[test]
+    fn test_scalar_mult_assign() {
+        let mut t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        t *= 2.0;
+        assert_eq!(t, Tuple3::<PatinaFloat>::new(0.0, 2.0, 4.0));
+    }
+
+    #[test]
+    fn test_division() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+
+        assert_eq!(t / 2.0, Tuple3::<PatinaFloat>::new(0.0, 0.5, 1.0));
+    }
+
+    #[test]
+    fn test_div_assign() {
+        let mut t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        t /= 2.0;
+        assert_eq!(t, Tuple3::<PatinaFloat>::new(0.0, 0.5, 1.0));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_division_by_zero_panics() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        let _ = t / 0.0;
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_div_assign_by_zero_panics() {
+        let mut t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        t /= 0.0;
     }
 }
