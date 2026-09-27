@@ -1,6 +1,6 @@
 use std::ops::{self, AddAssign, DivAssign, Index, IndexMut, MulAssign, SubAssign};
 
-use num_traits::Float;
+use num_traits::{Float, Num};
 
 #[derive(Clone, Copy, PartialEq, PartialOrd, Debug)]
 pub(crate) struct Tuple3<T> {
@@ -9,23 +9,25 @@ pub(crate) struct Tuple3<T> {
     pub z: T,
 }
 
-impl<T: Float> Tuple3<T> {
+impl<T: Num> Tuple3<T> {
     pub fn new(x: T, y: T, z: T) -> Self {
-        let t = Self { x, y, z };
-        debug_assert!(!t.has_nan());
-        t
+        Self { x, y, z }
     }
 
     pub fn zero() -> Self {
         Self::new(T::zero(), T::zero(), T::zero())
     }
+}
 
-    pub fn has_nan(&self) -> bool {
-        T::is_nan(self.x) || T::is_nan(self.y) || T::is_nan(self.z)
-    }
-
+impl<T: num_traits::Signed> Tuple3<T> {
     pub fn abs(&self) -> Self {
         Self::new(self.x.abs(), self.y.abs(), self.z.abs())
+    }
+}
+
+impl<T: Float> Tuple3<T> {
+    pub fn has_nan(&self) -> bool {
+        T::is_nan(self.x) || T::is_nan(self.y) || T::is_nan(self.z)
     }
 
     pub fn ceil(&self) -> Self {
