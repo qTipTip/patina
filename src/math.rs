@@ -1,20 +1,20 @@
 pub(crate) type PatinaFloat = f64;
 
 #[derive(Clone, Copy)]
-pub(crate) struct Point2D {
-    pub x: PatinaFloat,
-    pub y: PatinaFloat,
+pub(crate) struct Point2D<T> {
+    pub x: T,
+    pub y: T,
 }
 
 #[derive(Clone, Copy)]
-pub(crate) struct Tuple2 {
-    pub x: PatinaFloat,
-    pub y: PatinaFloat,
+pub(crate) struct Tuple2<T> {
+    pub x: T,
+    pub y: T,
 }
 
 #[derive(Clone, Copy)]
-pub(crate) struct Tuple3 {
-    pub x: PatinaFloat,
-    pub y: PatinaFloat,
-    pub z: PatinaFloat,
+pub(crate) struct Tuple3<T> {
+    pub x: T,
+    pub y: T,
+    pub z: T,
 }
