@@ -96,6 +96,10 @@ impl<T: Float> Tuple3<T> {
             self[perm_indices[2]],
         )
     }
+
+    pub fn hprod(&self) -> T {
+        self.x * self.y * self.z
+    }
 }
 
 impl<T: Float> Index<usize> for Tuple3<T> {
@@ -453,6 +457,12 @@ mod test_tuple3_functions {
         assert_eq!(
             a.permute(&[1, 2, 0]),
             Tuple3::<PatinaFloat>::new(999.0, 1.0, -15.0)
-        )
+        );
+    }
+
+    #[test]
+    fn test_hprod() {
+        let a = Tuple3::<PatinaFloat>::new(-10.0, 2.0, 1.0);
+        assert_eq!(a.hprod(), -20.0);
     }
 }
