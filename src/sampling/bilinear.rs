@@ -3,7 +3,7 @@ use crate::{
     sampling::linear::{invert_linear_sample, lerp, sample_linear},
 };
 
-fn bi_lerp(p: Point2D, weights: &[PatinaFloat]) -> PatinaFloat {
+fn bi_lerp(p: Point2D<PatinaFloat>, weights: &[PatinaFloat]) -> PatinaFloat {
     (1.0 - p.x) * (1.0 - p.y) * weights[0]
         + p.x * (1.0 - p.y) * weights[1]
         + p.y * (1.0 - p.x) * weights[2]
@@ -13,7 +13,7 @@ fn bi_lerp(p: Point2D, weights: &[PatinaFloat]) -> PatinaFloat {
 /// The bilinear function f(x, y) interpolates between four values $w_i$ at the four corners of the
 /// unit square [0, 1]**2. The corresponding pdf for f(x, y) is p(x, y) = 4f(x, y) / (w_0 + w_1 + w_2
 /// + w_3).
-fn bilinear_pdf(p: Point2D, weights: &[PatinaFloat]) -> PatinaFloat {
+fn bilinear_pdf(p: Point2D<PatinaFloat>, weights: &[PatinaFloat]) -> PatinaFloat {
     // If point is outside the unit square, return 0.
     if !(0.0..=1.0).contains(&p.x) || !(0.0..=1.0).contains(&p.y) {
         return 0.0;
@@ -31,7 +31,7 @@ fn bilinear_pdf(p: Point2D, weights: &[PatinaFloat]) -> PatinaFloat {
 
 /// Sample the bilinear probability distribution. We do this by first sample y for a bilinear
 /// marginal distribution, then we sample x for a bilinear conditional distribution.
-fn sample_bilinear(u: Point2D, weights: &[PatinaFloat]) -> Point2D {
+fn sample_bilinear(u: Point2D<PatinaFloat>, weights: &[PatinaFloat]) -> Point2D<PatinaFloat> {
     let mut q = Point2D { x: 0.0, y: 0.0 };
     q.y = sample_linear(u.y, weights[0] + weights[1], weights[2] + weights[3]);
     q.x = sample_linear(
@@ -45,7 +45,10 @@ fn sample_bilinear(u: Point2D, weights: &[PatinaFloat]) -> Point2D {
 
 // Since bilinear sampling is the composition of two linear samples, we can invert them by applying
 // inverses in the opposite order.
-fn invert_bilinear_sample(p: Point2D, weights: &[PatinaFloat]) -> Point2D {
+fn invert_bilinear_sample(
+    p: Point2D<PatinaFloat>,
+    weights: &[PatinaFloat],
+) -> Point2D<PatinaFloat> {
     Point2D {
         x: invert_linear_sample(
             p.x,
