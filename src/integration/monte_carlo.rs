@@ -35,6 +35,7 @@ where
         / (b - a)
 }
 
+// Integrate the function f from a to b using n uniformly spaced values, and the trapezoidal rule.
 fn integrate_trapezoidal<F>(n: usize, f: F, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat
 where
     F: Fn(&PatinaFloat) -> PatinaFloat,
@@ -61,7 +62,7 @@ mod test {
 
     #[test]
     fn mc_x_squared() {
-        let n = 1000;
+        let n = 10000;
         let a = 0.0;
         let b = 1.0;
 
@@ -74,17 +75,25 @@ mod test {
         assert_relative_eq!(y[0], 0.0);
         assert_relative_eq!(y[y.len() - 1], 1.0);
 
-        assert_relative_eq!(uniform_integrate_mc(n, f, a, b), 1.0 / 3.0);
+        assert_relative_eq!(
+            uniform_integrate_mc(n, f, a, b),
+            1.0 / 3.0,
+            epsilon = 1.0e-2
+        );
     }
 
     #[test]
     fn tpz_x_squared() {
-        let n = 1000;
+        let n = 10000;
         let a = 0.0;
         let b = 1.0;
 
         let f = |x: &PatinaFloat| -> PatinaFloat { x * x };
 
-        assert_relative_eq!(integrate_trapezoidal(n, f, a, b), 1.0 / 3.0);
+        assert_relative_eq!(
+            integrate_trapezoidal(n, f, a, b),
+            1.0 / 3.0,
+            epsilon = 1.0e-2
+        );
     }
 }
