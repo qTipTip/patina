@@ -64,11 +64,7 @@ impl<T: Float> ops::Add for Tuple3<T> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
-        Self {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-            z: self.z + rhs.z,
-        }
+        Self::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
     }
 }
 
@@ -77,6 +73,22 @@ impl<T: Float + AddAssign> ops::AddAssign for Tuple3<T> {
         self.x += rhs.x;
         self.y += rhs.y;
         self.z += rhs.z;
+    }
+}
+
+impl<T: Float> ops::Neg for Tuple3<T> {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Self::new(-self.x, -self.y, -self.z)
+    }
+}
+
+impl<T: Float> ops::Sub for Tuple3<T> {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        self + (-rhs)
     }
 }
 
@@ -131,5 +143,10 @@ mod test_operations {
         let r = Tuple3::<PatinaFloat>::new(1.5, 3.0, 2.0);
         t += r;
         assert_eq!(t, Tuple3::<PatinaFloat>::new(1.5, 4.0, 4.0));
+    }
+
+    fn test_negation() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        assert_eq!(-t, Tuple3::<PatinaFloat>::new(0.0, -1.0, -2.0));
     }
 }
