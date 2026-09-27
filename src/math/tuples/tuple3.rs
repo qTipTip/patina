@@ -224,11 +224,16 @@ impl<T: Num + CheckNan + Copy> ops::Mul<T> for Tuple3<T> {
     }
 }
 
-impl<T: MulAssign + Copy> ops::MulAssign<T> for Tuple3<T> {
+impl<T: MulAssign + Copy + CheckNan> ops::MulAssign<T> for Tuple3<T> {
     fn mul_assign(&mut self, rhs: T) {
         self.x *= rhs;
         self.y *= rhs;
         self.z *= rhs;
+
+        debug_assert!(
+            !self.x.is_nan_val() && !self.y.is_nan_val() && !self.z.is_nan_val(),
+            "Multiplication resulted in NaN!"
+        );
     }
 }
 
@@ -239,11 +244,16 @@ impl<T: Num + CheckNan + Copy> ops::Mul<Tuple3<T>> for Tuple3<T> {
     }
 }
 
-impl<T: MulAssign> ops::MulAssign<Tuple3<T>> for Tuple3<T> {
+impl<T: MulAssign + CheckNan> ops::MulAssign<Tuple3<T>> for Tuple3<T> {
     fn mul_assign(&mut self, rhs: Tuple3<T>) {
         self.x *= rhs.x;
         self.y *= rhs.y;
         self.z *= rhs.z;
+
+        debug_assert!(
+            !self.x.is_nan_val() && !self.y.is_nan_val() && !self.z.is_nan_val(),
+            "Multiplication resulted in NaN!"
+        );
     }
 }
 
@@ -254,11 +264,16 @@ impl<T: Num + CheckNan + Copy> ops::Div<Tuple3<T>> for Tuple3<T> {
     }
 }
 
-impl<T: DivAssign> ops::DivAssign<Tuple3<T>> for Tuple3<T> {
+impl<T: DivAssign + CheckNan> ops::DivAssign<Tuple3<T>> for Tuple3<T> {
     fn div_assign(&mut self, rhs: Tuple3<T>) {
         self.x /= rhs.x;
         self.y /= rhs.y;
         self.z /= rhs.z;
+
+        debug_assert!(
+            !self.x.is_nan_val() && !self.y.is_nan_val() && !self.z.is_nan_val(),
+            "Division resulted in NaN!"
+        );
     }
 }
 
@@ -269,11 +284,166 @@ impl<T: Num + CheckNan + Copy> ops::Div<T> for Tuple3<T> {
     }
 }
 
-impl<T: DivAssign + Copy> ops::DivAssign<T> for Tuple3<T> {
+impl<T: DivAssign + Copy + CheckNan> ops::DivAssign<T> for Tuple3<T> {
     fn div_assign(&mut self, rhs: T) {
         self.x /= rhs;
         self.y /= rhs;
         self.z /= rhs;
+        debug_assert!(
+            !self.x.is_nan_val() && !self.y.is_nan_val() && !self.z.is_nan_val(),
+            "Division resulted in NaN!"
+        );
+    }
+}
+
+#[cfg(test)]
+mod test_construction {
+    use approx::assert_relative_eq;
+
+    use crate::math::{PatinaFloat, tuples::tuple3::Tuple3};
+
+    #[test]
+    fn test_tuples_3() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+
+        assert_relative_eq!(t[0], 0.0);
+        assert_relative_eq!(t[1], 1.0);
+        assert_relative_eq!(t[2], 2.0);
+    }
+
+    #[test]
+    fn test_tuples_3_zero() {
+        let t = Tuple3::<PatinaFloat>::zero();
+
+        assert_relative_eq!(t[0], 0.0);
+        assert_relative_eq!(t[1], 0.0);
+        assert_relative_eq!(t[2], 0.0);
+    }
+}
+
+#[cfg(test)]
+mod test_operations {
+    use crate::math::{PatinaFloat, tuples::tuple3::Tuple3};
+
+    #[test]
+    fn test_addition() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        let r = Tuple3::<PatinaFloat>::new(1.5, 3.0, 2.0);
+
+        assert_eq!(t + r, Tuple3::<PatinaFloat>::new(1.5, 4.0, 4.0));
+    }
+
+    #[test]
+    fn test_additive_identity() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        let o = Tuple3::<PatinaFloat>::zero();
+
+        assert_eq!(t + o, t);
+    }
+
+    #[test]
+    fn test_add_assign() {
+        let mut t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        let r = Tuple3::<PatinaFloat>::new(1.5, 3.0, 2.0);
+        t += r;
+
+        assert_eq!(t, Tuple3::<PatinaFloat>::new(1.5, 4.0, 4.0));
+    }
+
+    #[test]
+    fn test_negation() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+
+        assert_eq!(-t, Tuple3::<PatinaFloat>::new(0.0, -1.0, -2.0));
+    }
+
+    #[test]
+    fn test_subtraction() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        let r = Tuple3::<PatinaFloat>::new(1.5, 3.0, 2.0);
+
+        assert_eq!(t - r, Tuple3::<PatinaFloat>::new(-1.5, -2.0, 0.0));
+    }
+
+    #[test]
+    fn test_subassign() {
+        let mut t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        t -= t;
+
+        assert_eq!(t, Tuple3::<PatinaFloat>::zero());
+    }
+
+    #[test]
+    fn test_scalar_mult() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        assert_eq!(t * 2.0, Tuple3::<PatinaFloat>::new(0.0, 2.0, 4.0));
+    }
+
+    #[test]
+    fn test_scalar_mult_assign() {
+        let mut t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        t *= 2.0;
+        assert_eq!(t, Tuple3::<PatinaFloat>::new(0.0, 2.0, 4.0));
+    }
+
+    #[test]
+    fn test_division() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+
+        assert_eq!(t / 2.0, Tuple3::<PatinaFloat>::new(0.0, 0.5, 1.0));
+    }
+
+    #[test]
+    fn test_div_assign() {
+        let mut t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        t /= 2.0;
+        assert_eq!(t, Tuple3::<PatinaFloat>::new(0.0, 0.5, 1.0));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_division_by_zero_panics() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        let _ = t / 0.0;
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_div_assign_by_zero_panics() {
+        let mut t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        t /= 0.0;
+    }
+
+    #[test]
+    fn test_componentwise_mult() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        let r = Tuple3::<PatinaFloat>::new(1.0, 4.0, 3.5);
+
+        assert_eq!(t * r, Tuple3::<PatinaFloat>::new(0.0, 4.0, 7.0));
+    }
+
+    #[test]
+    fn test_componentwise_mult_assign() {
+        let mut t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        let r = Tuple3::<PatinaFloat>::new(1.0, 4.0, 3.5);
+
+        t *= r;
+        assert_eq!(t, Tuple3::<PatinaFloat>::new(0.0, 4.0, 7.0));
+    }
+
+    #[test]
+    fn test_componentwise_div() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        let r = Tuple3::<PatinaFloat>::new(1.0, 4.0, 3.0);
+
+        assert_eq!(t / r, Tuple3::<PatinaFloat>::new(0.0, 0.25, 2.0 / 3.0));
+    }
+    #[test]
+    fn test_componentwise_div_assign() {
+        let mut t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        let r = Tuple3::<PatinaFloat>::new(1.0, 4.0, 3.0);
+        t /= r;
+        assert_eq!(t, Tuple3::<PatinaFloat>::new(0.0, 0.25, 2.0 / 3.0));
     }
 }
 

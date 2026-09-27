@@ -189,10 +189,15 @@ impl<T: Num + CheckNan + Copy> ops::Mul<T> for Tuple2<T> {
     }
 }
 
-impl<T: MulAssign + Copy> ops::MulAssign<T> for Tuple2<T> {
+impl<T: MulAssign + Copy + CheckNan> ops::MulAssign<T> for Tuple2<T> {
     fn mul_assign(&mut self, rhs: T) {
         self.x *= rhs;
         self.y *= rhs;
+
+        debug_assert!(
+            !self.x.is_nan_val() && !self.y.is_nan_val(),
+            "Multiplication resulted in NaN!"
+        );
     }
 }
 
@@ -203,10 +208,15 @@ impl<T: Num + CheckNan + Copy> ops::Mul<Tuple2<T>> for Tuple2<T> {
     }
 }
 
-impl<T: MulAssign> ops::MulAssign<Tuple2<T>> for Tuple2<T> {
+impl<T: MulAssign + CheckNan> ops::MulAssign<Tuple2<T>> for Tuple2<T> {
     fn mul_assign(&mut self, rhs: Tuple2<T>) {
         self.x *= rhs.x;
         self.y *= rhs.y;
+
+        debug_assert!(
+            !self.x.is_nan_val() && !self.y.is_nan_val(),
+            "Multiplication resulted in NaN!"
+        );
     }
 }
 
@@ -217,10 +227,15 @@ impl<T: Num + CheckNan + Copy> ops::Div<Tuple2<T>> for Tuple2<T> {
     }
 }
 
-impl<T: DivAssign> ops::DivAssign<Tuple2<T>> for Tuple2<T> {
+impl<T: DivAssign + CheckNan> ops::DivAssign<Tuple2<T>> for Tuple2<T> {
     fn div_assign(&mut self, rhs: Tuple2<T>) {
         self.x /= rhs.x;
         self.y /= rhs.y;
+
+        debug_assert!(
+            !self.x.is_nan_val() && !self.y.is_nan_val(),
+            "Division resulted in NaN!"
+        );
     }
 }
 
