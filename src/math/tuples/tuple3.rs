@@ -3,10 +3,7 @@ use std::ops::{self, AddAssign, DivAssign, Index, IndexMut, MulAssign, SubAssign
 use num_traits::Float;
 
 #[derive(Clone, Copy, PartialEq, PartialOrd, Debug)]
-pub(crate) struct Tuple3<T>
-where
-    T: Float,
-{
+pub(crate) struct Tuple3<T> {
     pub x: T,
     pub y: T,
     pub z: T,
