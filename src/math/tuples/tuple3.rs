@@ -26,6 +26,18 @@ impl<T: Float> Tuple3<T> {
     pub fn has_nan(&self) -> bool {
         T::is_nan(self.x) || T::is_nan(self.y) || T::is_nan(self.z)
     }
+
+    pub fn abs(&self) -> Self {
+        Self::new(self.x.abs(), self.y.abs(), self.z.abs())
+    }
+
+    pub fn ceil(&self) -> Self {
+        Self::new(self.x.ceil(), self.y.ceil(), self.z.ceil())
+    }
+
+    pub fn floor(&self) -> Self {
+        Self::new(self.x.floor(), self.y.floor(), self.z.floor())
+    }
 }
 
 impl<T: Float> Index<usize> for Tuple3<T> {
@@ -251,5 +263,23 @@ mod test_operations {
     fn test_div_assign_by_zero_panics() {
         let mut t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
         t /= 0.0;
+    }
+}
+
+#[cfg(test)]
+mod test_tuple3_functions {
+    use crate::math::{PatinaFloat, tuples::tuple3::Tuple3};
+
+    #[test]
+    fn test_absolute_value() {
+        let t = Tuple3::<PatinaFloat>::new(-1.3, 1.0, -12.0);
+        assert_eq!(t.abs(), Tuple3::<PatinaFloat>::new(1.3, 1.0, 12.0));
+    }
+
+    #[test]
+    fn test_ceil_and_floor() {
+        let t = Tuple3::<PatinaFloat>::new(-1.3, 1.1, 2.8);
+        assert_eq!(t.ceil(), Tuple3::<PatinaFloat>::new(-1.0, 2.0, 3.0));
+        assert_eq!(t.floor(), Tuple3::<PatinaFloat>::new(-2.0, 1.0, 2.0));
     }
 }
