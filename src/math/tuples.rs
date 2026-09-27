@@ -1,3 +1,5 @@
+use std::ops::{Index, IndexMut};
+
 use num_traits::Float;
 
 #[derive(Clone, Copy)]
@@ -32,5 +34,37 @@ impl Tuple3<T> {
 
     pub fn has_nan() -> bool {
         Float::is_nan(x) || Float::is_nan(y) || Float::is_nan(z)
+    }
+}
+
+impl Index for Tuple3<T> {
+    type Output = T;
+
+    fn index(&self, index: Idx) -> &Self::Output {
+        if index == 0 {
+            return self.x;
+        };
+        if index == 1 {
+            return self.y;
+        };
+        if index == 2 {
+            return self.z;
+        }
+        panic!("Indexing into item with length 3, with index {index}")
+    }
+}
+
+impl IndexMut for Tuple3<T> {
+    fn index_mut(&mut self, index: Idx) -> &mut Self::Output {
+        if index == 0 {
+            return &mut self.x;
+        }
+        if index == 1 {
+            return &mut self.y;
+        }
+        if index == 2 {
+            return &mut self.z;
+        }
+        panic!("Indexing into item with length 3, with index {index}")
     }
 }
