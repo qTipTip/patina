@@ -1,8 +1,8 @@
-use std::ops::{Index, IndexMut};
+use std::ops::{self, Index, IndexMut};
 
 use num_traits::Float;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, PartialOrd, Debug)]
 pub(crate) struct Tuple3<T>
 where
     T: Float,
@@ -60,6 +60,18 @@ impl<T: Float> IndexMut<usize> for Tuple3<T> {
     }
 }
 
+impl<T: Float> ops::Add for Tuple3<T> {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+            z: self.z + rhs.z,
+        }
+    }
+}
+
 #[cfg(test)]
 mod test_construction {
     use approx::assert_relative_eq;
@@ -84,5 +96,18 @@ mod test_construction {
         assert_relative_eq!(t[0], 0.0);
         assert_relative_eq!(t[1], 0.0);
         assert_relative_eq!(t[2], 0.0);
+    }
+}
+
+#[cfg(test)]
+mod test_operations {
+    use crate::math::{PatinaFloat, tuples::tuple3::Tuple3};
+
+    #[test]
+    fn test_addition() {
+        let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+        let r = Tuple3::<PatinaFloat>::new(1.5, 3.0, 2.0);
+
+        assert_eq!(t + r, Tuple3::<PatinaFloat>::new(1.5, 4.0, 4.0));
     }
 }
