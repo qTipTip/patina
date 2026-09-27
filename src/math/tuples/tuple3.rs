@@ -48,6 +48,16 @@ impl<T: Float> Tuple3<T> {
     pub fn fma(a: Self, b: Self, c: Self) -> Self {
         a * b + c
     }
+
+    // Performs the componentwise min between two tuples
+    pub fn min(a: Self, b: Self) -> Self {
+        Self::new(a.x.min(b.x), a.y.min(b.y), a.z.min(b.z))
+    }
+
+    // Performs the componentwise max between two tuples
+    pub fn max(a: Self, b: Self) -> Self {
+        Self::new(a.x.max(b.x), a.y.max(b.y), a.z.max(b.z))
+    }
 }
 
 impl<T: Float> Index<usize> for Tuple3<T> {
@@ -367,6 +377,21 @@ mod test_tuple3_functions {
         assert_eq!(
             Tuple3::lerp(0.5, a, b),
             Tuple3::<PatinaFloat>::new(0.5, 0.5, 0.5)
+        );
+    }
+
+    #[test]
+    fn test_min_max() {
+        let a = Tuple3::<PatinaFloat>::new(-15.0, 999.0, 1.0);
+        let b = Tuple3::<PatinaFloat>::new(-14.0, 810.0, 3.0);
+
+        assert_eq!(
+            Tuple3::max(a, b),
+            Tuple3::<PatinaFloat>::new(-14.0, 999.0, 3.0)
+        );
+        assert_eq!(
+            Tuple3::min(a, b),
+            Tuple3::<PatinaFloat>::new(-15.0, 810.0, 1.0)
         );
     }
 }
