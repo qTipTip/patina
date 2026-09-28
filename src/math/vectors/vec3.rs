@@ -4,10 +4,7 @@ use num_traits::Num;
 
 use crate::{
     implement_geometry_ops,
-    math::{
-        PatinaFloat, PatinaInt,
-        tuples::tuple3::{CheckNan, Tuple3},
-    },
+    math::{PatinaFloat, PatinaInt, traits::CheckNan, tuples::tuple3::Tuple3},
 };
 
 #[derive(PartialEq, Debug)]
@@ -48,5 +45,11 @@ mod test_construction {
         let r = PatinaVec3f::new(1.0, 2.0, 3.0);
 
         assert_eq!(t + r, PatinaVec3f::new(1.0, 3.0, 5.0));
+    }
+
+    #[test]
+    fn test_vec3_normalize() {
+        let t = PatinaVec3f::new(0.0, 1.0, 2.0);
+        // assert_eq!(t.normalize(), 0.0);
     }
 }

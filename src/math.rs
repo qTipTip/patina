@@ -1,6 +1,7 @@
 mod macros;
 pub mod normals;
 pub mod points;
+mod traits;
 pub mod tuples;
 pub mod vectors;
 

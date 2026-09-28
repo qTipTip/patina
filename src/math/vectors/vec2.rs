@@ -1,9 +1,7 @@
 use crate::{
     implement_geometry_ops,
-    math::{
-        PatinaFloat, PatinaInt,
-        tuples::tuple2::{CheckNan, Tuple2},
-    },
+    math::traits::CheckNan,
+    math::{PatinaFloat, PatinaInt, tuples::tuple2::Tuple2},
 };
 use num_traits::Num;
 
