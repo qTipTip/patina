@@ -82,6 +82,7 @@ where
         )
     }
 }
+
 impl<T> Vector3<T>
 where
     T: Num + Copy + CheckNan + ToPrimitive + PartialOrd,
