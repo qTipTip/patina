@@ -61,6 +61,16 @@ impl<T: Num + Copy + CheckNan + ToPrimitive> Vector3<T> {
             self.z.to_f64().expect("Conversion to f64 failed") / len,
         )
     }
+
+    pub fn dot(&self, rhs: &Self) -> T {
+        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
+    }
+
+    pub fn angle_between(&self, rhs: &Self) -> PatinaFloat {
+        if self.dot(rhs) < T::zero() {
+            return;
+        }
+    }
 }
 
 #[cfg(test)]
