@@ -1,11 +1,14 @@
-use std::ops::{Deref, DerefMut};
+use std::{
+    f64::consts::PI,
+    ops::{Add, Deref, DerefMut, Sub},
+};
 
 use num_traits::{Num, ToPrimitive};
 
 use crate::{
     implement_geometry_ops,
     math::{
-        PatinaFloat, PatinaInt,
+        PatinaFloat, PatinaInt, safe_asin,
         traits::CheckNan,
         tuples::{TupleLength, tuple3::Tuple3},
     },
@@ -33,7 +36,10 @@ impl<T> DerefMut for Vector3<T> {
     }
 }
 
-impl<T: Num + Copy + CheckNan + ToPrimitive> Vector3<T> {
+impl<T> Vector3<T>
+where
+    T: Num + Copy + CheckNan + ToPrimitive,
+{
     pub fn new(x: T, y: T, z: T) -> Self {
         Self(Tuple3::<T>::new(x, y, z))
     }
@@ -49,11 +55,15 @@ impl<T: Num + Copy + CheckNan + ToPrimitive> Vector3<T> {
             .sqrt()
     }
 
+    pub fn dot(&self, rhs: &Self) -> T {
+        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
+    }
+
     // normalize cannot return Vector3<T>, as an integer vector normalized requires float values.
     pub fn normalize(&self) -> Vector3<TupleLength> {
         let len = self.len();
         if len == 0.0 {
-            return Vector3::new(0.0, 0.0, 0.0);
+            return Vector3::<TupleLength>::new(0.0, 0.0, 0.0);
         }
         Vector3::<TupleLength>::new(
             self.x.to_f64().expect("Conversion to f64 failed") / len,
@@ -61,14 +71,18 @@ impl<T: Num + Copy + CheckNan + ToPrimitive> Vector3<T> {
             self.z.to_f64().expect("Conversion to f64 failed") / len,
         )
     }
-
-    pub fn dot(&self, rhs: &Self) -> T {
-        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
-    }
-
+}
+impl<T> Vector3<T>
+where
+    T: Num + Copy + CheckNan + ToPrimitive + PartialOrd,
+    for<'a> &'a Vector3<T>: Add<&'a Vector3<T>, Output = Vector3<T>>,
+    for<'a> &'a Vector3<T>: Sub<&'a Vector3<T>, Output = Vector3<T>>,
+{
     pub fn angle_between(&self, rhs: &Self) -> PatinaFloat {
         if self.dot(rhs) < T::zero() {
-            return;
+            PI - 2.0 * safe_asin((self + rhs).len() / 2.0)
+        } else {
+            2.0 * safe_asin((rhs - self).len() / 2.0)
         }
     }
 }
