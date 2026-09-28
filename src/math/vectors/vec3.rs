@@ -79,10 +79,12 @@ where
     for<'a> &'a Vector3<T>: Sub<&'a Vector3<T>, Output = Vector3<T>>,
 {
     pub fn angle_between(&self, rhs: &Self) -> PatinaFloat {
-        if self.dot(rhs) < T::zero() {
-            PI - 2.0 * safe_asin((self + rhs).len() / 2.0)
+        let u = self.normalize();
+        let v = rhs.normalize();
+        if u.dot(&v) < 0.0 {
+            PI - 2.0 * safe_asin((&u + &v).len() / 2.0)
         } else {
-            2.0 * safe_asin((rhs - self).len() / 2.0)
+            2.0 * safe_asin((&v - &u).len() / 2.0)
         }
     }
 }
