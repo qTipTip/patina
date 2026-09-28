@@ -89,6 +89,9 @@ where
 
 #[cfg(test)]
 mod test_construction {
+    use std::f64::consts::PI;
+
+    use approx::assert_relative_eq;
     use num_traits::Float;
 
     use crate::math::{tuples::TupleLength, vectors::vec3::PatinaVec3f};
@@ -120,5 +123,13 @@ mod test_construction {
             t.normalize(),
             PatinaVec3f::new(0.0, 1.0 / 5.0.sqrt(), 2.0 / 5.0.sqrt())
         );
+    }
+
+    #[test]
+    fn test_angle_between() {
+        let e1 = PatinaVec3f::new(1.0, 0.0, 0.0);
+        let e2 = PatinaVec3f::new(0.0, 1.0, 0.0);
+
+        assert_relative_eq!(e1.angle_between(&e2), PI / 2.0);
     }
 }
