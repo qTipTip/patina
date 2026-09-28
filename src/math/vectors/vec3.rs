@@ -13,7 +13,7 @@ use crate::{
 #[derive(PartialEq, Debug)]
 struct Vector3<T>(Tuple3<T>);
 
-implement_geometry_ops!(Vector3);
+implement_geometry_ops!(Vector3, Tuple3);
 
 type PatinaVec3f = Vector3<PatinaFloat>;
 type PatinaVec3i = Vector3<PatinaInt>;

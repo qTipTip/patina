@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! implement_geometry_ops {
-    ($t:ident) => {
+    ($t:ident, $tuple_type:ident) => {
         // Unary Operators (-Self)
         impl<T: Num + std::ops::Neg<Output = T> + CheckNan + Copy> std::ops::Neg for $t<T> {
             type Output = Self;
@@ -55,7 +55,7 @@ macro_rules! implement_geometry_ops {
         }
         impl<T> std::ops::MulAssign for $t<T>
         where
-            Tuple3<T>: std::ops::MulAssign<Tuple3<T>> + CheckNan,
+            $tuple_type<T>: std::ops::MulAssign<Tuple3<T>> + CheckNan,
         {
             #[inline]
             fn mul_assign(&mut self, rhs: Self) {
@@ -64,7 +64,7 @@ macro_rules! implement_geometry_ops {
         }
         impl<T> std::ops::DivAssign for $t<T>
         where
-            Tuple3<T>: std::ops::DivAssign<Tuple3<T>> + CheckNan,
+            $tuple_type<T>: std::ops::DivAssign<Tuple3<T>> + CheckNan,
         {
             #[inline]
             fn div_assign(&mut self, rhs: Self) {
