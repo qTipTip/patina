@@ -9,8 +9,15 @@ macro_rules! implement_geometry_ops {
                 $t(-self.0)
             }
         }
+        impl<'a, T: Num + std::ops::Neg<Output = T> + CheckNan + Copy> std::ops::Neg for &'a $t<T> {
+            type Output = $t<T>;
+            #[inline]
+            fn neg(self) -> Self::Output {
+                $t(-self.0)
+            }
+        }
 
-        // Binary Operators (Self + Self, Self - Self, Self * Self, Self / Self)
+        // 1. Value + Value
         impl<T: Num + CheckNan + Copy> std::ops::Add for $t<T> {
             type Output = Self;
             #[inline]
@@ -18,6 +25,32 @@ macro_rules! implement_geometry_ops {
                 $t(self.0 + rhs.0)
             }
         }
+        // 2. Ref + Ref
+        impl<'a, 'b, T: Num + CheckNan + Copy> std::ops::Add<&'b $t<T>> for &'a $t<T> {
+            type Output = $t<T>;
+            #[inline]
+            fn add(self, rhs: &'b $t<T>) -> Self::Output {
+                $t(self.0 + rhs.0)
+            }
+        }
+        // 3. Value + Ref
+        impl<'b, T: Num + CheckNan + Copy> std::ops::Add<&'b $t<T>> for $t<T> {
+            type Output = Self;
+            #[inline]
+            fn add(self, rhs: &'b $t<T>) -> Self::Output {
+                $t(self.0 + rhs.0)
+            }
+        }
+        // 4. Ref + Value
+        impl<'a, T: Num + CheckNan + Copy> std::ops::Add<$t<T>> for &'a $t<T> {
+            type Output = $t<T>;
+            #[inline]
+            fn add(self, rhs: $t<T>) -> Self::Output {
+                $t(self.0 + rhs.0)
+            }
+        }
+
+        // 1. Value - Value
         impl<T: Num + std::ops::Neg<Output = T> + CheckNan + Copy> std::ops::Sub for $t<T> {
             type Output = Self;
             #[inline]
@@ -25,6 +58,38 @@ macro_rules! implement_geometry_ops {
                 $t(self.0 - rhs.0)
             }
         }
+        // 2. Ref - Ref
+        impl<'a, 'b, T: Num + std::ops::Neg<Output = T> + CheckNan + Copy> std::ops::Sub<&'b $t<T>>
+            for &'a $t<T>
+        {
+            type Output = $t<T>;
+            #[inline]
+            fn sub(self, rhs: &'b $t<T>) -> Self::Output {
+                $t(self.0 - rhs.0)
+            }
+        }
+        // 3. Value - Ref
+        impl<'b, T: Num + std::ops::Neg<Output = T> + CheckNan + Copy> std::ops::Sub<&'b $t<T>>
+            for $t<T>
+        {
+            type Output = Self;
+            #[inline]
+            fn sub(self, rhs: &'b $t<T>) -> Self::Output {
+                $t(self.0 - rhs.0)
+            }
+        }
+        // 4. Ref - Value
+        impl<'a, T: Num + std::ops::Neg<Output = T> + CheckNan + Copy> std::ops::Sub<$t<T>>
+            for &'a $t<T>
+        {
+            type Output = $t<T>;
+            #[inline]
+            fn sub(self, rhs: $t<T>) -> Self::Output {
+                $t(self.0 - rhs.0)
+            }
+        }
+
+        // Binary Operators (Mul, Div)
         impl<T: Num + CheckNan + Copy> std::ops::Mul for $t<T> {
             type Output = Self;
             #[inline]
