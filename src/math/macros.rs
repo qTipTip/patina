@@ -55,7 +55,7 @@ macro_rules! implement_geometry_ops {
         }
         impl<T> std::ops::MulAssign for $t<T>
         where
-            $tuple_type<T>: std::ops::MulAssign<Tuple3<T>> + CheckNan,
+            $tuple_type<T>: std::ops::MulAssign<$tuple_type<T>> + CheckNan,
         {
             #[inline]
             fn mul_assign(&mut self, rhs: Self) {
@@ -64,7 +64,7 @@ macro_rules! implement_geometry_ops {
         }
         impl<T> std::ops::DivAssign for $t<T>
         where
-            $tuple_type<T>: std::ops::DivAssign<Tuple3<T>> + CheckNan,
+            $tuple_type<T>: std::ops::DivAssign<$tuple_type<T>> + CheckNan,
         {
             #[inline]
             fn div_assign(&mut self, rhs: Self) {
