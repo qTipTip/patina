@@ -59,6 +59,16 @@ where
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
 
+    pub fn cross(&self, rhs: &Self) -> Self {
+        // TODO: Compute this using a difference of products (using FMA), as it's more numerically
+        // stable, even at f32.
+        Self::new(
+            self.y * rhs.z - self.z * rhs.y,
+            self.z * rhs.x - self.x * rhs.z,
+            self.x * rhs.y - self.y * rhs.x,
+        )
+    }
+
     // normalize cannot return Vector3<T>, as an integer vector normalized requires float values.
     pub fn normalize(&self) -> Vector3<TupleLength> {
         let len = self.len();
@@ -133,5 +143,13 @@ mod test_construction {
         let e2 = PatinaVec3f::new(0.0, 1.0, 0.0);
 
         assert_relative_eq!(e1.angle_between(&e2), PI / 2.0);
+    }
+
+    #[test]
+    fn test_cross_product() {
+        let e1 = PatinaVec3f::new(1.0, 0.0, 0.0);
+        let e2 = PatinaVec3f::new(0.0, 1.0, 0.0);
+
+        assert_eq!(e1.cross(&e2), PatinaVec3f::new(0.0, 0.0, 1.0));
     }
 }
