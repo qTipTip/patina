@@ -2,12 +2,18 @@ use std::ops::{Deref, DerefMut};
 
 use num_traits::Num;
 
-use crate::math::{
-    PatinaFloat, PatinaInt,
-    tuples::tuple3::{CheckNan, Tuple3},
+use crate::{
+    implement_geometry_ops,
+    math::{
+        PatinaFloat, PatinaInt,
+        tuples::tuple3::{CheckNan, Tuple3},
+    },
 };
 
+#[derive(PartialEq, Debug)]
 struct Vector3<T>(Tuple3<T>);
+
+implement_geometry_ops!(Vector3);
 
 type PatinaVec3f = Vector3<PatinaFloat>;
 type PatinaVec3i = Vector3<PatinaInt>;
@@ -38,6 +44,9 @@ mod test_construction {
 
     #[test]
     fn test_vec3_constructor() {
-        let v = PatinaVec3f::new(0.0, 1.0, 2.0);
+        let t = PatinaVec3f::new(0.0, 1.0, 2.0);
+        let r = PatinaVec3f::new(1.0, 2.0, 3.0);
+
+        assert_eq!(t + r, PatinaVec3f::new(1.0, 3.0, 5.0));
     }
 }
