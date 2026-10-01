@@ -19,20 +19,6 @@ implement_geometry_ops!(Point3, Tuple3, [Add, Mul, Neg, Div]);
 pub type PatinaPoint3f = Point3<PatinaFloat>;
 pub type PatinaPoint3i = Point3<PatinaInt>;
 
-impl<T> DerefMut for Point3<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl<T> Deref for Point3<T> {
-    type Target = Tuple3<T>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
 impl<T: Num + Copy + CheckNan> Point3<T> {
     pub fn new(x: T, y: T, z: T) -> Self {
         Self(Tuple3::new(x, y, z))

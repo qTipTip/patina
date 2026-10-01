@@ -11,19 +11,6 @@ struct Normal3<T>(Tuple3<T>);
 
 implement_geometry_ops!(Normal3, Tuple3, [Add, Sub, Mul, Neg]);
 
-impl<T> DerefMut for Normal3<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl<T> Deref for Normal3<T> {
-    type Target = Tuple3<T>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
 impl<T: Num + Copy + CheckNan> Normal3<T> {
     pub fn new(x: T, y: T, z: T) -> Self {
         Self(Tuple3::new(x, y, z))

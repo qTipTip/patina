@@ -22,20 +22,6 @@ implement_geometry_ops!(Vector3, Tuple3, [Neg, Add, Sub, Mul, Div]);
 type PatinaVec3f = Vector3<PatinaFloat>;
 type PatinaVec3i = Vector3<PatinaInt>;
 
-impl<T> Deref for Vector3<T> {
-    type Target = Tuple3<T>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl<T> DerefMut for Vector3<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
 impl<T> Vector3<T>
 where
     T: Num + Copy + CheckNan + ToPrimitive,
