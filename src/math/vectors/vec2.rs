@@ -65,7 +65,7 @@ where
 
 impl<T> Vector2<T>
 where
-    T: Num + Copy + CheckNan + ToPrimitive + PartialOrd,
+    T: Num + Copy + CheckNan + ToPrimitive,
     for<'a> &'a Vector2<T>: Add<&'a Vector2<T>, Output = Vector2<T>>,
     for<'a> &'a Vector2<T>: Sub<&'a Vector2<T>, Output = Vector2<T>>,
 {

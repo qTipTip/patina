@@ -67,7 +67,7 @@ where
 
 impl<T> Vector3<T>
 where
-    T: Num + Copy + CheckNan + ToPrimitive + PartialOrd,
+    T: Num + Copy + CheckNan + ToPrimitive,
     for<'a> &'a Vector3<T>: Add<&'a Vector3<T>, Output = Vector3<T>>,
     for<'a> &'a Vector3<T>: Sub<&'a Vector3<T>, Output = Vector3<T>>,
 {

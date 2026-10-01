@@ -7,7 +7,7 @@ use num_traits::{Float, Num, float::FloatCore};
 
 use crate::math::traits::CheckNan;
 
-#[derive(Clone, Copy, PartialEq, PartialOrd, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Tuple3<T, Type> {
     pub x: T,
     pub y: T,
@@ -45,7 +45,7 @@ impl<T: Num + CheckNan + Copy> Tuple3<T> {
     }
 }
 
-impl<T: Num + CheckNan + Copy + PartialOrd> Tuple3<T> {
+impl<T: Num + CheckNan + Copy> Tuple3<T> {
     pub fn min(a: Self, b: Self) -> Self {
         Self::new(
             if a.x <= b.x { a.x } else { b.x },
