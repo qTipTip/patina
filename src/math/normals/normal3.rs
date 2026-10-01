@@ -3,7 +3,6 @@ use crate::math::{
     vectors::vec3::Vector3,
 };
 use num_traits::Num;
-use std::ops::{Deref, DerefMut};
 
 use crate::{implement_geometry_ops, math::tuples::tuple3::Tuple3};
 

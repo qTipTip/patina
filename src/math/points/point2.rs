@@ -1,4 +1,4 @@
-use std::ops::{Add, Deref, DerefMut, Sub};
+use std::ops::{Add, Sub};
 
 use crate::math::traits::CheckNan;
 use crate::math::tuples::TupleLength;
@@ -18,6 +18,7 @@ implement_geometry_ops!(Point2, Tuple2, [Add, Mul, Neg, Div]);
 
 pub type PatinaPoint2f = Point2<PatinaFloat>;
 pub type PatinaPoint2i = Point2<PatinaInt>;
+
 impl<T: Num + Copy + CheckNan> Point2<T> {
     pub fn new(x: T, y: T) -> Self {
         Self(Tuple2::new(x, y))

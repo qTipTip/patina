@@ -1,6 +1,6 @@
 use std::{
     f64::consts::PI,
-    ops::{Add, Deref, DerefMut, Sub},
+    ops::{Add, Sub},
 };
 
 use num_traits::{Num, ToPrimitive};

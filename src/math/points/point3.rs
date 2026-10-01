@@ -1,4 +1,4 @@
-use std::ops::{Add, Deref, DerefMut, Sub};
+use std::ops::{Add, Sub};
 
 use crate::math::traits::CheckNan;
 use crate::math::tuples::TupleLength;
