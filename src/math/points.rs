@@ -1,2 +1,2 @@
-pub struct Point2D {}
-pub struct Point3D {}
+pub mod point2;
+pub mod point3;

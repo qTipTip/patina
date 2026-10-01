@@ -9,3 +9,6 @@ run:
 
 fmt:
     cargo fmt
+
+check:
+    cargo check

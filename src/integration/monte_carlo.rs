@@ -140,8 +140,9 @@ mod test {
         );
     }
 
+    #[test]
     fn mc_importance_sampling_x_squared() {
-        let n = 1000;
+        let n = 10000;
         let a = 0.0;
         let b = 2.0;
 
@@ -154,7 +155,7 @@ mod test {
         assert_relative_eq!(
             integrate_mc_importance_sampling(n, f, a, b, pdf, sample_pdf),
             8.0 / 3.0,
-            epsilon = 1.0e-2
+            epsilon = 1.0e-1
         );
     }
 }

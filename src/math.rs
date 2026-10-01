@@ -1,4 +1,3 @@
-mod macros;
 pub mod normals;
 pub mod points;
 mod traits;

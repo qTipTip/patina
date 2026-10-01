@@ -1,3 +1,5 @@
+// We use the CheckNan-trait in combination with IsNotFloat-trait to provide a default `is_nan`
+// check on our Tuple-types.
 pub trait CheckNan {
     fn is_nan_val(&self) -> bool;
 }

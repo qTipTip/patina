@@ -1,12 +1,14 @@
 use patina::math::{
-    PatinaFloat, PatinaInt,
-    tuples::{tuple2::Tuple2, tuple3::Tuple3},
+    PatinaFloat, PatinaInt, normals::normal3::Normal3, points::point2::Point2,
+    vectors::vec3::Vector3,
 };
 
 fn main() {
-    let t = Tuple3::<PatinaFloat>::new(0.0, 1.0, 2.0);
-    let s = Tuple2::<PatinaInt>::new(0, 1);
+    let t = Vector3::<PatinaFloat>::new(0.0, 1.0, 2.0);
+    let s = Point2::<PatinaInt>::new(0, 1);
+    let n = Normal3::<PatinaInt>::new(0, 1, 2);
 
-    println!("Tuple3: {t:?}");
-    println!("Tuple2: {s:?}");
+    println!("Vector3: {t:?}");
+    println!("Point2: {s:?}");
+    println!("Normal3: {n:?}");
 }
