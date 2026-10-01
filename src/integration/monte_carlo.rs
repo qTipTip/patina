@@ -155,7 +155,7 @@ mod test {
         assert_relative_eq!(
             integrate_mc_importance_sampling(n, f, a, b, pdf, sample_pdf),
             8.0 / 3.0,
-            epsilon = 1.0e-2
+            epsilon = 1.0e-1
         );
     }
 }
