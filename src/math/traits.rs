@@ -1,7 +1,4 @@
-use std::{
-    ops::{Add, Deref, Mul},
-    process::Output,
-};
+use std::ops::{Add, Deref, Mul};
 
 use crate::math::tuples::{tuple2::Tuple2, tuple3::Tuple3};
 
