@@ -6,9 +6,9 @@ use crate::{
 };
 use num_traits::Num;
 
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct Point2<T>(Vector2<T>);
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct Point3<T>(Vector3<T>);
 
 implement_geometry_ops!(Point2, Vector2);
