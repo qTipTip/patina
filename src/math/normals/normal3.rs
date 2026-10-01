@@ -1,20 +1,11 @@
 use crate::math::{
-    traits::{CheckNan, Direction3},
+    traits::CheckNan,
+    tuples::{TypeNormal, tuple3::Tuple3},
     vectors::vec3::Vector3,
 };
 use num_traits::Num;
 
-use crate::{implement_geometry_ops, math::tuples::tuple3::Tuple3};
-
-struct Normal3<T>(Tuple3<T>);
-
-implement_geometry_ops!(Normal3, Tuple3, [Add, Sub, Mul, Neg]);
-
-impl<T: Num + Copy + CheckNan> Normal3<T> {
-    pub fn new(x: T, y: T, z: T) -> Self {
-        Self(Tuple3::new(x, y, z))
-    }
-}
+pub type Normal3<T> = Tuple3<T, TypeNormal>;
 
 impl<T: Num + Copy + CheckNan> From<Vector3<T>> for Normal3<T> {
     fn from(value: Vector3<T>) -> Self {
@@ -22,4 +13,24 @@ impl<T: Num + Copy + CheckNan> From<Vector3<T>> for Normal3<T> {
     }
 }
 
-impl<T> Direction3<T> for Normal3<T> {}
+#[cfg(test)]
+mod normal_vector_interactions {
+    use crate::math::{normals::normal3::Normal3, vectors::vec3::Vector3};
+
+    #[test]
+    fn dot_between_normals_and_vectors() {
+        let n = Normal3::new(1.0, 2.0, 3.0);
+        let v = Vector3::new(4.0, 5.0, 6.0);
+
+        assert_eq!(n.dot(&v), 32.0);
+        assert_eq!(v.dot(&n), 32.0);
+        assert_eq!(n.dot(&n), 14.0);
+        assert_eq!(v.dot(&v), 77.0);
+    }
+
+    #[test]
+    fn normal_from_vector() {
+        let v = Vector3::new(1.0, 2.0, 3.0);
+        assert_eq!(Normal3::from(v), Normal3::new(1.0, 2.0, 3.0));
+    }
+}
