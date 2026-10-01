@@ -14,8 +14,8 @@ use crate::{
     },
 };
 
-#[derive(PartialEq, Debug)]
-struct Vector3<T>(Tuple3<T>);
+#[derive(Copy, Clone, PartialEq, Debug)]
+pub struct Vector3<T>(Tuple3<T>);
 
 implement_geometry_ops!(Vector3, Tuple3);
 

@@ -13,8 +13,8 @@ use crate::{
 };
 use num_traits::{Num, ToPrimitive};
 
-#[derive(PartialEq, Debug)]
-struct Vector2<T>(Tuple2<T>);
+#[derive(Copy, Clone, PartialEq, Debug)]
+pub struct Vector2<T>(Tuple2<T>);
 
 type PatinaVec2f = Vector2<PatinaFloat>;
 type PatinaVec2i = Vector2<PatinaInt>;
