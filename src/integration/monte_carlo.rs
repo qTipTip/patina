@@ -140,6 +140,7 @@ mod test {
         );
     }
 
+    #[test]
     fn mc_importance_sampling_x_squared() {
         let n = 1000;
         let a = 0.0;
