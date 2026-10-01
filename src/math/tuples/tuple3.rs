@@ -15,13 +15,18 @@ pub struct Tuple3<T, Type> {
     _type: PhantomData<Type>,
 }
 
-impl<T: Num + CheckNan + Copy> Tuple3<T> {
+impl<T: Num + CheckNan + Copy, Type> Tuple3<T, Type> {
     pub fn new(x: T, y: T, z: T) -> Self {
         debug_assert!(
             !x.is_nan_val() && !y.is_nan_val() && !z.is_nan_val(),
             "Tuple3 components cannot be NaN!"
         );
-        Self { x, y, z }
+        Self {
+            x,
+            y,
+            z,
+            _type: PhantomData,
+        }
     }
 
     pub fn zero() -> Self {
@@ -45,7 +50,7 @@ impl<T: Num + CheckNan + Copy> Tuple3<T> {
     }
 }
 
-impl<T: Num + CheckNan + Copy> Tuple3<T> {
+impl<T: Num + CheckNan + Copy, Type> Tuple3<T, Type> {
     pub fn min(a: Self, b: Self) -> Self {
         Self::new(
             if a.x <= b.x { a.x } else { b.x },
@@ -105,13 +110,13 @@ impl<T: Num + CheckNan + Copy> Tuple3<T> {
     }
 }
 
-impl<T: num_traits::Signed + CheckNan + Copy> Tuple3<T> {
+impl<T: num_traits::Signed + CheckNan + Copy, Type> Tuple3<T, Type> {
     pub fn abs(&self) -> Self {
         Self::new(self.x.abs(), self.y.abs(), self.z.abs())
     }
 }
 
-impl<T: Num + FloatCore + CheckNan + Copy> Tuple3<T> {
+impl<T: Num + FloatCore + CheckNan + Copy, Type> Tuple3<T, Type> {
     pub fn ceil(&self) -> Self {
         Self::new(self.x.ceil(), self.y.ceil(), self.z.ceil())
     }
@@ -120,13 +125,13 @@ impl<T: Num + FloatCore + CheckNan + Copy> Tuple3<T> {
     }
 }
 
-impl<T: Float + CheckNan> Tuple3<T> {
+impl<T: Float + CheckNan, Type> Tuple3<T, Type> {
     pub fn fma(a: Self, b: Self, c: Self) -> Self {
         a * b + c
     }
 }
 
-impl<T> Index<usize> for Tuple3<T> {
+impl<T, Type> Index<usize> for Tuple3<T, Type> {
     type Output = T;
     fn index(&self, index: usize) -> &Self::Output {
         match index {
@@ -138,7 +143,7 @@ impl<T> Index<usize> for Tuple3<T> {
     }
 }
 
-impl<T> IndexMut<usize> for Tuple3<T> {
+impl<T, Type> IndexMut<usize> for Tuple3<T, Type> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         match index {
             0 => &mut self.x,
@@ -149,14 +154,14 @@ impl<T> IndexMut<usize> for Tuple3<T> {
     }
 }
 
-impl<T: Num + CheckNan + Copy> ops::Add for Tuple3<T> {
+impl<T: Num + CheckNan + Copy, Type> ops::Add for Tuple3<T, Type> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self::Output {
         Self::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
     }
 }
 
-impl<T: AddAssign> ops::AddAssign for Tuple3<T> {
+impl<T: AddAssign, Type> ops::AddAssign for Tuple3<T, Type> {
     fn add_assign(&mut self, rhs: Self) {
         self.x += rhs.x;
         self.y += rhs.y;
@@ -164,21 +169,21 @@ impl<T: AddAssign> ops::AddAssign for Tuple3<T> {
     }
 }
 
-impl<T: Num + Neg<Output = T> + CheckNan + Copy> ops::Neg for Tuple3<T> {
+impl<T: Num + Neg<Output = T> + CheckNan + Copy, Type> ops::Neg for Tuple3<T, Type> {
     type Output = Self;
     fn neg(self) -> Self::Output {
         Self::new(-self.x, -self.y, -self.z)
     }
 }
 
-impl<T: Num + Neg<Output = T> + CheckNan + Copy> ops::Sub for Tuple3<T> {
+impl<T: Num + Neg<Output = T> + CheckNan + Copy, Type> ops::Sub for Tuple3<T, Type> {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self::Output {
         self + (-rhs)
     }
 }
 
-impl<T: SubAssign> ops::SubAssign for Tuple3<T> {
+impl<T: SubAssign, Type> ops::SubAssign for Tuple3<T, Type> {
     fn sub_assign(&mut self, rhs: Self) {
         self.x -= rhs.x;
         self.y -= rhs.y;
@@ -186,14 +191,14 @@ impl<T: SubAssign> ops::SubAssign for Tuple3<T> {
     }
 }
 
-impl<T: Num + CheckNan + Copy> ops::Mul<T> for Tuple3<T> {
+impl<T: Num + CheckNan + Copy, Type> ops::Mul<T> for Tuple3<T, Type> {
     type Output = Self;
     fn mul(self, rhs: T) -> Self::Output {
         Self::new(self.x * rhs, self.y * rhs, self.z * rhs)
     }
 }
 
-impl<T: MulAssign + Copy + CheckNan> ops::MulAssign<T> for Tuple3<T> {
+impl<T: MulAssign + Copy + CheckNan, Type> ops::MulAssign<T> for Tuple3<T, Type> {
     fn mul_assign(&mut self, rhs: T) {
         self.x *= rhs;
         self.y *= rhs;
@@ -206,15 +211,15 @@ impl<T: MulAssign + Copy + CheckNan> ops::MulAssign<T> for Tuple3<T> {
     }
 }
 
-impl<T: Num + CheckNan + Copy> ops::Mul<Tuple3<T>> for Tuple3<T> {
+impl<T: Num + CheckNan + Copy, Type> ops::Mul<Tuple3<T, Type>> for Tuple3<T, Type> {
     type Output = Self;
-    fn mul(self, rhs: Tuple3<T>) -> Self::Output {
+    fn mul(self, rhs: Tuple3<T, Type>) -> Self::Output {
         Self::new(self.x * rhs.x, self.y * rhs.y, self.z * rhs.z)
     }
 }
 
-impl<T: MulAssign + CheckNan> ops::MulAssign<Tuple3<T>> for Tuple3<T> {
-    fn mul_assign(&mut self, rhs: Tuple3<T>) {
+impl<T: MulAssign + CheckNan, Type> ops::MulAssign<Tuple3<T, Type>> for Tuple3<T, Type> {
+    fn mul_assign(&mut self, rhs: Tuple3<T, Type>) {
         self.x *= rhs.x;
         self.y *= rhs.y;
         self.z *= rhs.z;
@@ -226,15 +231,15 @@ impl<T: MulAssign + CheckNan> ops::MulAssign<Tuple3<T>> for Tuple3<T> {
     }
 }
 
-impl<T: Num + CheckNan + Copy> ops::Div<Tuple3<T>> for Tuple3<T> {
+impl<T: Num + CheckNan + Copy, Type> ops::Div<Tuple3<T, Type>> for Tuple3<T, Type> {
     type Output = Self;
-    fn div(self, rhs: Tuple3<T>) -> Self::Output {
+    fn div(self, rhs: Tuple3<T, Type>) -> Self::Output {
         Self::new(self.x / rhs.x, self.y / rhs.y, self.z / rhs.z)
     }
 }
 
-impl<T: DivAssign + CheckNan> ops::DivAssign<Tuple3<T>> for Tuple3<T> {
-    fn div_assign(&mut self, rhs: Tuple3<T>) {
+impl<T: DivAssign + CheckNan, Type> ops::DivAssign<Tuple3<T, Type>> for Tuple3<T, Type> {
+    fn div_assign(&mut self, rhs: Tuple3<T, Type>) {
         self.x /= rhs.x;
         self.y /= rhs.y;
         self.z /= rhs.z;
@@ -246,14 +251,14 @@ impl<T: DivAssign + CheckNan> ops::DivAssign<Tuple3<T>> for Tuple3<T> {
     }
 }
 
-impl<T: Num + CheckNan + Copy> ops::Div<T> for Tuple3<T> {
+impl<T: Num + CheckNan + Copy, Type> ops::Div<T> for Tuple3<T, Type> {
     type Output = Self;
     fn div(self, rhs: T) -> Self::Output {
         Self::new(self.x / rhs, self.y / rhs, self.z / rhs)
     }
 }
 
-impl<T: DivAssign + Copy + CheckNan> ops::DivAssign<T> for Tuple3<T> {
+impl<T: DivAssign + Copy + CheckNan, Type> ops::DivAssign<T> for Tuple3<T, Type> {
     fn div_assign(&mut self, rhs: T) {
         self.x /= rhs;
         self.y /= rhs;
