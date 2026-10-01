@@ -19,7 +19,7 @@ pub struct Vector2<T>(Tuple2<T>);
 type PatinaVec2f = Vector2<PatinaFloat>;
 type PatinaVec2i = Vector2<PatinaInt>;
 
-implement_geometry_ops!(Vector2, Tuple2);
+implement_geometry_ops!(Vector2, Tuple2, [Neg, Add, Sub, Mul, Div]);
 
 impl<T> Deref for Vector2<T> {
     type Target = Tuple2<T>;

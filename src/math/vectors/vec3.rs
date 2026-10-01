@@ -17,7 +17,7 @@ use crate::{
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub struct Vector3<T>(Tuple3<T>);
 
-implement_geometry_ops!(Vector3, Tuple3);
+implement_geometry_ops!(Vector3, Tuple3, [Neg, Add, Sub, Mul, Div]);
 
 type PatinaVec3f = Vector3<PatinaFloat>;
 type PatinaVec3i = Vector3<PatinaInt>;

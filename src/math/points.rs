@@ -1,4 +1,4 @@
-use std::ops::{Add, Deref, DerefMut};
+use std::ops::{Add, Deref, DerefMut, Sub};
 
 use crate::math::traits::CheckNan;
 use crate::math::tuples::tuple2::Tuple2;
@@ -15,8 +15,9 @@ pub struct Point2<T>(Tuple2<T>);
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub struct Point3<T>(Tuple3<T>);
 
-implement_geometry_ops!(Point2, Tuple2);
-implement_geometry_ops!(Point3, Tuple3);
+// We don't inherit the Sub operator, as we'd like Point - Point = Vec. and not Point.
+implement_geometry_ops!(Point2, Tuple2, [Add, Mul, Neg, Div]);
+implement_geometry_ops!(Point3, Tuple3, [Add, Mul, Neg, Div]);
 
 pub type PatinaPoint3f = Point3<PatinaFloat>;
 pub type PatinaPoint3i = Point3<PatinaInt>;
@@ -70,6 +71,14 @@ impl<T: Num + Copy + CheckNan + std::ops::Add> Add<Vector3<T>> for Point3<T> {
     }
 }
 
+impl<T> Sub<Point3<T>> for Point3<T> {
+    type Output = Vector3<T>;
+
+    fn sub(self, rhs: Point3<T>) -> Self::Output {
+        todo!()
+    }
+}
+
 #[cfg(test)]
 mod point_vector_interactions {
     use crate::math::{points::Point3, vectors::vec3::Vector3};
@@ -80,5 +89,13 @@ mod point_vector_interactions {
         let q = Vector3::new(1.0, 0.0, 0.0);
 
         assert_eq!(p + q, Point3::new(1.0, 1.0, 2.0));
+    }
+
+    #[test]
+    fn point_sub_point_is_vector() {
+        let p = Point3::new(0.0, 1.0, 2.0);
+        let q = Point3::new(1.0, 0.0, 0.0);
+
+        assert_eq!(p - q, Vector3::new(-1.0, 1.0, 2.0));
     }
 }
