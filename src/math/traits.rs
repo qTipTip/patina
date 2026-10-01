@@ -1,7 +1,3 @@
-use std::ops::{Add, Deref, Mul};
-
-use crate::math::tuples::{tuple2::Tuple2, tuple3::Tuple3};
-
 // We use the CheckNan-trait in combination with IsNotFloat-trait to provide a default `is_nan`
 // check on our Tuple-types.
 pub trait CheckNan {
@@ -38,24 +34,5 @@ impl<T: IsNotFloat> CheckNan for T {
     #[inline]
     fn is_nan_val(&self) -> bool {
         false
-    }
-}
-
-// Direction: The Direction-trait lets us implement dot-product for any combination of `Normal`s and
-// `Vecs`.
-pub trait Direction2<T>: Deref<Target = Tuple2<T>> {
-    fn dot<R: Direction3<T>>(&self, rhs: &R) -> T
-    where
-        T: Copy + Mul<Output = T> + Add<Output = T>,
-    {
-        self.x * rhs.x + self.y * rhs.y
-    }
-}
-pub trait Direction3<T>: Deref<Target = Tuple3<T>> {
-    fn dot<R: Direction3<T>>(&self, rhs: &R) -> T
-    where
-        T: Copy + Mul<Output = T> + Add<Output = T>,
-    {
-        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
 }
