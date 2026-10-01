@@ -1,6 +1,6 @@
 use std::ops::{Add, Deref, DerefMut, Sub};
 
-use crate::math::traits::{CheckNan, IsNotFloat};
+use crate::math::traits::CheckNan;
 use crate::math::tuples::TupleLength;
 use crate::math::tuples::tuple2::Tuple2;
 use crate::math::tuples::tuple3::Tuple3;
@@ -9,7 +9,7 @@ use crate::{
     implement_geometry_ops,
     math::{PatinaFloat, PatinaInt},
 };
-use num_traits::{Float, Num, ToPrimitive};
+use num_traits::{Num, ToPrimitive};
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub struct Point2<T>(Tuple2<T>);
