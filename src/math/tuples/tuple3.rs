@@ -1,14 +1,18 @@
-use std::ops::{self, AddAssign, DivAssign, Index, IndexMut, MulAssign, Neg, SubAssign};
+use std::{
+    marker::PhantomData,
+    ops::{self, AddAssign, DivAssign, Index, IndexMut, MulAssign, Neg, SubAssign},
+};
 
 use num_traits::{Float, Num, float::FloatCore};
 
 use crate::math::traits::CheckNan;
 
 #[derive(Clone, Copy, PartialEq, PartialOrd, Debug)]
-pub struct Tuple3<T> {
+pub struct Tuple3<T, Type> {
     pub x: T,
     pub y: T,
     pub z: T,
+    _type: PhantomData<Type>,
 }
 
 impl<T: Num + CheckNan + Copy> Tuple3<T> {
