@@ -1,8 +1,9 @@
-use std::ops::{Deref, DerefMut};
+use std::ops::{Add, Deref, DerefMut};
 
 use crate::math::traits::CheckNan;
 use crate::math::tuples::tuple2::Tuple2;
 use crate::math::tuples::tuple3::Tuple3;
+use crate::math::vectors::vec3::Vector3;
 use crate::{
     implement_geometry_ops,
     math::{PatinaFloat, PatinaInt},
@@ -49,23 +50,21 @@ impl<T> Deref for Point3<T> {
     }
 }
 
-// impl From<PatinaPoint2f> for PatinaPoint2i {
-//     fn from(value: PatinaPoint2f) -> Self {
-//         Self
-//     }
-// }
-// impl From<PatinaPoint2i> for PatinaPoint2f {
-//     fn from(value: PatinaPoint2i) -> Self {
-//         todo!()
-//     }
-// }
-// impl From<PatinaPoint3f> for PatinaPoint3i {
-//     fn from(value: PatinaPoint3f) -> Self {
-//         todo!()
-//     }
-// }
-// impl From<PatinaPoint3i> for PatinaPoint3f {
-//     fn from(value: PatinaPoint3i) -> Self {
-//         todo!()
-//     }
-// }
+impl<T: Num + Copy + CheckNan> Point2<T> {
+    pub fn new(x: T, y: T) {
+        Self(Tuple2::new(x, y));
+    }
+}
+impl<T: Num + Copy + CheckNan> Point3<T> {
+    pub fn new(x: T, y: T, z: T) {
+        Self(Tuple3::new(x, y, z));
+    }
+}
+
+// Point / Vector operation
+
+impl<T> Add<Vector3<T>> for Point3<T> {
+    type Output = Self;
+
+    fn add(self, rhs: Vector3<T>) -> Self::Output {}
+}
