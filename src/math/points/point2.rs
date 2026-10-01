@@ -1,33 +1,21 @@
-use std::ops::{Add, Sub};
+use std::ops::Add;
 
 use crate::math::traits::CheckNan;
-use crate::math::tuples::TupleLength;
 use crate::math::tuples::tuple2::Tuple2;
+use crate::math::tuples::{TupleLength, TypePoint};
 use crate::math::vectors::vec2::Vector2;
-use crate::{
-    implement_geometry_ops,
-    math::{PatinaFloat, PatinaInt},
-};
+use crate::math::{PatinaFloat, PatinaInt};
 use num_traits::{Num, ToPrimitive};
 
-#[derive(PartialEq, Copy, Clone, Debug)]
-pub struct Point2<T>(Tuple2<T>);
-
-// We don't inherit the Sub operator, as we'd like Point - Point = Vec. and not Point.
-implement_geometry_ops!(Point2, Tuple2, [Add, Mul, Neg, Div]);
+// Point - Point = Vector comes from the `Difference` impl on `TypePoint`.
+pub type Point2<T> = Tuple2<T, TypePoint>;
 
 pub type PatinaPoint2f = Point2<PatinaFloat>;
 pub type PatinaPoint2i = Point2<PatinaInt>;
 
-impl<T: Num + Copy + CheckNan> Point2<T> {
-    pub fn new(x: T, y: T) -> Self {
-        Self(Tuple2::new(x, y))
-    }
-}
-
 impl<T> Point2<T>
 where
-    T: Num + Sub + CheckNan + ToPrimitive + Copy,
+    T: Num + CheckNan + ToPrimitive + Copy,
 {
     pub fn distance(self, rhs: Self) -> TupleLength {
         (self - rhs).len()
@@ -38,19 +26,11 @@ where
 }
 
 // Point / Vector operation
-impl<T: Num + Copy + CheckNan + std::ops::Add> Add<Vector2<T>> for Point2<T> {
+impl<T: Num + Copy + CheckNan> Add<Vector2<T>> for Point2<T> {
     type Output = Self;
 
     fn add(self, rhs: Vector2<T>) -> Self::Output {
         Self::new(self.x + rhs.x, self.y + rhs.y)
-    }
-}
-
-impl<T: Num + Sub + CheckNan + ToPrimitive + Copy> Sub<Point2<T>> for Point2<T> {
-    type Output = Vector2<T>;
-
-    fn sub(self, rhs: Point2<T>) -> Self::Output {
-        Vector2::new(self.x - rhs.x, self.y - rhs.y)
     }
 }
 
