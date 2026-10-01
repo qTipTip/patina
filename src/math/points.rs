@@ -110,4 +110,13 @@ mod point_vector_interactions {
         let q = Point3::new(1.0, 0.0, 0.0);
         assert_eq!(p - q, Vector3::new(-1.0, 1.0, 2.0));
     }
+
+    #[test]
+    fn test_point_distance() {
+        let p = Point3::new(0.0, 1.0, 2.0);
+        let q = Point3::new(1.0, 0.0, 0.0);
+
+        assert_eq!(p.distance(q), 6.0_f64.sqrt());
+        assert_eq!(p.distance_squared(q), 6.0);
+    }
 }
