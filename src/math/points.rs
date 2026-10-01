@@ -10,18 +10,18 @@ use crate::{
 };
 use num_traits::Num;
 
-#[derive(Copy, Clone)]
+#[derive(PartialEq, Copy, Clone, Debug)]
 pub struct Point2<T>(Tuple2<T>);
-#[derive(Copy, Clone)]
+#[derive(PartialEq, Copy, Clone, Debug)]
 pub struct Point3<T>(Tuple3<T>);
 
 implement_geometry_ops!(Point2, Tuple2);
 implement_geometry_ops!(Point3, Tuple3);
 
-type PatinaPoint3f = Point3<PatinaFloat>;
-type PatinaPoint3i = Point3<PatinaInt>;
-type PatinaPoint2f = Point2<PatinaFloat>;
-type PatinaPoint2i = Point2<PatinaInt>;
+pub type PatinaPoint3f = Point3<PatinaFloat>;
+pub type PatinaPoint3i = Point3<PatinaInt>;
+pub type PatinaPoint2f = Point2<PatinaFloat>;
+pub type PatinaPoint2i = Point2<PatinaInt>;
 
 impl<T> DerefMut for Point2<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
@@ -67,5 +67,18 @@ impl<T: Num + Copy + CheckNan + std::ops::Add> Add<Vector3<T>> for Point3<T> {
 
     fn add(self, rhs: Vector3<T>) -> Self::Output {
         Self::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
+    }
+}
+
+#[cfg(test)]
+mod point_vector_interactions {
+    use crate::math::{points::Point3, vectors::vec3::Vector3};
+
+    #[test]
+    fn point_add_vector_is_point() {
+        let p = Point3::new(0.0, 1.0, 2.0);
+        let q = Vector3::new(1.0, 0.0, 0.0);
+
+        assert_eq!(p + q, Point3::new(1.0, 1.0, 2.0));
     }
 }
