@@ -1,23 +1,14 @@
-use std::{
-    f64::consts::PI,
-    ops::{Add, Sub},
-};
+use std::f64::consts::PI;
 
 use num_traits::{Num, ToPrimitive};
 
-use crate::{
-    implement_geometry_ops,
-    math::{
-        PatinaFloat, PatinaInt, safe_asin,
-        traits::{CheckNan, Direction3},
-        tuples::{TupleLength, tuple3::Tuple3},
-    },
+use crate::math::{
+    PatinaFloat, PatinaInt, safe_asin,
+    traits::CheckNan,
+    tuples::{TupleLength, TypeVector, tuple3::Tuple3},
 };
 
-#[derive(Copy, Clone, PartialEq, Debug)]
-pub struct Vector3<T>(Tuple3<T>);
-
-implement_geometry_ops!(Vector3, Tuple3, [Neg, Add, Sub, Mul, Div]);
+pub type Vector3<T> = Tuple3<T, TypeVector>;
 
 type PatinaVec3f = Vector3<PatinaFloat>;
 type PatinaVec3i = Vector3<PatinaInt>;
@@ -26,10 +17,6 @@ impl<T> Vector3<T>
 where
     T: Num + Copy + CheckNan + ToPrimitive,
 {
-    pub fn new(x: T, y: T, z: T) -> Self {
-        Self(Tuple3::<T>::new(x, y, z))
-    }
-
     pub fn len_squared(&self) -> T {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
@@ -63,14 +50,7 @@ where
             self.z.to_f64().expect("Conversion to f64 failed") / len,
         )
     }
-}
 
-impl<T> Vector3<T>
-where
-    T: Num + Copy + CheckNan + ToPrimitive,
-    for<'a> &'a Vector3<T>: Add<&'a Vector3<T>, Output = Vector3<T>>,
-    for<'a> &'a Vector3<T>: Sub<&'a Vector3<T>, Output = Vector3<T>>,
-{
     pub fn angle_between(&self, rhs: &Self) -> PatinaFloat {
         let u = self.normalize();
         let v = rhs.normalize();
@@ -81,8 +61,6 @@ where
         }
     }
 }
-
-impl<T> Direction3<T> for Vector3<T> {}
 
 #[cfg(test)]
 mod test_construction {

@@ -1,34 +1,21 @@
-use std::{
-    f64::consts::PI,
-    ops::{Add, Sub},
-};
+use std::f64::consts::PI;
 
-use crate::{
-    implement_geometry_ops,
-    math::{
-        PatinaFloat, PatinaInt, safe_asin,
-        traits::CheckNan,
-        tuples::{TupleLength, tuple2::Tuple2},
-    },
+use crate::math::{
+    PatinaFloat, PatinaInt, safe_asin,
+    traits::CheckNan,
+    tuples::{TupleLength, TypeVector, tuple2::Tuple2},
 };
 use num_traits::{Num, ToPrimitive};
 
-#[derive(Copy, Clone, PartialEq, Debug)]
-pub struct Vector2<T>(Tuple2<T>);
+pub type Vector2<T> = Tuple2<T, TypeVector>;
 
 type PatinaVec2f = Vector2<PatinaFloat>;
 type PatinaVec2i = Vector2<PatinaInt>;
-
-implement_geometry_ops!(Vector2, Tuple2, [Neg, Add, Sub, Mul, Div]);
 
 impl<T> Vector2<T>
 where
     T: Num + Copy + CheckNan + ToPrimitive,
 {
-    pub fn new(x: T, y: T) -> Self {
-        Self(Tuple2::<T>::new(x, y))
-    }
-
     pub fn len_squared(&self) -> T {
         self.x * self.x + self.y * self.y
     }
@@ -38,10 +25,6 @@ where
             .to_f64()
             .expect("Conversion to f64 failed")
             .sqrt()
-    }
-
-    pub fn dot(&self, rhs: &Self) -> T {
-        self.x * rhs.x + self.y * rhs.y
     }
 
     pub fn cross(&self, rhs: &Self) -> T {
@@ -61,14 +44,7 @@ where
             self.y.to_f64().expect("Conversion to f64 failed") / len,
         )
     }
-}
 
-impl<T> Vector2<T>
-where
-    T: Num + Copy + CheckNan + ToPrimitive,
-    for<'a> &'a Vector2<T>: Add<&'a Vector2<T>, Output = Vector2<T>>,
-    for<'a> &'a Vector2<T>: Sub<&'a Vector2<T>, Output = Vector2<T>>,
-{
     pub fn angle_between(&self, rhs: &Self) -> PatinaFloat {
         let u = self.normalize();
         let v = rhs.normalize();
