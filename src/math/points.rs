@@ -1,6 +1,7 @@
 use std::ops::{Add, Deref, DerefMut, Sub};
 
 use crate::math::traits::{CheckNan, IsNotFloat};
+use crate::math::tuples::TupleLength;
 use crate::math::tuples::tuple2::Tuple2;
 use crate::math::tuples::tuple3::Tuple3;
 use crate::math::vectors::vec3::Vector3;
@@ -8,7 +9,7 @@ use crate::{
     implement_geometry_ops,
     math::{PatinaFloat, PatinaInt},
 };
-use num_traits::{Num, ToPrimitive};
+use num_traits::{Float, Num, ToPrimitive};
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub struct Point2<T>(Tuple2<T>);
@@ -59,6 +60,18 @@ impl<T: Num + Copy + CheckNan> Point2<T> {
 impl<T: Num + Copy + CheckNan> Point3<T> {
     pub fn new(x: T, y: T, z: T) -> Self {
         Self(Tuple3::new(x, y, z))
+    }
+}
+
+impl<T> Point3<T>
+where
+    T: Num + Sub + CheckNan + ToPrimitive + Copy,
+{
+    pub fn distance(self, rhs: Self) -> TupleLength {
+        (self - rhs).len()
+    }
+    pub fn distance_squared(self, rhs: Self) -> T {
+        (self - rhs).len_squared()
     }
 }
 
