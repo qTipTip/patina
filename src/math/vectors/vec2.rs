@@ -87,10 +87,10 @@ where
         let u = self.normalize();
         let v = rhs.normalize();
         if u.dot(&v) < 0.0 {
-            PI - 2.0 * safe_asin((&u + &v).len() / 2.0)
+            PI - 2.0 * safe_asin((u + v).len() / 2.0)
         } else {
             2.0 * {
-                let x = (&v - &u).len() / 2.0;
+                let x = (v - u).len() / 2.0;
                 x.clamp(-1.0, 1.0).asin()
             }
         }
