@@ -51,20 +51,21 @@ impl<T> Deref for Point3<T> {
 }
 
 impl<T: Num + Copy + CheckNan> Point2<T> {
-    pub fn new(x: T, y: T) {
-        Self(Tuple2::new(x, y));
+    pub fn new(x: T, y: T) -> Self {
+        Self(Tuple2::new(x, y))
     }
 }
 impl<T: Num + Copy + CheckNan> Point3<T> {
-    pub fn new(x: T, y: T, z: T) {
-        Self(Tuple3::new(x, y, z));
+    pub fn new(x: T, y: T, z: T) -> Self {
+        Self(Tuple3::new(x, y, z))
     }
 }
 
 // Point / Vector operation
-
-impl<T> Add<Vector3<T>> for Point3<T> {
+impl<T: Num + Copy + CheckNan + std::ops::Add> Add<Vector3<T>> for Point3<T> {
     type Output = Self;
 
-    fn add(self, rhs: Vector3<T>) -> Self::Output {}
+    fn add(self, rhs: Vector3<T>) -> Self::Output {
+        Self::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
+    }
 }
