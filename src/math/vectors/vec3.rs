@@ -9,7 +9,7 @@ use crate::{
     implement_geometry_ops,
     math::{
         PatinaFloat, PatinaInt, safe_asin,
-        traits::CheckNan,
+        traits::{CheckNan, Direction3},
         tuples::{TupleLength, tuple3::Tuple3},
     },
 };
@@ -55,10 +55,6 @@ where
             .sqrt()
     }
 
-    pub fn dot(&self, rhs: &Self) -> T {
-        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
-    }
-
     pub fn cross(&self, rhs: &Self) -> Self {
         // TODO: Compute this using a difference of products (using FMA), as it's more numerically
         // stable, even at f32.
@@ -99,6 +95,8 @@ where
         }
     }
 }
+
+impl<T> Direction3<T> for Vector3<T> {}
 
 #[cfg(test)]
 mod test_construction {
