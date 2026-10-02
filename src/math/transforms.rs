@@ -1,3 +1,5 @@
+use approx::relative_ne;
+
 use crate::math::{
     PatinaFloat, matrices::Matrix4, normals::PatinaNorm3f, points::PatinaPoint3f,
     rays::ray3::PatinaRay3f, vectors::PatinaVec3f,
@@ -44,6 +46,18 @@ impl Transform {
         let m_inv = Matrix4::diag([1.0 / x, 1.0 / y, 1.0 / z, 1.0]);
 
         Self { m, m_inv }
+    }
+
+    // method for checking if a particular transformation has scaling terms or not.
+    pub fn has_scaling(&self) -> bool {
+        let e1 = PatinaVec3f::new(1.0, 0.0, 0.0);
+        let e2 = PatinaVec3f::new(0.0, 1.0, 0.0);
+        let e3 = PatinaVec3f::new(0.0, 0.0, 1.0);
+
+        // If any of the unit vectors have changed length, then we return true
+        relative_ne!(e1.len_squared(), 1.0)
+            || relative_ne!(e2.len_squared(), 1.0)
+            || relative_ne!(e3.len_squared(), 1.0)
     }
 
     // Returns the inverse transform
