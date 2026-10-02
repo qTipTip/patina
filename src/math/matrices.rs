@@ -9,9 +9,7 @@ pub struct SquareMatrix<const N: usize> {
 impl<const N: usize> Default for SquareMatrix<N> {
     fn default() -> Self {
         let mut m = [[0.0; N]; N];
-        for i in 0..N {
-            m[i][i] = 1.0
-        }
+        (0..N).for_each(|i| m[i][i] = 1.0);
         Self { m }
     }
 }
@@ -19,10 +17,9 @@ impl<const N: usize> Index<usize> for SquareMatrix<N> {
     type Output = [PatinaFloat; N];
 
     fn index(&self, index: usize) -> &Self::Output {
-        self.m[index]
+        &self.m[index]
     }
 }
-
 pub type Matrix4 = SquareMatrix<4>;
 
 #[cfg(test)]
