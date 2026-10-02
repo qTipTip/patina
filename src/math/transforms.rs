@@ -202,10 +202,9 @@ impl Apply<PatinaRay3f> for Transform {
 mod test_transforms {
     use std::f64::consts::PI;
 
-    use approx::abs_diff_eq;
+    use approx::assert_abs_diff_eq;
 
     use crate::math::{
-        matrices::Matrix4,
         normals::normal3::Normal3,
         points::PatinaPoint3f,
         transforms::{Apply, Transform},
@@ -257,6 +256,6 @@ mod test_transforms {
         for _ in 0..4 {
             m = m * s;
         }
-        abs_diff_eq!(m, Transform::identity());
+        assert_abs_diff_eq!(m, Transform::identity())
     }
 }
