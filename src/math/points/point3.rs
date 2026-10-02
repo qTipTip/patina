@@ -4,7 +4,6 @@ use crate::math::traits::CheckNan;
 use crate::math::tuples::tuple3::Tuple3;
 use crate::math::tuples::{TupleLength, TypePoint};
 use crate::math::vectors::vec3::Vector3;
-use crate::math::{PatinaFloat, PatinaInt};
 use num_traits::{Num, ToPrimitive};
 
 // Point - Point = Vector comes from the `Difference` impl on `TypePoint`.
