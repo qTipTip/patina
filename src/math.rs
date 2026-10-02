@@ -1,7 +1,9 @@
+pub mod matrices;
 pub mod normals;
 pub mod points;
 pub mod rays;
 mod traits;
+pub mod transforms;
 pub mod tuples;
 pub mod vectors;
 

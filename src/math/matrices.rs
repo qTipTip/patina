@@ -33,7 +33,11 @@ mod test {
         let m = SquareMatrix::<10>::default();
         for i in 0..10 {
             for j in 0..10 {
-                assert_relative_eq!(m[i][j], 0.0);
+                if i == j {
+                    assert_relative_eq!(m[i][j], 1.0);
+                } else {
+                    assert_relative_eq!(m[i][j], 0.0);
+                }
             }
         }
     }
