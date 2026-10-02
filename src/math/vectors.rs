@@ -7,7 +7,7 @@ use crate::math::{
 pub mod vec2;
 pub mod vec3;
 
-type PatinaVec2f = Vector2<PatinaFloat>;
-type PatinaVec2i = Vector2<PatinaInt>;
-type PatinaVec3f = Vector3<PatinaFloat>;
-type PatinaVec3i = Vector3<PatinaInt>;
+pub type PatinaVec2f = Vector2<PatinaFloat>;
+pub type PatinaVec2i = Vector2<PatinaInt>;
+pub type PatinaVec3f = Vector3<PatinaFloat>;
+pub type PatinaVec3i = Vector3<PatinaInt>;

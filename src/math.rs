@@ -1,5 +1,6 @@
 pub mod normals;
 pub mod points;
+pub mod rays;
 mod traits;
 pub mod tuples;
 pub mod vectors;
