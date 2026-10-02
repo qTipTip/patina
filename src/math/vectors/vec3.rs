@@ -63,7 +63,11 @@ where
 
     // Given u (self) and a normalized vector w, compute a vector v from u that is orthogonal to w.
     pub fn gram_schmidt(self, w: Self) -> Self {
-        debug_assert!(approx::relative_eq!(w.len(), 1.0));
+        let len = w.len();
+        debug_assert!(
+            approx::relative_eq!(len, 1.0),
+            "vector not normalized in call to gram_schmidt: got length {len:?}"
+        );
         self - w * self.dot(&w)
     }
 }
