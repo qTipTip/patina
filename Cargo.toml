@@ -9,6 +9,7 @@ path = "src/lib.rs"
 crate-type = ["lib"]
 
 [dependencies]
+approx = "0.5.1"
 num-traits = "0.2.19"
 rand = "0.10.3"
 

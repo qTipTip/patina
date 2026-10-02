@@ -60,6 +60,12 @@ where
             2.0 * safe_asin((v - u).len() / 2.0)
         }
     }
+
+    // Given u (self) and a normalized vector w, compute a vector v from u that is orthogonal to w.
+    pub fn gram_schmidt(self, w: Self) -> Self {
+        debug_assert!(approx::relative_eq!(w.len(), 1.0));
+        self - w * self.dot(&w)
+    }
 }
 
 #[cfg(test)]
@@ -114,5 +120,14 @@ mod test_construction {
         let e2 = PatinaVec3f::new(0.0, 1.0, 0.0);
 
         assert_eq!(e1.cross(&e2), PatinaVec3f::new(0.0, 0.0, 1.0));
+    }
+
+    #[test]
+    fn test_gram_schmidt() {
+        let u = PatinaVec3f::new(1.0, 1.2, -3.2);
+        let v = PatinaVec3f::new(1.2, 0.0, 3.2).normalize();
+
+        let w = u.gram_schmidt(v);
+        assert_relative_eq!(v.dot(&w), 0.0);
     }
 }
