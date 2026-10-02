@@ -24,6 +24,21 @@ impl Transform {
         None
     }
 
+    pub fn translate(u: &PatinaVec3f) -> Self {
+        let mut m = Matrix4::identity();
+        let mut m_inv = Matrix4::identity();
+
+        m[0][3] = u.x;
+        m[1][3] = u.y;
+        m[2][3] = u.z;
+
+        m_inv[0][3] = -u.x;
+        m_inv[1][3] = -u.y;
+        m_inv[2][3] = -u.z;
+
+        Self { m, m_inv }
+    }
+
     // Returns the inverse transform
     pub fn inverse(&self) -> Self {
         Self {
