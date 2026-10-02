@@ -15,4 +15,12 @@ impl Transform {
         }
         None
     }
+
+    // Returns the inverse transform
+    pub fn inverse(&self) -> Self {
+        Self {
+            m: self.m_inv,
+            m_inv: self.m,
+        }
+    }
 }

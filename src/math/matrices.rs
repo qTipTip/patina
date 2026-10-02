@@ -166,6 +166,15 @@ impl<const N: usize> Add for SquareMatrix<N> {
     }
 }
 
+// An algebraic matrix x vector multiplication. It does not carry any geometric meaning.
+impl<const N: usize> Mul<[PatinaFloat; N]> for SquareMatrix<N> {
+    type Output = [PatinaFloat; N];
+
+    fn mul(self, rhs: [PatinaFloat; N]) -> Self::Output {
+        std::array::from_fn(|i| self[i].iter().zip(rhs).map(|(a, b)| a * b).sum())
+    }
+}
+
 #[cfg(test)]
 mod test {
     use approx::assert_relative_eq;
