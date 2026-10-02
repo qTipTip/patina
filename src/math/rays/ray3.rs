@@ -1,9 +1,9 @@
 use crate::math::{PatinaFloat, points::PatinaPoint3f, vectors::PatinaVec3f};
 
 pub struct PatinaRay3 {
-    o: PatinaPoint3f,
-    d: PatinaVec3f,
-    t: PatinaFloat,
+    o: PatinaPoint3f, // origin
+    d: PatinaVec3f,   // direction
+    t: PatinaFloat,   // time
 }
 
 impl PatinaRay3 {
