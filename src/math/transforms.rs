@@ -1,3 +1,5 @@
+use std::ops::Mul;
+
 use approx::relative_ne;
 
 use crate::math::{
@@ -113,6 +115,17 @@ impl Transform {
         Self {
             m: self.m_inv,
             m_inv: self.m,
+        }
+    }
+}
+
+impl Mul for Transform {
+    type Output = Self;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        Self {
+            m: self.m * rhs.m,
+            m_inv: rhs.m_inv * self.m_inv,
         }
     }
 }
