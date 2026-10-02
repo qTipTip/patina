@@ -58,9 +58,9 @@ impl Transform {
         let e3 = PatinaVec3f::new(0.0, 0.0, 1.0);
 
         // If any of the unit vectors have changed length, then we return true
-        relative_ne!(e1.len_squared(), 1.0)
-            || relative_ne!(e2.len_squared(), 1.0)
-            || relative_ne!(e3.len_squared(), 1.0)
+        relative_ne!(self.apply(e1).len_squared(), 1.0)
+            || relative_ne!(self.apply(e2).len_squared(), 1.0)
+            || relative_ne!(self.apply(e3).len_squared(), 1.0)
     }
 
     // for a left handed coordinate system, this is a clockwise rotation around x-axis.
@@ -213,14 +213,16 @@ mod test_transforms {
     #[test]
     fn test_normals_scale() {
         let s = Transform::scale(1.2, 2.1, -1.2);
-        let (e1, e2, e3) = PatinaVec3f::new(0.0, 1.0, 2.0)
+        assert!(s.has_scaling());
+
+        let (e1, e2, _) = PatinaVec3f::new(15.0, 1.0, 2.0)
             .normalize()
             .coordinate_system();
         let n = Normal3::from(e1);
 
         // n and e2 should be perpendicular
         assert_eq!(n.dot(&e2), 0.0);
-        // Sn and e2 should still be perpendicular
-        assert_eq!(s.apply(n).dot(&e2), 0.0);
+        // S*n and S*e2 should still be perpendicular after a
+        assert_eq!(s.apply(n).dot(&s.apply(e2)), 0.0);
     }
 }
