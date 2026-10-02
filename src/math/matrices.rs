@@ -1,3 +1,4 @@
+#[derive(Default)]
 pub struct SquareMatrix<const N: usize> {
     m: [[PatinaFloat; N]; N],
 }
