@@ -1,16 +1,13 @@
 use std::f64::consts::PI;
 
 use crate::math::{
-    PatinaFloat, PatinaInt, safe_asin,
+    PatinaFloat, safe_asin,
     traits::CheckNan,
     tuples::{TupleLength, TypeVector, tuple2::Tuple2},
 };
 use num_traits::{Num, ToPrimitive};
 
 pub type Vector2<T> = Tuple2<T, TypeVector>;
-
-type PatinaVec2f = Vector2<PatinaFloat>;
-type PatinaVec2i = Vector2<PatinaInt>;
 
 impl<T> Vector2<T>
 where
@@ -66,7 +63,7 @@ mod test_construction {
     use approx::assert_relative_eq;
     use num_traits::Float;
 
-    use crate::math::{tuples::TupleLength, vectors::vec2::PatinaVec2f};
+    use crate::math::{tuples::TupleLength, vectors::PatinaVec2f};
 
     #[test]
     fn test_vec2_constructor() {

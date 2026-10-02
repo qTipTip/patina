@@ -1,18 +1,14 @@
+use approx::relative_eq;
+use num_traits::{Float, Num, ToPrimitive};
 use std::f64::consts::PI;
 
-use approx::{assert_relative_eq, relative_eq};
-use num_traits::{Float, Num, ToPrimitive, sign};
-
 use crate::math::{
-    PatinaFloat, PatinaInt, safe_asin,
+    PatinaFloat, safe_asin,
     traits::CheckNan,
     tuples::{TupleLength, TypeVector, tuple3::Tuple3},
 };
 
 pub type Vector3<T> = Tuple3<T, TypeVector>;
-
-type PatinaVec3f = Vector3<PatinaFloat>;
-type PatinaVec3i = Vector3<PatinaInt>;
 
 impl<T> Vector3<T>
 where
@@ -98,7 +94,7 @@ mod test_construction {
     use approx::assert_relative_eq;
     use num_traits::Float;
 
-    use crate::math::{tuples::TupleLength, vectors::vec3::PatinaVec3f};
+    use crate::math::{tuples::TupleLength, vectors::PatinaVec3f};
 
     #[test]
     fn test_vec3_constructor() {

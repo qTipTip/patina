@@ -10,9 +10,6 @@ use num_traits::{Num, ToPrimitive};
 // Point - Point = Vector comes from the `Difference` impl on `TypePoint`.
 pub type Point3<T> = Tuple3<T, TypePoint>;
 
-pub type PatinaPoint3f = Point3<PatinaFloat>;
-pub type PatinaPoint3i = Point3<PatinaInt>;
-
 impl<T> Point3<T>
 where
     T: Num + CheckNan + ToPrimitive + Copy,
