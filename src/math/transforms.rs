@@ -64,7 +64,7 @@ impl Transform {
     }
 
     // for a left handed coordinate system, this is a clockwise rotation around x-axis.
-    pub fn rotate_x(&self, theta: PatinaFloat) -> Self {
+    pub fn rotate_x(theta: PatinaFloat) -> Self {
         let sin_theta = theta.sin();
         let cos_theta = theta.cos();
 
@@ -80,7 +80,7 @@ impl Transform {
     }
 
     // for a left handed coordinate system, this is a clockwise rotation around y-axis.
-    pub fn rotate_y(&self, theta: PatinaFloat) -> Self {
+    pub fn rotate_y(theta: PatinaFloat) -> Self {
         let sin_theta = theta.sin();
         let cos_theta = theta.cos();
 
@@ -96,7 +96,7 @@ impl Transform {
     }
 
     // for a left handed coordinate system, this is a clockwise rotation around z-axis.
-    pub fn rotate_z(&self, theta: PatinaFloat) -> Self {
+    pub fn rotate_z(theta: PatinaFloat) -> Self {
         let sin_theta = theta.sin();
         let cos_theta = theta.cos();
 
