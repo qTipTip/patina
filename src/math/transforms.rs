@@ -5,3 +5,14 @@ pub struct Transform {
     m: Matrix4,
     m_inv: Option<Matrix4>,
 }
+
+impl Transform {
+    // Return an Option<transform> defined by the matrix `m`. Is None if the matrix m cannot be
+    // inverted.
+    pub fn from_matrix(m: &Matrix4) -> Option<Self> {
+        Self {
+            m,
+            m_inv: m.inverse(),
+        }
+    }
+}
