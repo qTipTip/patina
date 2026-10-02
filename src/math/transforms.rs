@@ -1,6 +1,6 @@
 use crate::math::{
-    matrices::Matrix4, normals::PatinaNorm3f, points::PatinaPoint3f, rays::ray3::PatinaRay3f,
-    vectors::PatinaVec3f,
+    PatinaFloat, matrices::Matrix4, normals::PatinaNorm3f, points::PatinaPoint3f,
+    rays::ray3::PatinaRay3f, vectors::PatinaVec3f,
 };
 
 // A transform encodes a transformation matrix (4x4) along with it's inverse (None if singular).
@@ -35,6 +35,13 @@ impl Transform {
         m_inv[0][3] = -u.x;
         m_inv[1][3] = -u.y;
         m_inv[2][3] = -u.z;
+
+        Self { m, m_inv }
+    }
+
+    pub fn scale(x: PatinaFloat, y: PatinaFloat, z: PatinaFloat) -> Self {
+        let m = Matrix4::diag([x, y, z, 1.0]);
+        let m_inv = Matrix4::diag([1.0 / x, 1.0 / y, 1.0 / z, 1.0]);
 
         Self { m, m_inv }
     }
