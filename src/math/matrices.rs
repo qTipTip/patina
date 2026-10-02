@@ -299,4 +299,19 @@ mod test {
         assert!(m.inverse().is_none());
         assert_eq!(m.determinant(), 0.0);
     }
+
+    #[test]
+    fn test_matrix_vector_mult() {
+        let m = sample();
+
+        // Multiplying with a unit vector should pick out a column:
+        for i in 0..4 {
+            let v = std::array::from_fn(|j| if j == i { 1.0 } else { 0.0 });
+            let w = m * v;
+
+            for j in 0..4 {
+                assert_eq!(m[j][i], w[j])
+            }
+        }
+    }
 }
