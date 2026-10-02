@@ -182,6 +182,7 @@ impl Apply<PatinaRay3f> for Transform {
 #[cfg(test)]
 mod test_transforms {
     use crate::math::{
+        normals::normal3::Normal3,
         points::PatinaPoint3f,
         transforms::{Apply, Transform},
         vectors::PatinaVec3f,
@@ -207,5 +208,19 @@ mod test_transforms {
         assert_eq!(t.apply(p), PatinaPoint3f::new(2.1, 1.2, -0.2));
         // but not vectors
         assert_eq!(t.apply(v), v);
+    }
+
+    #[test]
+    fn test_normals_scale() {
+        let s = Transform::scale(1.2, 2.1, -1.2);
+        let (e1, e2, e3) = PatinaVec3f::new(0.0, 1.0, 2.0)
+            .normalize()
+            .coordinate_system();
+        let n = Normal3::from(e1);
+
+        // n and e2 should be perpendicular
+        assert_eq!(n.dot(&e2), 0.0);
+        // Sn and e2 should still be perpendicular
+        assert_eq!(s.apply(n).dot(&e2), 0.0);
     }
 }
