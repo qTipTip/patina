@@ -60,6 +60,54 @@ impl Transform {
             || relative_ne!(e3.len_squared(), 1.0)
     }
 
+    // for a left handed coordinate system, this is a clockwise rotation around x-axis.
+    pub fn rotate_x(&self, theta: PatinaFloat) -> Self {
+        let sin_theta = theta.sin();
+        let cos_theta = theta.cos();
+
+        let mut m = Matrix4::diag([1.0, cos_theta, cos_theta, 1.0]);
+        m[2][1] = sin_theta;
+        m[1][2] = -sin_theta;
+
+        // a rotation matrix is orthogonal, so it's inverse is the transpose
+        Self {
+            m,
+            m_inv: m.transpose(),
+        }
+    }
+
+    // for a left handed coordinate system, this is a clockwise rotation around y-axis.
+    pub fn rotate_y(&self, theta: PatinaFloat) -> Self {
+        let sin_theta = theta.sin();
+        let cos_theta = theta.cos();
+
+        let mut m = Matrix4::diag([cos_theta, 1.0, cos_theta, 1.0]);
+        m[2][0] = -sin_theta;
+        m[0][2] = sin_theta;
+
+        // a rotation matrix is orthogonal, so it's inverse is the transpose
+        Self {
+            m,
+            m_inv: m.transpose(),
+        }
+    }
+
+    // for a left handed coordinate system, this is a clockwise rotation around z-axis.
+    pub fn rotate_z(&self, theta: PatinaFloat) -> Self {
+        let sin_theta = theta.sin();
+        let cos_theta = theta.cos();
+
+        let mut m = Matrix4::diag([cos_theta, cos_theta, 1.0, 1.0]);
+        m[0][1] = -sin_theta;
+        m[1][0] = -sin_theta;
+
+        // a rotation matrix is orthogonal, so it's inverse is the transpose
+        Self {
+            m,
+            m_inv: m.transpose(),
+        }
+    }
+
     // Returns the inverse transform
     pub fn inverse(&self) -> Self {
         Self {
