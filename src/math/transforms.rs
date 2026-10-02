@@ -8,6 +8,7 @@ use crate::math::{
 };
 
 // A transform encodes a transformation matrix (4x4) along with it's inverse (None if singular).
+#[derive(Debug, PartialEq)]
 pub struct Transform {
     m: Matrix4,
     m_inv: Matrix4,
@@ -175,5 +176,36 @@ impl Apply<PatinaRay3f> for Transform {
     fn apply(&self, r: PatinaRay3f) -> Self::Output {
         // Transform the origin and direction separately
         PatinaRay3f::new(self.apply(r.o), self.apply(r.d))
+    }
+}
+
+#[cfg(test)]
+mod test_transforms {
+    use crate::math::{
+        points::PatinaPoint3f,
+        transforms::{Apply, Transform},
+        vectors::PatinaVec3f,
+    };
+
+    #[test]
+    fn test_inverse_is_identity() {
+        let t = Transform::scale(2.0, 1.0, 0.5);
+        let p = PatinaPoint3f::new(1.0, 0.5, 0.25);
+        // inverting the inverse of a transform is the transform
+        assert_eq!(t.inverse().inverse(), t);
+        // applying t, then t inverse is the identity
+        assert_eq!((t.inverse() * t).apply(p), p);
+    }
+
+    #[test]
+    fn test_translation() {
+        let t = Transform::translate(&PatinaVec3f::new(2.0, 1.0, -0.5));
+        let p = PatinaPoint3f::new(0.1, 0.2, 0.3);
+        let v = PatinaVec3f::new(0.1, 0.2, 0.3);
+
+        // translations move points,
+        assert_eq!(t.apply(p), PatinaPoint3f::new(2.1, 1.2, -0.2));
+        // but not vectors
+        assert_eq!(t.apply(v), v);
     }
 }
