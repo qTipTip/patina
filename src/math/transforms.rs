@@ -1,6 +1,6 @@
 use std::ops::Mul;
 
-use approx::relative_ne;
+use approx::{AbsDiffEq, relative_ne};
 
 use crate::math::{
     PatinaFloat, matrices::Matrix4, normals::PatinaNorm3f, points::PatinaPoint3f,
@@ -8,10 +8,22 @@ use crate::math::{
 };
 
 // A transform encodes a transformation matrix (4x4) along with it's inverse (None if singular).
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Transform {
     m: Matrix4,
     m_inv: Matrix4,
+}
+
+impl AbsDiffEq for Transform {
+    type Epsilon = PatinaFloat;
+
+    fn default_epsilon() -> Self::Epsilon {
+        1.0e-12
+    }
+
+    fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
+        self.m.abs_diff_eq(&other.m, epsilon) && self.m_inv.abs_diff_eq(&other.m_inv, epsilon)
+    }
 }
 
 pub trait Apply<In> {
@@ -27,6 +39,13 @@ impl Transform {
             return Some(Self { m: *m, m_inv });
         }
         None
+    }
+
+    pub fn identity() -> Self {
+        Self {
+            m: Matrix4::identity(),
+            m_inv: Matrix4::identity(),
+        }
     }
 
     pub fn translate(u: &PatinaVec3f) -> Self {
@@ -181,7 +200,10 @@ impl Apply<PatinaRay3f> for Transform {
 
 #[cfg(test)]
 mod test_transforms {
+    use std::f64::consts::PI;
+
     use crate::math::{
+        matrices::Matrix4,
         normals::normal3::Normal3,
         points::PatinaPoint3f,
         transforms::{Apply, Transform},
@@ -224,5 +246,15 @@ mod test_transforms {
         assert_eq!(n.dot(&e2), 0.0);
         // S*n and S*e2 should still be perpendicular after a
         assert_eq!(s.apply(n).dot(&s.apply(e2)), 0.0);
+    }
+
+    #[test]
+    fn test_rotation_around_is_identity() {
+        let mut m = Transform::identity();
+        let s = Transform::rotate_x(2.0 * PI / 4.0);
+        for _ in 0..4 {
+            m = m * s;
+        }
+        assert_eq!(m, Transform::identity());
     }
 }

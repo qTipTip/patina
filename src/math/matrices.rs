@@ -1,5 +1,7 @@
 use std::ops::{Add, Index, IndexMut, Mul};
 
+use approx::AbsDiffEq;
+
 use crate::math::PatinaFloat;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -29,7 +31,24 @@ impl<const N: usize> IndexMut<usize> for SquareMatrix<N> {
 }
 
 pub type Matrix4 = SquareMatrix<4>;
+impl<const N: usize> AbsDiffEq for SquareMatrix<N> {
+    type Epsilon = PatinaFloat;
 
+    fn default_epsilon() -> Self::Epsilon {
+        1.0e-12
+    }
+
+    fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
+        for i in 0..N {
+            for j in 0..N {
+                if !self[i][j].abs_diff_eq(&other[i][j], epsilon) {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+}
 impl<const N: usize> SquareMatrix<N> {
     // Rows are given in order, so `m[i][j]` is row i, column j.
     pub fn new(m: [[PatinaFloat; N]; N]) -> Self {
