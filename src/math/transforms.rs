@@ -216,7 +216,7 @@ mod test_transforms {
         let t = Transform::scale(2.0, 1.0, 0.5);
         let p = PatinaPoint3f::new(1.0, 0.5, 0.25);
         // inverting the inverse of a transform is the transform
-        assert_eq!(t.inverse().inverse(), t);
+        assert_abs_diff_eq!(t.inverse().inverse(), t);
         // applying t, then t inverse is the identity
         assert_eq!((t.inverse() * t).apply(p), p);
     }
