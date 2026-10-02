@@ -1,9 +1,17 @@
-use crate::math::matrices::Matrix4;
+use crate::math::{
+    matrices::Matrix4, normals::PatinaNorm3f, points::PatinaPoint3f, rays::ray3::PatinaRay3f,
+    vectors::PatinaVec3f,
+};
 
 // A transform encodes a transformation matrix (4x4) along with it's inverse (None if singular).
 pub struct Transform {
     m: Matrix4,
     m_inv: Matrix4,
+}
+
+pub trait Apply<In> {
+    type Output;
+    fn apply(&self, x: In) -> Self::Output;
 }
 
 impl Transform {
@@ -22,5 +30,53 @@ impl Transform {
             m: self.m_inv,
             m_inv: self.m,
         }
+    }
+}
+
+impl Apply<PatinaPoint3f> for Transform {
+    type Output = PatinaPoint3f;
+
+    fn apply(&self, p: PatinaPoint3f) -> Self::Output {
+        let v = [p.x, p.y, p.z, 1.0];
+        let q = self.m * v;
+
+        let w = q[3];
+        if w == 1.0 {
+            PatinaPoint3f::new(q[0], q[1], q[2])
+        } else {
+            PatinaPoint3f::new(q[0] / w, q[1] / w, q[2] / w)
+        }
+    }
+}
+
+impl Apply<PatinaVec3f> for Transform {
+    type Output = PatinaVec3f;
+
+    fn apply(&self, v: PatinaVec3f) -> Self::Output {
+        let v = [v.x, v.y, v.z, 0.0];
+        let q = self.m * v;
+
+        PatinaVec3f::new(q[0], q[1], q[2])
+    }
+}
+
+impl Apply<PatinaNorm3f> for Transform {
+    type Output = PatinaNorm3f;
+    // Normals do not transform like vectors. They instead transform by the transposed inverse.
+    fn apply(&self, n: PatinaNorm3f) -> Self::Output {
+        let v = [n.x, n.y, n.z, 0.0];
+        let inv_t = self.m_inv.transpose();
+
+        let w = inv_t * v;
+        PatinaNorm3f::new(w[0], w[1], w[2])
+    }
+}
+
+impl Apply<PatinaRay3f> for Transform {
+    type Output = PatinaRay3f;
+
+    fn apply(&self, r: PatinaRay3f) -> Self::Output {
+        // Transform the origin and direction separately
+        PatinaRay3f::new(self.apply(r.o), self.apply(r.d))
     }
 }

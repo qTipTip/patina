@@ -2,9 +2,9 @@ use crate::math::{PatinaFloat, points::PatinaPoint3f, vectors::PatinaVec3f};
 
 #[derive(Copy, Clone)]
 pub struct PatinaRay3f {
-    o: PatinaPoint3f, // origin
-    d: PatinaVec3f,   // direction
-    _t: PatinaFloat,  // time
+    pub o: PatinaPoint3f, // origin
+    pub d: PatinaVec3f,   // direction
+    _t: PatinaFloat,      // time
 }
 
 impl PatinaRay3f {
