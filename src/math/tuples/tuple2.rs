@@ -109,6 +109,17 @@ impl<T: Num + Copy, Type: Direction> Tuple2<T, Type> {
     pub fn dot<Rhs: Direction>(&self, rhs: &Tuple2<T, Rhs>) -> T {
         self.x * rhs.x + self.y * rhs.y
     }
+
+    pub fn face_forward<Rhs: Direction>(self, rhs: Tuple2<T, Rhs>) -> Self
+    where
+        T: PartialOrd + Neg<Output = T> + CheckNan,
+    {
+        if self.dot(&rhs) < T::zero() {
+            -self
+        } else {
+            self
+        }
+    }
 }
 
 impl<T, Type> Index<usize> for Tuple2<T, Type> {

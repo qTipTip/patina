@@ -4,14 +4,10 @@ use crate::math::traits::CheckNan;
 use crate::math::tuples::tuple2::Tuple2;
 use crate::math::tuples::{TupleLength, TypePoint};
 use crate::math::vectors::vec2::Vector2;
-use crate::math::{PatinaFloat, PatinaInt};
 use num_traits::{Num, ToPrimitive};
 
 // Point - Point = Vector comes from the `Difference` impl on `TypePoint`.
 pub type Point2<T> = Tuple2<T, TypePoint>;
-
-pub type PatinaPoint2f = Point2<PatinaFloat>;
-pub type PatinaPoint2i = Point2<PatinaInt>;
 
 impl<T> Point2<T>
 where
