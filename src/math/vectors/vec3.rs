@@ -1,6 +1,7 @@
 use std::f64::consts::PI;
 
-use num_traits::{Num, ToPrimitive};
+use approx::{assert_relative_eq, relative_eq};
+use num_traits::{Float, Num, ToPrimitive, sign};
 
 use crate::math::{
     PatinaFloat, PatinaInt, safe_asin,
@@ -71,6 +72,24 @@ where
         self - w * self.dot(&w)
     }
 }
+impl<T: Float + CheckNan> Vector3<T> {
+    // Given a vector normalized vector u (self), compute a local coordinate system such that the
+    // three vectors are mutually perpendicular. We use the numerically stable method by Frisvad &
+    // Duff: https://jcgt.org/published/0006/01/01/.
+    pub fn coordinate_system(self) -> (Self, Self, Self) {
+        debug_assert!(relative_eq!(self.len(), 1.0));
+        let (x, y, z) = (self.x, self.y, self.z);
+        let s = T::one().copysign(z);
+        let a = -T::one() / (s + z);
+        let b = x * y * a;
+
+        (
+            self,
+            Vector3::new(T::one() + s * x * x * a, s * b, -s * x),
+            Vector3::new(b, s + y * y * a, -y),
+        )
+    }
+}
 
 #[cfg(test)]
 mod test_construction {
@@ -133,5 +152,15 @@ mod test_construction {
 
         let w = u.gram_schmidt(v);
         assert_relative_eq!(v.dot(&w), 0.0);
+    }
+
+    #[test]
+    fn test_coordinate_system() {
+        let u = PatinaVec3f::new(1.0, 1.2, -3.2);
+        let (e1, e2, e3) = u.normalize().coordinate_system();
+
+        assert_relative_eq!(e1.dot(&e2), 0.0);
+        assert_relative_eq!(e1.dot(&e3), 0.0);
+        assert_relative_eq!(e2.dot(&e3), 0.0);
     }
 }
