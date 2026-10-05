@@ -1,3 +1,4 @@
+pub mod bounding_boxes;
 pub mod matrices;
 pub mod normals;
 pub mod points;
