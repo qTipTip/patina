@@ -28,3 +28,12 @@ impl<T: Copy> From<Point3<T>> for Bounds3<T> {
         }
     }
 }
+
+impl<T: Num + Copy + PartialOrd + CheckNan> Bounds3<T> {
+    pub fn new(p1: Point3<T>, p2: Point3<T>) -> Self {
+        Self {
+            p_min: Point3::min(p1, p2),
+            p_max: Point3::max(p1, p2),
+        }
+    }
+}
