@@ -1,3 +1,5 @@
+use std::ops::Index;
+
 use num_traits::{Bounded, Num};
 
 use crate::math::{points::point3::Point3, traits::CheckNan};
@@ -35,5 +37,18 @@ impl<T: Num + Copy + PartialOrd + CheckNan> Bounds3<T> {
             p_min: Point3::min(p1, p2),
             p_max: Point3::max(p1, p2),
         }
+    }
+}
+
+impl<T> Index<usize> for Bounds3<T> {
+    type Output = Point3<T>;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        debug_assert!(
+            index == 0 || index == 1,
+            "Can only index bounding boxes with 0 or 1"
+        );
+
+        if index == 0 { &self.p_min } else { &self.p_max }
     }
 }
