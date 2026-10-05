@@ -38,6 +38,17 @@ impl<T: Num + Copy + PartialOrd + CheckNan> Bounds3<T> {
             p_max: Point3::max(p1, p2),
         }
     }
+
+    // Return the i'th out of the eight corners of the bounding box.
+    pub fn get_corner(&self, corner: usize) -> Point3<T> {
+        // There are exactly eight possible combination of the corner & 1, corner & 2 and corner & 4
+        // indices, so they enumerate the corners.
+        Point3::new(
+            self[corner & 1].x,
+            self[if (corner & 2) != 0 { 1 } else { 0 }].y,
+            self[if (corner & 4) != 0 { 1 } else { 0 }].z,
+        )
+    }
 }
 
 impl<T> Index<usize> for Bounds3<T> {
@@ -50,5 +61,33 @@ impl<T> Index<usize> for Bounds3<T> {
         );
 
         if index == 0 { &self.p_min } else { &self.p_max }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::math::{bounding_boxes::bounds3::Bounds3, points::PatinaPoint3f};
+
+    #[test]
+    fn test_corner_enumeration() {
+        let b = Bounds3::new(
+            PatinaPoint3f::new(0.0, 0.0, 0.0),
+            PatinaPoint3f::new(1.0, 1.0, 1.0),
+        );
+
+        let expected_corners = [
+            PatinaPoint3f::new(0.0, 0.0, 0.0),
+            PatinaPoint3f::new(1.0, 0.0, 0.0),
+            PatinaPoint3f::new(0.0, 1.0, 0.0),
+            PatinaPoint3f::new(1.0, 1.0, 0.0),
+            PatinaPoint3f::new(0.0, 0.0, 1.0),
+            PatinaPoint3f::new(1.0, 0.0, 1.0),
+            PatinaPoint3f::new(0.0, 1.0, 1.0),
+            PatinaPoint3f::new(1.0, 1.0, 1.0),
+        ];
+
+        for (i, &corner) in expected_corners.iter().enumerate() {
+            assert_eq!(corner, b.get_corner(i), "corner {i} didn't match expected")
+        }
     }
 }
