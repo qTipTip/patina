@@ -40,6 +40,10 @@ impl<T: Num + Copy + PartialOrd + CheckNan> Bounds3<T> {
         }
     }
 
+    pub fn from_point(p1: Point3<T>) -> Self {
+        Self::from(p1)
+    }
+
     // Return the i'th out of the eight corners of the bounding box.
     pub fn get_corner(&self, corner: usize) -> Point3<T> {
         // There are exactly eight possible combination of the corner & 1, corner & 2 and corner & 4
