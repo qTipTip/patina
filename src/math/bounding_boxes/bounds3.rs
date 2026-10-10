@@ -22,6 +22,7 @@ impl<T: Num + Bounded + Copy + CheckNan> Default for Bounds3<T> {
     }
 }
 
+// Instantiate a bounding box from a single point.
 impl<T: Copy> From<Point3<T>> for Bounds3<T> {
     fn from(value: Point3<T>) -> Self {
         Self {
