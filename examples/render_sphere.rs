@@ -32,7 +32,7 @@ impl Film {
     fn set(&mut self, x: usize, y: usize, value: PatinaFloat) {
         debug_assert!(x < self.width && y < self.height);
 
-        let idx = x * self.width + y;
+        let idx = y * self.width + x;
         self.pixels[idx] = value;
     }
 }
@@ -60,5 +60,7 @@ fn main() {
         }
     }
 
-    let _ = image.save(PathBuf::from("examples/images/render_sphere.jpg"));
+    image
+        .save(PathBuf::from("examples/images/render_sphere.jpg"))
+        .expect("failed to save image");
 }
