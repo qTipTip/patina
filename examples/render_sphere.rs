@@ -1,8 +1,5 @@
 use patina::math::{PatinaFloat, points::PatinaPoint2f, rays::ray3::PatinaRay3f};
 
-struct CameraRay {
-    ray: PatinaRay3f,
-}
 struct CameraSample {
     p_film: PatinaPoint2f, // Point on the film in (x, y)
     p_lens: PatinaPoint2f, // Point on the lens in (x, y)
@@ -13,7 +10,7 @@ struct CameraSample {
 struct Film {}
 
 trait Camera {
-    fn generate_ray(&self, sample: &CameraSample) -> Option<CameraRay>;
+    fn generate_ray(&self, sample: &CameraSample) -> Option<PatinaRay3f>;
     fn get_film(&self) -> &Film;
     // Maps u in [0, 1) to [shutter_open, shutter_close).
     fn sample_time(&self, u: PatinaFloat) -> PatinaFloat;
