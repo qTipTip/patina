@@ -63,6 +63,14 @@ impl<T: Num + Copy + PartialOrd + CheckNan> Bounds3<T> {
             p_max: Point3::max(self.p_max, rhs.p_max),
         }
     }
+
+    // Returns a bounding box that encompasses the point.
+    pub fn union_point(&self, p: Point3<T>) -> Self {
+        Self {
+            p_min: Point3::min(self.p_min, p),
+            p_max: Point3::max(self.p_max, p),
+        }
+    }
 }
 impl<T> Index<usize> for Bounds3<T> {
     type Output = Point3<T>;
