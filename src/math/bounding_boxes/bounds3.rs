@@ -64,6 +64,14 @@ impl<T: Num + Copy + PartialOrd + CheckNan> Bounds3<T> {
         }
     }
 
+    // Returns the intersection between two bounding boxes
+    pub fn intersection(&self, rhs: &Self) -> Self {
+        Self {
+            p_min: Point3::max(self.p_min, rhs.p_min),
+            p_max: Point3::min(self.p_max, rhs.p_max),
+        }
+    }
+
     // Returns a bounding box that encompasses the point.
     pub fn union_point(&self, p: Point3<T>) -> Self {
         Self {
@@ -121,7 +129,7 @@ mod test {
         );
         let b = Bounds3::new(
             PatinaPoint3f::new(1.0, 1.0, 1.0),
-            PatinaPoint3f::new(2.0, 2.0, 2.0),
+            PatinaPoint3f::new(3.0, 3.0, 3.0),
         );
 
         assert_eq!(
@@ -142,5 +150,25 @@ mod test {
         let p = PatinaPoint3f::new(1.0, 1.0, 1.0);
 
         assert_eq!(a.union_point(p), a);
+    }
+
+    #[test]
+    fn test_bounds_intersection() {
+        let a = Bounds3::new(
+            PatinaPoint3f::new(0.0, 0.0, 0.0),
+            PatinaPoint3f::new(2.0, 2.0, 2.0),
+        );
+        let b = Bounds3::new(
+            PatinaPoint3f::new(1.0, 1.0, 1.0),
+            PatinaPoint3f::new(3.0, 3.0, 3.0),
+        );
+
+        assert_eq!(
+            a.intersection(&b),
+            Bounds3::new(
+                PatinaPoint3f::new(1.0, 1.0, 1.0),
+                PatinaPoint3f::new(2.0, 2.0, 2.0)
+            )
+        );
     }
 }
