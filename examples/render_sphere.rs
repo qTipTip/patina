@@ -16,10 +16,10 @@ struct CameraSample {
 struct Film {}
 
 trait Camera {
-    fn generate_ray() -> Option<CameraRay>;
-    fn get_film() -> Film;
+    fn generate_ray(&self, sample: &CameraSample) -> Option<CameraRay>;
+    fn get_film(&self) -> Film;
     // Maps u in [0, 1) to [shutter_open, shutter_close).
-    fn sample_time(u: PatinaFloat) -> PatinaFloat;
+    fn sample_time(&self, u: PatinaFloat) -> PatinaFloat;
 }
 
 // Meant to serve as a minimal working render. We should render points in a sphere as white, and
