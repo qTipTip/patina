@@ -12,3 +12,6 @@ fmt:
 
 check:
     cargo check
+
+example $example_name:
+    cargo run --example $example_name
