@@ -77,6 +77,6 @@ fn main() {
 
     let image = film.to_image();
     image
-        .save(PathBuf::from("examples/images/render_sphere.jpg"))
+        .save(PathBuf::from("examples/images/render_sphere.png"))
         .expect("failed to save image");
 }
