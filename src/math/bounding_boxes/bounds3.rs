@@ -56,7 +56,7 @@ impl<T: Num + Copy + PartialOrd + CheckNan> Bounds3<T> {
         )
     }
 
-    // Returns a bounding box that encompasses the two.
+    // Returns the union of between this and another bounding box.
     pub fn union(&self, rhs: &Self) -> Self {
         Self {
             p_min: Point3::min(self.p_min, rhs.p_min),
@@ -64,7 +64,7 @@ impl<T: Num + Copy + PartialOrd + CheckNan> Bounds3<T> {
         }
     }
 
-    // Returns the intersection between two bounding boxes
+    // Returns the intersection between this and another bounding box
     pub fn intersection(&self, rhs: &Self) -> Self {
         Self {
             p_min: Point3::max(self.p_min, rhs.p_min),
@@ -80,6 +80,7 @@ impl<T: Num + Copy + PartialOrd + CheckNan> Bounds3<T> {
         }
     }
 }
+
 impl<T> Index<usize> for Bounds3<T> {
     type Output = Point3<T>;
 
@@ -136,7 +137,7 @@ mod test {
             a.union(&b),
             Bounds3::new(
                 PatinaPoint3f::new(0.0, 0.0, 0.0),
-                PatinaPoint3f::new(2.0, 2.0, 2.0)
+                PatinaPoint3f::new(3.0, 3.0, 3.0)
             )
         );
     }
