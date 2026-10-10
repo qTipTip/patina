@@ -7,7 +7,31 @@ struct CameraSample {
     filter_weight: PatinaFloat,
 }
 
-struct Film {}
+impl Default for CameraSample {
+    fn default() -> Self {
+        Self {
+            p_film: PatinaPoint2f::zero(),
+            p_lens: PatinaPoint2f::zero(),
+            time: Default::default(),
+            filter_weight: Default::default(),
+        }
+    }
+}
+
+struct Film {
+    width: usize,
+    height: usize,
+    pixels: Vec<PatinaFloat>,
+}
+
+impl Film {
+    fn set(&mut self, x: usize, y: usize, value: PatinaFloat) {
+        debug_assert!(x < self.width && y < self.height);
+
+        let idx = x * self.width + y;
+        self.pixels[idx] = value;
+    }
+}
 
 trait Camera {
     fn generate_ray(&self, sample: &CameraSample) -> Option<PatinaRay3f>;
