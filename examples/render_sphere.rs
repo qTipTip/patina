@@ -1,3 +1,7 @@
+use std::path::PathBuf;
+
+use image::{Rgb, RgbImage};
+use num_traits::ToPrimitive;
 use patina::math::{PatinaFloat, points::PatinaPoint2f, rays::ray3::PatinaRay3f};
 
 struct CameraSample {
@@ -43,5 +47,18 @@ trait Camera {
 // Meant to serve as a minimal working render. We should render points in a sphere as white, and
 // everything else black.
 fn main() {
-    println!("Render sphere");
+    let (width, height) = (800, 800);
+
+    let mut image = RgbImage::new(width, height);
+    for x in 0..width {
+        let r = (x as f64 / width as f64 * 255.0) as u8;
+        for y in 0..height {
+            let g = (y as f64 / height as f64 * 255.0) as u8;
+            let b: u8 = 255;
+
+            image.put_pixel(x, y, Rgb([r, g, b]));
+        }
+    }
+
+    let _ = image.save(PathBuf::from("examples/images/render_sphere.jpg"));
 }
