@@ -132,4 +132,15 @@ mod test {
             )
         );
     }
+
+    #[test]
+    fn test_bounds_point_union() {
+        let a = Bounds3::new(
+            PatinaPoint3f::new(0.0, 0.0, 0.0),
+            PatinaPoint3f::new(2.0, 2.0, 2.0),
+        );
+        let p = PatinaPoint3f::new(1.0, 1.0, 1.0);
+
+        assert_eq!(a.union_point(p), a);
+    }
 }
