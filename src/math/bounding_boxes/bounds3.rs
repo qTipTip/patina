@@ -4,6 +4,7 @@ use num_traits::{Bounded, Num};
 
 use crate::math::{points::point3::Point3, traits::CheckNan};
 
+#[derive(PartialEq, Debug)]
 pub struct Bounds3<T> {
     pub p_min: Point3<T>,
     pub p_max: Point3<T>,
@@ -54,8 +55,15 @@ impl<T: Num + Copy + PartialOrd + CheckNan> Bounds3<T> {
             self[if (corner & 4) != 0 { 1 } else { 0 }].z,
         )
     }
-}
 
+    // Returns a bounding box that encompasses the two.
+    pub fn union(&self, rhs: &Self) -> Self {
+        Self {
+            p_min: Point3::min(self.p_min, rhs.p_min),
+            p_max: Point3::max(self.p_max, rhs.p_max),
+        }
+    }
+}
 impl<T> Index<usize> for Bounds3<T> {
     type Output = Point3<T>;
 
@@ -71,6 +79,7 @@ impl<T> Index<usize> for Bounds3<T> {
 
 #[cfg(test)]
 mod test {
+
     use crate::math::{bounding_boxes::bounds3::Bounds3, points::PatinaPoint3f};
 
     #[test]
@@ -94,5 +103,25 @@ mod test {
         for (i, &corner) in expected_corners.iter().enumerate() {
             assert_eq!(corner, b.get_corner(i), "corner {i} didn't match expected")
         }
+    }
+
+    #[test]
+    fn test_bounds_union() {
+        let a = Bounds3::new(
+            PatinaPoint3f::new(0.0, 0.0, 0.0),
+            PatinaPoint3f::new(2.0, 2.0, 2.0),
+        );
+        let b = Bounds3::new(
+            PatinaPoint3f::new(1.0, 1.0, 1.0),
+            PatinaPoint3f::new(2.0, 2.0, 2.0),
+        );
+
+        assert_eq!(
+            a.union(&b),
+            Bounds3::new(
+                PatinaPoint3f::new(0.0, 0.0, 0.0),
+                PatinaPoint3f::new(2.0, 2.0, 2.0)
+            )
+        );
     }
 }
