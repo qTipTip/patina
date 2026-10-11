@@ -3,8 +3,14 @@ use std::path::PathBuf;
 use image::{Rgb, RgbImage};
 use patina::{
     math::{
-        PatinaFloat, bounding_boxes::Bounds2f, points::{PatinaPoint2f, PatinaPoint3f}, rays::ray3::PatinaRay3f, transforms::Transform, vectors::PatinaVec3f,
-    }, sampling::linear::lerp,
+        PatinaFloat,
+        bounding_boxes::Bounds2f,
+        points::{PatinaPoint2f, PatinaPoint3f},
+        rays::ray3::PatinaRay3f,
+        transforms::{Apply, Transform},
+        vectors::PatinaVec3f,
+    },
+    sampling::linear::lerp,
 };
 
 struct CameraSample {
@@ -15,8 +21,6 @@ struct CameraSample {
 }
 
 struct ProjectiveCamera {
-    film: Film,
-
     shutter_open: PatinaFloat,
     shutter_closed: PatinaFloat,
 
@@ -39,20 +43,32 @@ struct ProjectiveCamera {
 //
 // We need a set of transformations to convert between these coordinate spaces.
 impl ProjectiveCamera {
-    pub fn new(film: Film, screen_from_camera: &Transform, screen_window: &Bounds2f, _focal_distance: PatinaFloat, _lens_radius: PatinaFloat) -> Self {
+    pub fn new(
+        width: u32,
+        height: u32,
+        screen_from_camera: &Transform,
+        screen_window: &Bounds2f,
+        _focal_distance: PatinaFloat,
+        _lens_radius: PatinaFloat,
+    ) -> Self {
+        // Scales and translates screen into NDC (0, 1)-coordinates.
         let ndc_from_screen = Transform::scale(
-            1.0 / (screen_window.p_max.x - screen_window.p_min.x), 
+            1.0 / (screen_window.p_max.x - screen_window.p_min.x),
             1.0 / (screen_window.p_max.y - screen_window.p_min.y),
-            1.0
-        ) * Transform::translate(&PatinaVec3f::new(-screen_window.p_min.x, -screen_window.p_max.y, 0.0));
-        let raster_from_ndc = Transform::scale(film.width as PatinaFloat, -(film.height as PatinaFloat), 1.0);
-        
-        let raster_from_screen = ndc_from_screen * raster_from_ndc;
+            1.0,
+        ) * Transform::translate(&PatinaVec3f::new(
+            -screen_window.p_min.x,
+            -screen_window.p_max.y,
+            0.0,
+        ));
+        // Scales the NDC coordinates into raster coordinates.
+        let raster_from_ndc = Transform::scale(width as PatinaFloat, -(height as PatinaFloat), 1.0);
+
+        let raster_from_screen = raster_from_ndc * ndc_from_screen;
         let screen_from_raster = raster_from_screen.inverse();
         let camera_from_raster = screen_from_camera.inverse() * screen_from_raster;
-        
+
         Self {
-            film,
             shutter_open: 0.0,
             shutter_closed: 1.0,
             raster_from_screen,
@@ -65,23 +81,19 @@ impl ProjectiveCamera {
 impl Camera for ProjectiveCamera {
     fn generate_ray(&self, sample: &CameraSample) -> Option<PatinaRay3f> {
         let p_film = PatinaPoint3f::new(sample.p_film.x, sample.p_film.y, 0.0);
-        let p_camera = camera_from_raster(p_film);
+        let p_camera = self.camera_from_raster.apply(p_film);
+
         None
     }
 
-    fn get_film(&self) -> &Film {
-        &self.film
+    fn film(&self) -> &Film {
+        todo!()
     }
 
     fn sample_time(&self, u: PatinaFloat) -> PatinaFloat {
         debug_assert!(self.shutter_open < self.shutter_closed);
         lerp(u, self.shutter_open, self.shutter_closed)
     }
-}
-
-// This method takes a raster point (on the film), and transforms it into camera space.
-fn camera_from_raster(p_film: patina::math::tuples::tuple3::Tuple3<f64, patina::math::tuples::TypePoint>) -> _ {
-    let t = Transform::scale(1.0 / , y, z)
 }
 
 impl Default for CameraSample {
@@ -123,7 +135,7 @@ impl Film {
 
 trait Camera {
     fn generate_ray(&self, sample: &CameraSample) -> Option<PatinaRay3f>;
-    fn get_film(&self) -> &Film;
+    fn film(&self) -> &Film;
     // Maps u in [0, 1) to [shutter_open, shutter_close).
     fn sample_time(&self, u: PatinaFloat) -> PatinaFloat;
 }
