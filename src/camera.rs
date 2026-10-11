@@ -21,7 +21,7 @@ struct Shutter {
 
 // Contains shared state between all camera types
 struct CameraBase {
-    camera_transform: Transform,
+    camera_transform: Transform, // describes how the camera is placed in the world.
     shutter: Shutter,
     resolution_x: u32,
     resolution_y: u32,
@@ -115,17 +115,23 @@ mod test_projections {
         let raster_p = p.raster_from_screen.apply(screen_p);
 
         assert_eq!(raster_p, PatinaPoint3f::new(0.0, 0.0, 0.0));
+        // and back:
+        assert_eq!(screen_p, p.screen_from_raster.apply(raster_p));
 
         // Given the point (-1, 1, 1) in screen space, it should map to (0, 0, 1) in raster space.
         let screen_p = PatinaPoint3f::new(-1.0, 1.0, 1.0);
         let raster_p = p.raster_from_screen.apply(screen_p);
 
         assert_eq!(raster_p, PatinaPoint3f::new(0.0, 0.0, 1.0));
+        // and back:
+        assert_eq!(screen_p, p.screen_from_raster.apply(raster_p));
 
         // Given the point (1, -1, 0.5) in screen space, it should map to (100, 50, 0.5) in raster space.
         let screen_p = PatinaPoint3f::new(1.0, -1.0, 0.5);
         let raster_p = p.raster_from_screen.apply(screen_p);
 
         assert_eq!(raster_p, PatinaPoint3f::new(100.0, 50.0, 0.5));
+        // and back:
+        assert_eq!(screen_p, p.screen_from_raster.apply(raster_p));
     }
 }
