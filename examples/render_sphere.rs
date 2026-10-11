@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use image::{Rgb, RgbImage};
 use patina::{
     math::{
-        PatinaFloat, points::{PatinaPoint2f, PatinaPoint3f}, rays::ray3::PatinaRay3f, transforms::Transform,
+        PatinaFloat, bounding_boxes::Bounds2f, points::{PatinaPoint2f, PatinaPoint3f}, rays::ray3::PatinaRay3f, transforms::Transform, vectors::PatinaVec3f,
     }, sampling::linear::lerp,
 };
 
@@ -16,8 +16,6 @@ struct CameraSample {
 
 struct ProjectiveCamera {
     film: Film,
-    width: u32,
-    height: u32,
 
     shutter_open: PatinaFloat,
     shutter_closed: PatinaFloat,
@@ -41,8 +39,26 @@ struct ProjectiveCamera {
 //
 // We need a set of transformations to convert between these coordinate spaces.
 impl ProjectiveCamera {
-    pub fn new() {
-            
+    pub fn new(film: Film, screen_from_camera: &Transform, screen_window: &Bounds2f, _focal_distance: PatinaFloat, _lens_radius: PatinaFloat) -> Self {
+        let ndc_from_screen = Transform::scale(
+            1.0 / (screen_window.p_max.x - screen_window.p_min.x), 
+            1.0 / (screen_window.p_max.y - screen_window.p_min.y),
+            1.0
+        ) * Transform::translate(&PatinaVec3f::new(-screen_window.p_min.x, -screen_window.p_max.y, 0.0));
+        let raster_from_ndc = Transform::scale(film.width as PatinaFloat, -(film.height as PatinaFloat), 1.0);
+        
+        let raster_from_screen = ndc_from_screen * raster_from_ndc;
+        let screen_from_raster = raster_from_screen.inverse();
+        let camera_from_raster = screen_from_camera.inverse() * screen_from_raster;
+        
+        Self {
+            film,
+            shutter_open: 0.0,
+            shutter_closed: 1.0,
+            raster_from_screen,
+            screen_from_raster,
+            camera_from_raster,
+        }
     }
 }
 
