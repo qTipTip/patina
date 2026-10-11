@@ -8,7 +8,7 @@ use crate::math::PatinaFloat;
 /// integrate it to find the cumulative distribution (CDF). We can then obtain a uniformly
 /// distributed random number x. Then we generate a sample by solving the equation x = P(X) for X.
 // Return the linear interpolation between a and b, with 0 <= x <= 1.
-pub(crate) fn lerp(x: PatinaFloat, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat {
+pub fn lerp(x: PatinaFloat, a: PatinaFloat, b: PatinaFloat) -> PatinaFloat {
     debug_assert!((0.0..=1.0).contains(&x));
 
     (1.0 - x) * a + x * b
