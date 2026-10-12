@@ -87,8 +87,9 @@ mod test_camera_transform {
     #[test]
     // For each rendering space, the transform world_from_render * render_from_camera should equal world_from_camera.
     fn test_camera_transforms() {
-        let world_from_camera =
-            Transform::rotate_x(0.3) * Transform::translate(&PatinaVec3f::new(10.0, 0.0, 0.0));
+        let world_from_camera = Transform::rotate_x(0.3)
+            * Transform::rotate_z(1.2)
+            * Transform::translate(&PatinaVec3f::new(10.0, -1.0, 2.3));
 
         for space in [
             RenderingSpace::Camera,
@@ -98,7 +99,8 @@ mod test_camera_transform {
             let c = CameraTransform::new(space, &world_from_camera);
             assert_abs_diff_eq!(
                 world_from_camera,
-                c.world_from_render * c.render_from_camera
+                c.world_from_render * c.render_from_camera,
+                epsilon = 1e-12
             );
         }
     }

@@ -121,7 +121,7 @@ impl Transform {
 
         let mut m = Matrix4::diag([cos_theta, cos_theta, 1.0, 1.0]);
         m[0][1] = -sin_theta;
-        m[1][0] = -sin_theta;
+        m[1][0] = sin_theta;
 
         // a rotation matrix is orthogonal, so it's inverse is the transpose
         Self {
