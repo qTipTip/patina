@@ -1,3 +1,5 @@
+pub mod r#trait;
+
 use crate::{
     math::{
         PatinaFloat, bounding_boxes::Bounds2f, points::PatinaPoint2f, rays::ray3::PatinaRay3f,
@@ -43,15 +45,6 @@ struct OrthographicCamera {
 struct PerspectiveCamera {
     base: CameraBase,
     projective: ProjectiveTransforms,
-}
-
-// Defines the common functionality each camera has to implement.
-trait Camera {
-    fn generate_ray(&self, sample: &CameraSample) -> Option<PatinaRay3f>;
-    fn base(&self) -> &CameraBase;
-    fn sample_time(&self, u: PatinaFloat) -> PatinaFloat {
-        lerp(u, self.base().shutter.open, self.base().shutter.close)
-    }
 }
 
 impl ProjectiveTransforms {
