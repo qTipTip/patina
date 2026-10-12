@@ -250,9 +250,27 @@ mod test_transforms {
     }
 
     #[test]
-    fn test_rotation_around_is_identity() {
+    fn test_rotation_around_x_is_identity() {
         let mut m = Transform::identity();
         let s = Transform::rotate_x(2.0 * PI / 4.0);
+        for _ in 0..4 {
+            m = m * s;
+        }
+        assert_abs_diff_eq!(m, Transform::identity())
+    }
+    #[test]
+    fn test_rotation_around_y_is_identity() {
+        let mut m = Transform::identity();
+        let s = Transform::rotate_y(2.0 * PI / 4.0);
+        for _ in 0..4 {
+            m = m * s;
+        }
+        assert_abs_diff_eq!(m, Transform::identity())
+    }
+    #[test]
+    fn test_rotation_around_z_is_identity() {
+        let mut m = Transform::identity();
+        let s = Transform::rotate_z(2.0 * PI / 4.0);
         for _ in 0..4 {
             m = m * s;
         }
