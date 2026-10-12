@@ -1,7 +1,12 @@
 pub mod projective;
 pub mod r#trait;
 
-use crate::math::{PatinaFloat, points::PatinaPoint2f, transforms::Transform};
+use crate::math::{
+    PatinaFloat,
+    points::{PatinaPoint2f, PatinaPoint3f},
+    transforms::{Apply, Transform},
+    vectors::PatinaVec3f,
+};
 
 pub struct CameraSample {
     p_film: PatinaPoint2f, // Point on the film in (x, y)
@@ -39,20 +44,41 @@ pub struct CameraTransform {
 // is applied to scene geometry, so bounding boxes stay effective.w
 //
 // World-space: Loses precision if the camera is placed far away from the origin.
-pub enum RenderingCoordinateSpace {
+pub enum RenderingSpace {
     Camera,
     CameraWorld,
     World,
 }
 
 impl CameraTransform {
-    pub fn new(space: RenderingCoordinateSpace, world_from_camera: &Transform) {
+    pub fn new(space: RenderingSpace, world_from_camera: &Transform) -> Self {
+        // The world_from_render transform is computed based on which space we are rendering in.
+        // TODO: Handle AnimatedTransforms here.
+        //
+        // Given a point in render space, where is it in the world space?
         let world_from_render = match space {
-            RenderingCoordinateSpace::Camera => {
+            RenderingSpace::Camera => *world_from_camera,
+            RenderingSpace::CameraWorld => {
+                let p_camera = world_from_camera.apply(PatinaPoint3f::zero());
+                Transform::translate(&PatinaVec3f::new(p_camera.x, p_camera.y, p_camera.z))
+            }
+            RenderingSpace::World => Transform::identity(),
+        };
 
-            },
-            RenderingCoordinateSpace::CameraWorld => todo!(),
-            RenderingCoordinateSpace::World => todo!(),
+        let render_from_world = world_from_render.inverse();
+        // Given a point in the camera space, where is it in render space?
+        let render_from_camera = render_from_world * (*world_from_camera);
+        Self {
+            render_from_camera,
+            world_from_render,
         }
+    }
+}
+
+#[cfg(test)]
+mod test_camera_transform {
+    #[test]
+    fn test_() {
+        todo!();
     }
 }
