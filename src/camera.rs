@@ -40,7 +40,10 @@ struct OrthographicCamera {
     base: CameraBase,
     projective: ProjectiveTransforms,
 }
-struct PerspectiveCamera {}
+struct PerspectiveCamera {
+    base: CameraBase,
+    projective: ProjectiveTransforms,
+}
 
 // Defines the common functionality each camera has to implement.
 trait Camera {
