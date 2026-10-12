@@ -85,7 +85,6 @@ mod test_camera_transform {
     };
 
     #[test]
-    // For each rendering space, the transform world_from_render * render_from_camera should equal world_from_camera.
     fn test_camera_transforms_camera() {
         let world_from_camera = Transform::rotate_x(0.3)
             * Transform::rotate_z(1.2)
@@ -97,8 +96,8 @@ mod test_camera_transform {
             epsilon = 1e-12
         );
     }
+
     #[test]
-    // For each rendering space, the transform world_from_render * render_from_camera should equal world_from_camera.
     fn test_camera_transforms_camera_world() {
         let world_from_camera = Transform::rotate_x(0.3)
             * Transform::rotate_z(1.2)
@@ -110,7 +109,7 @@ mod test_camera_transform {
             epsilon = 1e-12
         );
     }
-    // For each rendering space, the transform world_from_render * render_from_camera should equal world_from_camera.
+
     #[test]
     fn test_camera_transforms_world() {
         let world_from_camera = Transform::rotate_x(0.3)
