@@ -77,8 +77,29 @@ impl CameraTransform {
 
 #[cfg(test)]
 mod test_camera_transform {
+    use approx::assert_abs_diff_eq;
+
+    use crate::{
+        camera::{CameraTransform, RenderingSpace},
+        math::{transforms::Transform, vectors::PatinaVec3f},
+    };
+
     #[test]
-    fn test_() {
-        todo!();
+    // For each rendering space, the transform world_from_render * render_from_camera should equal world_from_camera.
+    fn test_camera_transforms() {
+        let world_from_camera =
+            Transform::rotate_x(0.3) * Transform::translate(&PatinaVec3f::new(10.0, 0.0, 0.0));
+
+        for space in [
+            RenderingSpace::Camera,
+            RenderingSpace::CameraWorld,
+            RenderingSpace::World,
+        ] {
+            let c = CameraTransform::new(space, &world_from_camera);
+            assert_abs_diff_eq!(
+                world_from_camera,
+                c.world_from_render * c.render_from_camera
+            );
+        }
     }
 }
