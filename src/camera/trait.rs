@@ -5,7 +5,7 @@ use crate::{
 };
 
 // Defines the common functionality each camera has to implement.
-trait Camera {
+pub trait Camera {
     fn generate_ray(&self, sample: &CameraSample) -> Option<PatinaRay3f>;
     fn base(&self) -> &CameraBase;
     fn sample_time(&self, u: PatinaFloat) -> PatinaFloat {
