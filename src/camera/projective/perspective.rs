@@ -1,6 +1,6 @@
 use crate::{
     camera::{
-        self, Camera, CameraBase, CameraTransform, RenderingSpace, Shutter,
+        Camera, CameraBase, CameraSample, CameraTransform, RenderingSpace, Shutter,
         projective::ProjectiveTransforms,
     },
     math::{Apply, Bounds2f, PatinaFloat, PatinaPoint3f, PatinaRay3f, PatinaVec3f, Transform},
@@ -63,7 +63,7 @@ impl PerspectiveCamera {
 }
 
 impl Camera for PerspectiveCamera {
-    fn generate_ray(&self, sample: &camera::CameraSample) -> Option<crate::math::PatinaRay3f> {
+    fn generate_ray(&self, sample: &CameraSample) -> Option<PatinaRay3f> {
         let p_film = PatinaPoint3f::new(sample.p_film.x, sample.p_film.y, 0.0);
         let p_camera = self.projective.camera_from_raster.apply(p_film);
         let v_camera = PatinaVec3f::new(p_camera.x, p_camera.y, p_camera.z).normalize();
