@@ -85,3 +85,25 @@ impl Camera for PerspectiveCamera {
         &self.base
     }
 }
+
+#[cfg(test)]
+mod test_perspective_camera {
+    use std::f64::consts::PI;
+
+    use crate::{
+        camera::PerspectiveCamera,
+        math::{Bounds2f, PatinaPoint2f, Transform},
+    };
+
+    fn get_test_camera_simple() -> PerspectiveCamera {
+        PerspectiveCamera::new(
+            &Transform::identity(),
+            crate::camera::RenderingSpace::Camera,
+            0.0,
+            0.1,
+            (100, 50),
+            &Bounds2f::new(PatinaPoint2f::new(-1.0, -1.0), PatinaPoint2f::new(1.0, 1.0)),
+            PI / 2.0,
+        )
+    }
+}
