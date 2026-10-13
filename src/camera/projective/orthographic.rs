@@ -48,7 +48,11 @@ impl Camera for OrthographicCamera {
         let p_camera = self.projective.camera_from_raster.apply(p_film);
 
         // Construct a ray with the given sample time
-        let ray = PatinaRay3f::new(p_camera, PatinaVec3f::new(0.0, 0.0, 1.0), sample.time);
+        let ray = PatinaRay3f::new(
+            p_camera,
+            PatinaVec3f::new(0.0, 0.0, 1.0),
+            self.sample_time(sample.time),
+        );
 
         // TODO: Modify for depth of field
 
@@ -63,7 +67,9 @@ impl Camera for OrthographicCamera {
 
 #[cfg(test)]
 mod test_orthographic_camera {
-    use approx::assert_relative_eq;
+    use std::f64::consts::PI;
+
+    use approx::{assert_relative_eq, assert_relative_ne};
 
     use crate::{
         camera::{
@@ -80,7 +86,7 @@ mod test_orthographic_camera {
 
     // Test camera is configured with rendering space = camera, transform = identity, so camera is
     // at the world origin.
-    fn get_test_camera() -> OrthographicCamera {
+    fn get_simple_test_camera() -> OrthographicCamera {
         // Camera setup:
         let t = Transform::identity();
         let b = CameraBase {
@@ -98,9 +104,31 @@ mod test_orthographic_camera {
         OrthographicCamera::new(b, &screen_window)
     }
 
+    fn get_moved_test_camera() -> OrthographicCamera {
+        // Camera setup: Rotate 90 degrees clockwise around the y-axis.
+        // Use world render space.
+        //
+        // Remember that a camera generates a ray in render-space.
+        let t = Transform::translate(&PatinaVec3f::new(-10.0, 0.0, 0.0))
+            * Transform::rotate_y(PI / 2.0);
+        let b = CameraBase {
+            camera_transform: CameraTransform::new(RenderingSpace::World, &t),
+            shutter: Shutter {
+                open: 2.0,
+                close: 3.0,
+            },
+            resolution_x: 100,
+            resolution_y: 50,
+        };
+        let screen_window =
+            Bounds2f::new(PatinaPoint2f::new(-1.0, -1.0), PatinaPoint2f::new(1.0, 1.0));
+
+        OrthographicCamera::new(b, &screen_window)
+    }
+
     #[test]
     fn test_camera_ray_dxs() {
-        let c = get_test_camera();
+        let c = get_simple_test_camera();
 
         assert_eq!(c.camera_dx, PatinaVec3f::new(2.0 / 100.0, 0.0, 0.0));
         assert_eq!(c.camera_dy, PatinaVec3f::new(0.0, -2.0 / 50.0, 0.0));
@@ -109,7 +137,7 @@ mod test_orthographic_camera {
     // rays are parallel and point out of the camera (0, 0, z).
     #[test]
     fn test_camera_ray_generation_top_left() {
-        let camera = get_test_camera();
+        let camera = get_simple_test_camera();
         let sample = CameraSample {
             p_film: PatinaPoint2f::new(0.0, 0.0),
             _p_lens: PatinaPoint2f::zero(),
@@ -129,7 +157,7 @@ mod test_orthographic_camera {
 
     #[test]
     fn test_camera_ray_generation_middle() {
-        let camera = get_test_camera();
+        let camera = get_simple_test_camera();
         let sample = CameraSample {
             p_film: PatinaPoint2f::new(50.0, 25.0),
             _p_lens: PatinaPoint2f::zero(),
@@ -145,5 +173,30 @@ mod test_orthographic_camera {
         assert_relative_eq!(r.o, PatinaPoint3f::new(0.0, 0.0, 0.0));
         assert_relative_eq!(r.d, PatinaVec3f::new(0.0, 0.0, 1.0));
         assert_relative_eq!(r.t, 0.5);
+    }
+
+    #[test]
+    fn test_camera_ray_generation_non_trivial() {
+        let camera = get_moved_test_camera();
+
+        let sample = CameraSample {
+            p_film: PatinaPoint2f::new(50.0, 25.0),
+            _p_lens: PatinaPoint2f::zero(),
+            time: 0.5,
+            _filter_weight: 0.0,
+        };
+
+        let r = camera
+            .generate_ray(&sample)
+            .expect("Should generate a valid ray");
+
+        // The generated ray in world space should have origin (-10, 0.0, 0.0) as the sample is in
+        // the middle of the orthographic camera, and z_near = 0.
+        //
+        // The direction should be (1, 0, 0) as we've rotated the camera 90 degrees clockwise around
+        // the y-axis, so z-axis now points down the x-axis.
+        assert_relative_eq!(r.o, PatinaPoint3f::new(-10.0, 0.0, 0.0));
+        assert_relative_eq!(r.d, PatinaVec3f::new(1.0, 0.0, 0.0));
+        assert_relative_eq!(r.t, 2.5);
     }
 }

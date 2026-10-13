@@ -1,14 +1,11 @@
 pub mod projective;
 pub mod r#trait;
 
-use crate::{
-    camera::r#trait::Camera,
-    math::{
-        PatinaFloat,
-        points::{PatinaPoint2f, PatinaPoint3f},
-        transforms::{Apply, Transform},
-        vectors::PatinaVec3f,
-    },
+use crate::math::{
+    PatinaFloat,
+    points::{PatinaPoint2f, PatinaPoint3f},
+    transforms::{Apply, Transform},
+    vectors::PatinaVec3f,
 };
 
 pub struct CameraSample {
