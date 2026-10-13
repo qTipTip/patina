@@ -1,11 +1,18 @@
 use crate::{
     camera::{CameraBase, projective::ProjectiveTransforms, r#trait::Camera},
-    math::{bounding_boxes::Bounds2f, transforms::Transform},
+    math::{
+        bounding_boxes::Bounds2f,
+        transforms::{Apply, Transform},
+        vectors::PatinaVec3f,
+    },
 };
 
 pub struct OrthographicCamera {
     base: CameraBase,
     projective: ProjectiveTransforms,
+
+    camera_dx: PatinaVec3f,
+    camera_dy: PatinaVec3f,
 }
 
 impl OrthographicCamera {
@@ -14,9 +21,21 @@ impl OrthographicCamera {
         let projective_transforms =
             ProjectiveTransforms::new(screen_from_camera, screen_window, base.resolution());
 
+        // The camera_dx and camera_dy vectors tells us how much the camera changes when changing
+        // raster position 1 unit x / 1 unit y respectively. Will be used for ray differentials
+        // later.
+        let camera_dx = projective_transforms
+            .camera_from_raster
+            .apply(PatinaVec3f::new(1.0, 0.0, 0.0));
+        let camera_dy = projective_transforms
+            .camera_from_raster
+            .apply(PatinaVec3f::new(0.0, 1.0, 0.0));
+
         Self {
             base,
             projective: projective_transforms,
+            camera_dx,
+            camera_dy,
         }
     }
 }
