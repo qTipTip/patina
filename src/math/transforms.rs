@@ -165,6 +165,11 @@ impl Transform {
     // Computes the perspective projection. Takes a field of view andle and distances to the z_near,
     // z_far planes.
     pub fn perspective(fov: PatinaFloat, z_near: PatinaFloat, z_far: PatinaFloat) -> Transform {
+        debug_assert!(
+            z_near > 0.0,
+            "z_near must be strictly positive, otherwise the transform has no inverse"
+        );
+        debug_assert!(z_far > z_near);
         // Compute the transform for perspecitve projection
         let mut m = Matrix4::identity();
         m[2][2] = z_far / (z_far - z_near);
