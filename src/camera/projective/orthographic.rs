@@ -17,8 +17,8 @@ pub struct OrthographicCamera {
     base: CameraBase,
     projective: ProjectiveTransforms,
 
-    camera_dx: PatinaVec3f,
-    camera_dy: PatinaVec3f,
+    _camera_dx: PatinaVec3f,
+    _camera_dy: PatinaVec3f,
 }
 
 impl OrthographicCamera {
@@ -49,18 +49,18 @@ impl OrthographicCamera {
         // The camera_dx and camera_dy vectors tells us how much the camera changes when changing
         // raster position 1 unit x / 1 unit y respectively. Will be used for ray differentials
         // later.
-        let camera_dx = projective_transforms
+        let _camera_dx = projective_transforms
             .camera_from_raster
             .apply(PatinaVec3f::new(1.0, 0.0, 0.0));
-        let camera_dy = projective_transforms
+        let _camera_dy = projective_transforms
             .camera_from_raster
             .apply(PatinaVec3f::new(0.0, 1.0, 0.0));
 
         Self {
             base,
             projective: projective_transforms,
-            camera_dx,
-            camera_dy,
+            _camera_dx,
+            _camera_dy,
         }
     }
 }
@@ -153,8 +153,8 @@ mod test_orthographic_camera {
     fn test_camera_ray_dxs() {
         let c = get_simple_test_camera();
 
-        assert_relative_eq!(c.camera_dx, PatinaVec3f::new(2.0 / 100.0, 0.0, 0.0));
-        assert_relative_eq!(c.camera_dy, PatinaVec3f::new(0.0, -2.0 / 50.0, 0.0));
+        assert_relative_eq!(c._camera_dx, PatinaVec3f::new(2.0 / 100.0, 0.0, 0.0));
+        assert_relative_eq!(c._camera_dy, PatinaVec3f::new(0.0, -2.0 / 50.0, 0.0));
     }
     // The orthographic camera is in some sense the simplest camera to reason about, as all render
     // rays are parallel and point out of the camera (0, 0, z).
