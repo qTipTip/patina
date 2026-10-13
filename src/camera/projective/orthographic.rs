@@ -130,8 +130,8 @@ mod test_orthographic_camera {
     fn test_camera_ray_dxs() {
         let c = get_simple_test_camera();
 
-        assert_eq!(c.camera_dx, PatinaVec3f::new(2.0 / 100.0, 0.0, 0.0));
-        assert_eq!(c.camera_dy, PatinaVec3f::new(0.0, -2.0 / 50.0, 0.0));
+        assert_relative_eq!(c.camera_dx, PatinaVec3f::new(2.0 / 100.0, 0.0, 0.0));
+        assert_relative_eq!(c.camera_dy, PatinaVec3f::new(0.0, -2.0 / 50.0, 0.0));
     }
     // The orthographic camera is in some sense the simplest camera to reason about, as all render
     // rays are parallel and point out of the camera (0, 0, z).
@@ -179,7 +179,7 @@ mod test_orthographic_camera {
     fn test_camera_ray_generation_non_trivial() {
         let camera = get_moved_test_camera();
 
-        let sample = CameraSample {
+        let sample_middle = CameraSample {
             p_film: PatinaPoint2f::new(50.0, 25.0),
             _p_lens: PatinaPoint2f::zero(),
             time: 0.5,
@@ -187,11 +187,27 @@ mod test_orthographic_camera {
         };
 
         let r = camera
-            .generate_ray(&sample)
+            .generate_ray(&sample_middle)
             .expect("Should generate a valid ray");
 
         // The generated ray in world space should have origin (-10, 0.0, 0.0) as the sample is in
         // the middle of the orthographic camera, and z_near = 0.
+        //
+        // The direction should be (1, 0, 0) as we've rotated the camera 90 degrees clockwise around
+        // the y-axis, so z-axis now points down the x-axis.
+        assert_relative_eq!(r.o, PatinaPoint3f::new(-10.0, 0.0, 0.0));
+        assert_relative_eq!(r.d, PatinaVec3f::new(1.0, 0.0, 0.0));
+        assert_relative_eq!(r.t, 2.5);
+
+        let sample_top_left = CameraSample {
+            p_film: PatinaPoint2f::new(0.0, 0.0),
+            _p_lens: PatinaPoint2f::zero(),
+            time: 0.5,
+            _filter_weight: 0.0,
+        };
+
+        // The generated ray in world space should have origin (-10, 1.0, 1.0) as the sample is in
+        // the top left of the orthographic camera, and z_near = 0.
         //
         // The direction should be (1, 0, 0) as we've rotated the camera 90 degrees clockwise around
         // the y-axis, so z-axis now points down the x-axis.
