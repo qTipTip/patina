@@ -1,6 +1,6 @@
 use std::ops::{Add, Index, IndexMut, Mul};
 
-use approx::AbsDiffEq;
+use approx::{AbsDiffEq, RelativeEq};
 
 use crate::math::PatinaFloat;
 
@@ -47,6 +47,25 @@ impl<const N: usize> AbsDiffEq for SquareMatrix<N> {
             }
         }
         true
+    }
+}
+
+impl<const N: usize> RelativeEq for SquareMatrix<N> {
+    fn default_max_relative() -> Self::Epsilon {
+        1.0e-12
+    }
+
+    fn relative_eq(
+        &self,
+        other: &Self,
+        epsilon: Self::Epsilon,
+        max_relative: Self::Epsilon,
+    ) -> bool {
+        self.m
+            .iter()
+            .flatten()
+            .zip(other.m.iter().flatten())
+            .all(|(a, b)| a.relative_eq(b, epsilon, max_relative))
     }
 }
 impl<const N: usize> SquareMatrix<N> {

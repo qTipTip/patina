@@ -3,9 +3,11 @@ use std::{
     ops::{self, AddAssign, DivAssign, Index, IndexMut, MulAssign, Neg, SubAssign},
 };
 
+use approx::{AbsDiffEq, RelativeEq};
 use num_traits::{Float, Num, float::FloatCore};
 
 use crate::math::{
+    PatinaFloat,
     traits::CheckNan,
     tuples::{Difference, Direction},
 };
@@ -15,6 +17,36 @@ pub struct Tuple2<T, Type> {
     pub x: T,
     pub y: T,
     _type: PhantomData<Type>,
+}
+
+// Approximate comparisons, component by component. Only implemented for float tuples, as
+// integer tuples can be compared exactly.
+impl<Type: PartialEq> AbsDiffEq for Tuple2<PatinaFloat, Type> {
+    type Epsilon = PatinaFloat;
+
+    fn default_epsilon() -> Self::Epsilon {
+        1.0e-12
+    }
+
+    fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
+        self.x.abs_diff_eq(&other.x, epsilon) && self.y.abs_diff_eq(&other.y, epsilon)
+    }
+}
+
+impl<Type: PartialEq> RelativeEq for Tuple2<PatinaFloat, Type> {
+    fn default_max_relative() -> Self::Epsilon {
+        1.0e-12
+    }
+
+    fn relative_eq(
+        &self,
+        other: &Self,
+        epsilon: Self::Epsilon,
+        max_relative: Self::Epsilon,
+    ) -> bool {
+        self.x.relative_eq(&other.x, epsilon, max_relative)
+            && self.y.relative_eq(&other.y, epsilon, max_relative)
+    }
 }
 
 impl<T: Num + CheckNan + Copy, Type> Tuple2<T, Type> {

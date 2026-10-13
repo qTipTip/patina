@@ -1,13 +1,43 @@
 use std::ops::Index;
 
+use approx::{AbsDiffEq, RelativeEq};
 use num_traits::{Bounded, Num};
 
-use crate::math::{points::point2::Point2, traits::CheckNan};
+use crate::math::{PatinaFloat, points::point2::Point2, traits::CheckNan};
 
 #[derive(PartialEq, Debug)]
 pub struct Bounds2<T> {
     pub p_min: Point2<T>,
     pub p_max: Point2<T>,
+}
+
+impl AbsDiffEq for Bounds2<PatinaFloat> {
+    type Epsilon = PatinaFloat;
+
+    fn default_epsilon() -> Self::Epsilon {
+        1.0e-12
+    }
+
+    fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
+        self.p_min.abs_diff_eq(&other.p_min, epsilon)
+            && self.p_max.abs_diff_eq(&other.p_max, epsilon)
+    }
+}
+
+impl RelativeEq for Bounds2<PatinaFloat> {
+    fn default_max_relative() -> Self::Epsilon {
+        1.0e-12
+    }
+
+    fn relative_eq(
+        &self,
+        other: &Self,
+        epsilon: Self::Epsilon,
+        max_relative: Self::Epsilon,
+    ) -> bool {
+        self.p_min.relative_eq(&other.p_min, epsilon, max_relative)
+            && self.p_max.relative_eq(&other.p_max, epsilon, max_relative)
+    }
 }
 
 impl<T: Num + Bounded + Copy + CheckNan> Default for Bounds2<T> {

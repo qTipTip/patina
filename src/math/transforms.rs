@@ -1,6 +1,6 @@
 use std::ops::Mul;
 
-use approx::{AbsDiffEq, relative_ne};
+use approx::{AbsDiffEq, RelativeEq, relative_ne};
 
 use crate::math::{
     PatinaFloat,
@@ -27,6 +27,22 @@ impl AbsDiffEq for Transform {
 
     fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
         self.m.abs_diff_eq(&other.m, epsilon) && self.m_inv.abs_diff_eq(&other.m_inv, epsilon)
+    }
+}
+
+impl RelativeEq for Transform {
+    fn default_max_relative() -> Self::Epsilon {
+        1.0e-12
+    }
+
+    fn relative_eq(
+        &self,
+        other: &Self,
+        epsilon: Self::Epsilon,
+        max_relative: Self::Epsilon,
+    ) -> bool {
+        self.m.relative_eq(&other.m, epsilon, max_relative)
+            && self.m_inv.relative_eq(&other.m_inv, epsilon, max_relative)
     }
 }
 

@@ -63,6 +63,8 @@ impl Camera for OrthographicCamera {
 
 #[cfg(test)]
 mod test_orthographic_camera {
+    use approx::assert_relative_eq;
+
     use crate::{
         camera::{
             CameraBase, CameraSample, CameraTransform, RenderingSpace, Shutter,
@@ -120,9 +122,9 @@ mod test_orthographic_camera {
             .generate_ray(&sample)
             .expect("Should generate a valid ray");
 
-        assert_eq!(r.o, PatinaPoint3f::new(-1.0, 1.0, 0.0));
-        assert_eq!(r.d, PatinaVec3f::new(0.0, 0.0, 1.0));
-        assert_eq!(r.t, 0.5);
+        assert_relative_eq!(r.o, PatinaPoint3f::new(-1.0, 1.0, 0.0));
+        assert_relative_eq!(r.d, PatinaVec3f::new(0.0, 0.0, 1.0));
+        assert_relative_eq!(r.t, 0.5);
     }
 
     #[test]
@@ -140,8 +142,8 @@ mod test_orthographic_camera {
             .generate_ray(&sample)
             .expect("Should generate a valid ray");
 
-        assert_eq!(r.o, PatinaPoint3f::new(0.0, 0.0, 0.0));
-        assert_eq!(r.d, PatinaVec3f::new(0.0, 0.0, 1.0));
-        assert_eq!(r.t, 0.5);
+        assert_relative_eq!(r.o, PatinaPoint3f::new(0.0, 0.0, 0.0));
+        assert_relative_eq!(r.d, PatinaVec3f::new(0.0, 0.0, 1.0));
+        assert_relative_eq!(r.t, 0.5);
     }
 }
