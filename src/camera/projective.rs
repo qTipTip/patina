@@ -7,6 +7,7 @@ mod perspective;
 
 // Contains transformations needed for for some of the projective cameras (perspective /
 // orthograpic).
+#[allow(dead_code)]
 pub(crate) struct ProjectiveTransforms {
     screen_from_camera: Transform,
     camera_from_raster: Transform,

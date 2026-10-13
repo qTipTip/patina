@@ -81,7 +81,7 @@ impl CameraBase {
 // A camera transform helps us switch which coordinate system we perform the rendering in.
 pub(crate) struct CameraTransform {
     render_from_camera: Transform, // TODO: Make this an animated transform.
-    world_from_render: Transform,
+    _world_from_render: Transform,
 }
 
 // Camera-space: we obtain lots of accuracy cloest to the camera, but it deteriorates
@@ -105,7 +105,7 @@ impl CameraTransform {
         // TODO: Handle AnimatedTransforms here.
         //
         // Given a point in render space, where is it in the world space?
-        let world_from_render = match space {
+        let _world_from_render = match space {
             RenderingSpace::Camera => *world_from_camera,
             RenderingSpace::CameraWorld => {
                 let p_camera = world_from_camera.apply(PatinaPoint3f::zero());
@@ -114,12 +114,12 @@ impl CameraTransform {
             RenderingSpace::World => Transform::identity(),
         };
 
-        let render_from_world = world_from_render.inverse();
+        let render_from_world = _world_from_render.inverse();
         // Given a point in the camera space, where is it in render space?
         let render_from_camera = render_from_world * (*world_from_camera);
         Self {
             render_from_camera,
-            world_from_render,
+            _world_from_render,
         }
     }
 }
@@ -147,7 +147,7 @@ mod test_camera_transform {
         // world_from_render * render_from_camera should equal world_from_camera
         assert_abs_diff_eq!(
             world_from_camera,
-            c.world_from_render * c.render_from_camera,
+            c._world_from_render * c.render_from_camera,
             epsilon = 1e-12
         );
     }
@@ -162,7 +162,7 @@ mod test_camera_transform {
         // world_from_render * render_from_camera should equal world_from_camera
         assert_abs_diff_eq!(
             world_from_camera,
-            c.world_from_render * c.render_from_camera,
+            c._world_from_render * c.render_from_camera,
             epsilon = 1e-12
         );
 
@@ -170,14 +170,14 @@ mod test_camera_transform {
         // unchanged.
         let p_cam = world_from_camera.apply(PatinaPoint3f::zero());
         // The render origin is where the camera is located
-        assert_eq!(p_cam, c.world_from_render.apply(PatinaPoint3f::zero()));
+        assert_eq!(p_cam, c._world_from_render.apply(PatinaPoint3f::zero()));
         // The camera sits at the render origin
         assert_eq!(
             c.render_from_camera.apply(PatinaPoint3f::zero()),
             PatinaPoint3f::zero()
         );
         // World points are shifted, but not rotated
-        let render_from_world = c.world_from_render.inverse();
+        let render_from_world = c._world_from_render.inverse();
         let p = PatinaPoint3f::new(3.2, 10.3, -2.3);
         let v = p - p_cam;
         assert_eq!(
@@ -203,12 +203,12 @@ mod test_camera_transform {
         // world_from_render * render_from_camera should equal world_from_camera
         assert_abs_diff_eq!(
             world_from_camera,
-            c.world_from_render * c.render_from_camera,
+            c._world_from_render * c.render_from_camera,
             epsilon = 1e-12
         );
 
         // For the world render space, the world_from_render should be identity, as render space is
         // world space.
-        assert_abs_diff_eq!(c.world_from_render, Transform::identity())
+        assert_abs_diff_eq!(c._world_from_render, Transform::identity())
     }
 }

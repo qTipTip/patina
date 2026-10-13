@@ -39,6 +39,7 @@ pub(crate) fn safe_asin(x: PatinaFloat) -> PatinaFloat {
     x.clamp(-1.0, 1.0).asin()
 }
 
+#[allow(dead_code)]
 pub(crate) fn safe_acos(x: PatinaFloat) -> PatinaFloat {
     x.clamp(-1.0, 1.0).acos()
 }

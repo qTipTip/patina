@@ -296,7 +296,7 @@ mod test_orthographic_camera {
         for (name, space, render_middle_o, render_top_left_o, render_d) in cases {
             eprintln!("checking rendering space: {name}");
             let camera = get_moved_test_camera(space);
-            let world_from_render = camera.base.camera_transform.world_from_render;
+            let world_from_render = camera.base.camera_transform._world_from_render;
 
             for (sample, render_o, world_o) in [
                 (&sample_middle, render_middle_o, world_middle_o),
