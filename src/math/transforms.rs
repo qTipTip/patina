@@ -3,8 +3,12 @@ use std::ops::Mul;
 use approx::{AbsDiffEq, relative_ne};
 
 use crate::math::{
-    PatinaFloat, matrices::Matrix4, normals::PatinaNorm3f, points::PatinaPoint3f,
-    rays::ray3::PatinaRay3f, vectors::PatinaVec3f,
+    PatinaFloat,
+    matrices::Matrix4,
+    normals::PatinaNorm3f,
+    points::PatinaPoint3f,
+    rays::ray3::PatinaRay3f,
+    vectors::{PatinaVec3f, vec3::Vector3},
 };
 
 // A transform encodes a transformation matrix (4x4) along with it's inverse (None if singular).
@@ -138,8 +142,12 @@ impl Transform {
         }
     }
 
-    pub(crate) fn orthographic(arg_1: f64, arg_2: f64) -> Transform {
-        todo!()
+    // Computes the orthographic transformation which leaves (x, y) but transforms z-values at
+    // z_near to 0 and z_values to z_far to 1.
+    pub fn orthographic(z_near: PatinaFloat, z_far: PatinaFloat) -> Transform {
+        debug_assert!(z_far > z_near);
+        Self::scale(1.0, 1.0, 1.0 / (z_far - z_near))
+            * Transform::translate(&PatinaVec3f::new(0.0, 0.0, -z_near))
     }
 }
 
