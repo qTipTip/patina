@@ -206,12 +206,15 @@ mod test_orthographic_camera {
             _filter_weight: 0.0,
         };
 
+        let r = camera
+            .generate_ray(&sample_top_left)
+            .expect("Should generate a valid ray");
         // The generated ray in world space should have origin (-10, 1.0, 1.0) as the sample is in
         // the top left of the orthographic camera, and z_near = 0.
         //
         // The direction should be (1, 0, 0) as we've rotated the camera 90 degrees clockwise around
         // the y-axis, so z-axis now points down the x-axis.
-        assert_relative_eq!(r.o, PatinaPoint3f::new(-10.0, 0.0, 0.0));
+        assert_relative_eq!(r.o, PatinaPoint3f::new(-10.0, 1.0, 1.0));
         assert_relative_eq!(r.d, PatinaVec3f::new(1.0, 0.0, 0.0));
         assert_relative_eq!(r.t, 2.5);
     }
