@@ -6,33 +6,11 @@
 // shrinks (foreshortening).
 mod common;
 
-use common::{Film, Sphere, background_color, closest_hit, output_path};
+use common::{Film, Sphere, background_color, closest_hit, depth_color, depth_range, output_path};
 use patina::{
     camera::{Camera, CameraSample, OrthographicCamera, RenderingSpace},
     math::{Bounds2f, PatinaFloat, PatinaPoint2f, PatinaPoint3f, PatinaRay3f, Transform},
 };
-
-// The depth range of the scene, used to shade every sphere on the same scale: from the front of the
-// nearest sphere to the back of the farthest one.
-fn depth_range(spheres: &[Sphere]) -> (PatinaFloat, PatinaFloat) {
-    let near = spheres
-        .iter()
-        .map(|s| s.origin.z - s.radius)
-        .fold(PatinaFloat::INFINITY, PatinaFloat::min);
-    let far = spheres
-        .iter()
-        .map(|s| s.origin.z + s.radius)
-        .fold(PatinaFloat::NEG_INFINITY, PatinaFloat::max);
-    (near, far)
-}
-
-// Grayscale by depth: white at `near`, black at `far`. Depth is the hit point's z in camera space,
-// which is render space here since we render in RenderingSpace::Camera.
-fn depth_color(hit: &PatinaPoint3f, (near, far): (PatinaFloat, PatinaFloat)) -> [u8; 3] {
-    let brightness = (1.0 - (hit.z - near) / (far - near)).clamp(0.0, 1.0);
-    let v = (brightness * 255.0) as u8;
-    [v, v, v]
-}
 
 // `p_film` and `resolution` are only used for the background, which is based on the pixel position.
 fn ray_color(

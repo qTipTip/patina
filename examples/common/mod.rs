@@ -121,3 +121,25 @@ pub fn closest_hit<'a>(spheres: &'a [Sphere], ray: &PatinaRay3f) -> Option<(&'a 
     }
     closest
 }
+
+// The depth range of the scene, used to shade every sphere on the same scale: from the front of the
+// nearest sphere to the back of the farthest one.
+pub fn depth_range(spheres: &[Sphere]) -> (PatinaFloat, PatinaFloat) {
+    let near = spheres
+        .iter()
+        .map(|s| s.origin.z - s.radius)
+        .fold(PatinaFloat::INFINITY, PatinaFloat::min);
+    let far = spheres
+        .iter()
+        .map(|s| s.origin.z + s.radius)
+        .fold(PatinaFloat::NEG_INFINITY, PatinaFloat::max);
+    (near, far)
+}
+
+// Grayscale by depth: white at `near`, black at `far`. Depth is the hit point's z in render space,
+// which is camera depth only when rendering in RenderingSpace::Camera, as the examples do.
+pub fn depth_color(hit: &PatinaPoint3f, (near, far): (PatinaFloat, PatinaFloat)) -> [u8; 3] {
+    let brightness = (1.0 - (hit.z - near) / (far - near)).clamp(0.0, 1.0);
+    let v = (brightness * 255.0) as u8;
+    [v, v, v]
+}
