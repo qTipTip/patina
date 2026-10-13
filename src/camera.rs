@@ -12,10 +12,10 @@ use crate::{
 };
 
 pub struct CameraSample {
-    p_film: PatinaPoint2f, // Point on the film in (x, y)
-    p_lens: PatinaPoint2f, // Point on the lens in (x, y)
+    p_film: PatinaPoint2f,  // Point on the film in (x, y)
+    _p_lens: PatinaPoint2f, // Point on the lens in (x, y) // TODO: Not used yet
     time: PatinaFloat,
-    filter_weight: PatinaFloat,
+    _filter_weight: PatinaFloat, // TODO: Not used yet
 }
 
 // A shutter has an open and close time.
