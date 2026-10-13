@@ -81,7 +81,11 @@ mod test_camera_transform {
 
     use crate::{
         camera::{CameraTransform, RenderingSpace},
-        math::{transforms::Transform, vectors::PatinaVec3f},
+        math::{
+            points::PatinaPoint3f,
+            transforms::{Apply, Transform},
+            vectors::PatinaVec3f,
+        },
     };
 
     #[test]
@@ -108,6 +112,32 @@ mod test_camera_transform {
             c.world_from_render * c.render_from_camera,
             epsilon = 1e-12
         );
+
+        // For camera world, the origin in render space should map to the camera position in world space , and directions should be
+        // unchanged.
+        let p_cam = world_from_camera.apply(PatinaPoint3f::zero());
+        // The render origin is where the camera is located
+        assert_eq!(p_cam, c.world_from_render.apply(PatinaPoint3f::zero()));
+        // The camera sits at the render origin
+        assert_eq!(
+            c.render_from_camera.apply(PatinaPoint3f::zero()),
+            PatinaPoint3f::zero()
+        );
+        // World points are shifted, but not rotated
+        let render_from_world = c.world_from_render.inverse();
+        let p = PatinaPoint3f::new(3.2, 10.3, -2.3);
+        let v = p - p_cam;
+        assert_eq!(
+            render_from_world.apply(p),
+            PatinaPoint3f::new(v.x, v.y, v.z)
+        );
+        // world directions are unchanged
+        let w = PatinaVec3f::new(3.2, 1.2, -2.3);
+        assert_eq!(render_from_world.apply(w), w);
+
+        // camera keeps it's world orientation
+        let v = PatinaVec3f::new(3.2, 1.2, -2.3);
+        assert_eq!(c.render_from_camera.apply(v), world_from_camera.apply(v));
     }
 
     #[test]
@@ -121,5 +151,9 @@ mod test_camera_transform {
             c.world_from_render * c.render_from_camera,
             epsilon = 1e-12
         );
+
+        // For the world render space, the world_from_render should be identity, as render space is
+        // world space.
+        assert_abs_diff_eq!(c.world_from_render, Transform::identity())
     }
 }
