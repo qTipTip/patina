@@ -63,10 +63,15 @@ pub struct Sphere {
     pub radius: PatinaFloat,
 }
 
+// A ray-sphere hit. the distance along the ray, and the point it hits.
+pub struct Hit {
+    pub t: PatinaFloat,
+    pub p: PatinaPoint3f,
+}
+
 impl Sphere {
-    // Returns the closest point where the ray hits the sphere, if it hits at all (t >= 0). We'll
-    // implement this more generally later.
-    pub fn ray_intersection(&self, ray: &PatinaRay3f) -> Option<PatinaPoint3f> {
+    // Returns the closest hit in front of the ray's origin with t < t_max, if any.
+    pub fn intersect(&self, ray: &PatinaRay3f, t_max: PatinaFloat) -> Option<Hit> {
         // Vector from the sphere's center to the ray's origin (Point - Point = Vector).
         let oc = ray.o - self.origin;
 
@@ -79,18 +84,31 @@ impl Sphere {
             return None;
         }
 
-        // The two solutions, nearest first. Use the nearest one in front of the ray's origin.
+        // The two solutions, nearest first. Use the nearest one in [0, t_max).
         let sqrt_discriminant = discriminant.sqrt();
         let t0 = (-b - sqrt_discriminant) / (2.0 * a);
         let t1 = (-b + sqrt_discriminant) / (2.0 * a);
-        let t = if t0 >= 0.0 {
-            t0
-        } else if t1 >= 0.0 {
-            t1
-        } else {
-            return None;
-        };
+        let t = [t0, t1].into_iter().find(|t| (0.0..t_max).contains(t))?;
 
-        Some(ray.eval(t))
+        Some(Hit { t, p: ray.eval(t) })
     }
+
+    // Returns the closest point where the ray hits the sphere, if it hits at all (t >= 0).
+    pub fn ray_intersection(&self, ray: &PatinaRay3f) -> Option<PatinaPoint3f> {
+        self.intersect(ray, PatinaFloat::INFINITY).map(|hit| hit.p)
+    }
+}
+
+// The closest hit among several spheres, together with the sphere that was hit. Each hit lowers
+// t_max, so spheres behind the closest one so far are rejected.
+pub fn closest_hit<'a>(spheres: &'a [Sphere], ray: &PatinaRay3f) -> Option<(&'a Sphere, Hit)> {
+    let mut closest = None;
+    let mut t_max = PatinaFloat::INFINITY;
+    for sphere in spheres {
+        if let Some(hit) = sphere.intersect(ray, t_max) {
+            t_max = hit.t;
+            closest = Some((sphere, hit));
+        }
+    }
+    closest
 }
