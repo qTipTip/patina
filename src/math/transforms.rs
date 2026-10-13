@@ -3,12 +3,8 @@ use std::ops::Mul;
 use approx::{AbsDiffEq, RelativeEq, relative_ne};
 
 use crate::math::{
-    PatinaFloat,
-    matrices::Matrix4,
-    normals::PatinaNorm3f,
-    points::PatinaPoint3f,
-    rays::ray3::PatinaRay3f,
-    vectors::{PatinaVec3f, vec3::Vector3},
+    PatinaFloat, matrices::Matrix4, normals::PatinaNorm3f, points::PatinaPoint3f,
+    rays::ray3::PatinaRay3f, vectors::PatinaVec3f,
 };
 
 // A transform encodes a transformation matrix (4x4) along with it's inverse (None if singular).
