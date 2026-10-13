@@ -64,8 +64,13 @@ impl PerspectiveCamera {
 
 impl Camera for PerspectiveCamera {
     fn generate_ray(&self, sample: &CameraSample) -> Option<PatinaRay3f> {
+        // Given a point on the film (x, y), we find the corresponding point in the camera space on
+        // the near-plane (z = 0).
         let p_film = PatinaPoint3f::new(sample.p_film.x, sample.p_film.y, 0.0);
         let p_camera = self.projective.camera_from_raster.apply(p_film);
+
+        // The direction is then given by the vector between the origin (0, 0, 0) and p_camera (as
+        // all rays originate at (0, 0, 0)).
         let v_camera = PatinaVec3f::new(p_camera.x, p_camera.y, p_camera.z).normalize();
 
         // Construct a ray with the given sample time
@@ -91,7 +96,7 @@ mod test_perspective_camera {
     use std::f64::consts::PI;
 
     use crate::{
-        camera::PerspectiveCamera,
+        camera::{Camera, CameraSample, PerspectiveCamera},
         math::{Bounds2f, PatinaPoint2f, Transform},
     };
 
@@ -105,5 +110,20 @@ mod test_perspective_camera {
             &Bounds2f::new(PatinaPoint2f::new(-1.0, -1.0), PatinaPoint2f::new(1.0, 1.0)),
             PI / 2.0,
         )
+    }
+
+    #[test]
+    fn test_camera_ray_generation_middle() {
+        let camera = get_test_camera_simple();
+        let sample = CameraSample::new(
+            PatinaPoint2f::new(50.0, 25.0),
+            PatinaPoint2f::zero(),
+            0.5,
+            0.0,
+        );
+
+        let r = camera
+            .generate_ray(&sample)
+            .expect("Should generate a valid ray");
     }
 }
