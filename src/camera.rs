@@ -15,10 +15,33 @@ pub struct CameraSample {
     _filter_weight: PatinaFloat, // TODO: Not used yet
 }
 
+impl CameraSample {
+    pub fn new(
+        p_film: PatinaPoint2f,
+        p_lens: PatinaPoint2f,
+        time: PatinaFloat,
+        filter_weight: PatinaFloat,
+    ) -> Self {
+        Self {
+            p_film,
+            _p_lens: p_lens,
+            time,
+            _filter_weight: filter_weight,
+        }
+    }
+}
+
 // A shutter has an open and close time.
 pub struct Shutter {
     open: PatinaFloat,
     close: PatinaFloat,
+}
+
+impl Shutter {
+    pub fn new(open: PatinaFloat, close: PatinaFloat) -> Self {
+        debug_assert!(open <= close);
+        Self { open, close }
+    }
 }
 
 // Contains shared state between all camera types
@@ -30,6 +53,20 @@ pub struct CameraBase {
 }
 
 impl CameraBase {
+    pub fn new(
+        camera_transform: CameraTransform,
+        shutter: Shutter,
+        resolution_x: u32,
+        resolution_y: u32,
+    ) -> Self {
+        Self {
+            camera_transform,
+            shutter,
+            resolution_x,
+            resolution_y,
+        }
+    }
+
     pub fn resolution(&self) -> (u32, u32) {
         (self.resolution_x, self.resolution_y)
     }
