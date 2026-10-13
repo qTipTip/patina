@@ -2,110 +2,15 @@ use std::path::PathBuf;
 
 use image::{Rgb, RgbImage};
 use patina::{
-    math::{
-        PatinaFloat,
-        bounding_boxes::Bounds2f,
-        points::{PatinaPoint2f, PatinaPoint3f},
-        rays::ray3::PatinaRay3f,
-        transforms::{Apply, Transform},
-        vectors::PatinaVec3f,
+    camera::{
+        CameraBase, CameraSample, CameraTransform, RenderingSpace, Shutter,
+        projective::orthographic::OrthographicCamera, r#trait::Camera,
     },
-    sampling::linear::lerp,
+    math::{
+        bounding_boxes::Bounds2f, points::PatinaPoint2f, rays::ray3::PatinaRay3f,
+        transforms::Transform,
+    },
 };
-
-struct CameraSample {
-    p_film: PatinaPoint2f, // Point on the film in (x, y)
-    p_lens: PatinaPoint2f, // Point on the lens in (x, y)
-    time: PatinaFloat,
-    filter_weight: PatinaFloat,
-}
-
-struct ProjectiveCamera {
-    shutter_open: PatinaFloat,
-    shutter_closed: PatinaFloat,
-
-    raster_from_screen: Transform,
-    screen_from_raster: Transform,
-    camera_from_raster: Transform,
-}
-
-// We need a set various coordinate systems to meaningfully discuss cameras.
-//
-// Screen space: defined on the film plane. Camera projects objects from camera space onto the film
-// plane, and the parts within the "screen window" is visible. Points at the near plane map to z =
-// 0, and points at the far plane map to z = 1.
-//
-// NDC Space (Normalized device coordinates): Coordinates for actual image being rendered, (x, y):
-// [0, 1]x[0, 1]. Same z-values as screen space.
-//
-// Raster space: Same as NDC space, but scaled to the resolution of the image, so (x, y): [0,
-// width]x[0, height].
-//
-// We need a set of transformations to convert between these coordinate spaces.
-impl ProjectiveCamera {
-    pub fn new(
-        width: u32,
-        height: u32,
-        screen_from_camera: &Transform,
-        screen_window: &Bounds2f,
-        _focal_distance: PatinaFloat,
-        _lens_radius: PatinaFloat,
-    ) -> Self {
-        // Scales and translates screen into NDC (0, 1)-coordinates.
-        let ndc_from_screen = Transform::scale(
-            1.0 / (screen_window.p_max.x - screen_window.p_min.x),
-            1.0 / (screen_window.p_max.y - screen_window.p_min.y),
-            1.0,
-        ) * Transform::translate(&PatinaVec3f::new(
-            -screen_window.p_min.x,
-            -screen_window.p_max.y,
-            0.0,
-        ));
-        // Scales the NDC coordinates into raster coordinates.
-        let raster_from_ndc = Transform::scale(width as PatinaFloat, -(height as PatinaFloat), 1.0);
-
-        let raster_from_screen = raster_from_ndc * ndc_from_screen;
-        let screen_from_raster = raster_from_screen.inverse();
-        let camera_from_raster = screen_from_camera.inverse() * screen_from_raster;
-
-        Self {
-            shutter_open: 0.0,
-            shutter_closed: 1.0,
-            raster_from_screen,
-            screen_from_raster,
-            camera_from_raster,
-        }
-    }
-}
-
-impl Camera for ProjectiveCamera {
-    fn generate_ray(&self, sample: &CameraSample) -> Option<PatinaRay3f> {
-        let p_film = PatinaPoint3f::new(sample.p_film.x, sample.p_film.y, 0.0);
-        let p_camera = self.camera_from_raster.apply(p_film);
-
-        None
-    }
-
-    fn film(&self) -> &Film {
-        todo!()
-    }
-
-    fn sample_time(&self, u: PatinaFloat) -> PatinaFloat {
-        debug_assert!(self.shutter_open < self.shutter_closed);
-        lerp(u, self.shutter_open, self.shutter_closed)
-    }
-}
-
-impl Default for CameraSample {
-    fn default() -> Self {
-        Self {
-            p_film: PatinaPoint2f::zero(),
-            p_lens: PatinaPoint2f::zero(),
-            time: Default::default(),
-            filter_weight: Default::default(),
-        }
-    }
-}
 
 struct Film {
     width: usize,
@@ -133,11 +38,12 @@ impl Film {
     }
 }
 
-trait Camera {
-    fn generate_ray(&self, sample: &CameraSample) -> Option<PatinaRay3f>;
-    fn film(&self) -> &Film;
-    // Maps u in [0, 1) to [shutter_open, shutter_close).
-    fn sample_time(&self, u: PatinaFloat) -> PatinaFloat;
+// Hand rolled coloring for this example. Gives us a gradient.
+fn ray_color(ray: &PatinaRay3f) -> [u8; 3] {
+    let r = ((ray.o.x + 1.0) / 2.0 * 255.0) as u8;
+    let g = ((1.0 - ray.o.y) / 2.0 * 255.0) as u8;
+    let b = 255;
+    [r, g, b]
 }
 
 // Meant to serve as a minimal working render. We should render points in a sphere as white, and
@@ -148,16 +54,34 @@ fn main() {
     let mut film = Film {
         width: WIDTH,
         height: HEIGHT,
-        pixels: Vec::from(&[[0, 0, 0]; WIDTH * HEIGHT]),
+        pixels: vec![[0, 0, 0]; WIDTH * HEIGHT],
     };
+
+    // An orthographic camera at the world origin, rendering in camera space, so render space is
+    // camera space.
+    let base = CameraBase::new(
+        CameraTransform::new(RenderingSpace::Camera, &Transform::identity()),
+        Shutter::new(0.0, 1.0),
+        WIDTH as u32,
+        HEIGHT as u32,
+    );
+    let screen_window = Bounds2f::new(PatinaPoint2f::new(-1.0, -1.0), PatinaPoint2f::new(1.0, 1.0));
+    let camera = OrthographicCamera::new(base, &screen_window);
 
     for x in 0..WIDTH {
         for y in 0..HEIGHT {
-            let r = (x as f64 / WIDTH as f64 * 255.0) as u8;
-            let g = (y as f64 / HEIGHT as f64 * 255.0) as u8;
-            let b = 255;
+            let sample = CameraSample::new(
+                PatinaPoint2f::new(x as f64, y as f64),
+                PatinaPoint2f::zero(),
+                0.5,
+                1.0,
+            );
+            let color = match camera.generate_ray(&sample) {
+                Some(ray) => ray_color(&ray),
+                None => [0, 0, 0],
+            };
 
-            film.set(x, y, [r, g, b]);
+            film.set(x, y, color);
         }
     }
 
