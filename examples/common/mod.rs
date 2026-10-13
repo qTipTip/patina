@@ -5,6 +5,7 @@
 use std::path::{Path, PathBuf};
 
 use image::{Rgb, RgbImage};
+use patina::math::{PatinaFloat, PatinaPoint3f, PatinaRay3f};
 
 pub struct Film {
     width: usize,
@@ -55,4 +56,41 @@ pub fn output_path(name: &str) -> PathBuf {
         .nth(1)
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from(format!("renders/{name}.png")))
+}
+
+pub struct Sphere {
+    pub origin: PatinaPoint3f,
+    pub radius: PatinaFloat,
+}
+
+impl Sphere {
+    // Returns the closest point where the ray hits the sphere, if it hits at all (t >= 0). We'll
+    // implement this more generally later.
+    pub fn ray_intersection(&self, ray: &PatinaRay3f) -> Option<PatinaPoint3f> {
+        // Vector from the sphere's center to the ray's origin (Point - Point = Vector).
+        let oc = ray.o - self.origin;
+
+        let a = ray.d.dot(&ray.d);
+        let b = 2.0 * oc.dot(&ray.d);
+        let c = oc.dot(&oc) - self.radius * self.radius;
+
+        let discriminant = b * b - 4.0 * a * c;
+        if discriminant < 0.0 {
+            return None;
+        }
+
+        // The two solutions, nearest first. Use the nearest one in front of the ray's origin.
+        let sqrt_discriminant = discriminant.sqrt();
+        let t0 = (-b - sqrt_discriminant) / (2.0 * a);
+        let t1 = (-b + sqrt_discriminant) / (2.0 * a);
+        let t = if t0 >= 0.0 {
+            t0
+        } else if t1 >= 0.0 {
+            t1
+        } else {
+            return None;
+        };
+
+        Some(ray.eval(t))
+    }
 }
