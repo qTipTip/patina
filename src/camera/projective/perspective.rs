@@ -95,9 +95,11 @@ impl Camera for PerspectiveCamera {
 mod test_perspective_camera {
     use std::f64::consts::PI;
 
+    use approx::assert_relative_eq;
+
     use crate::{
         camera::{Camera, CameraSample, PerspectiveCamera},
-        math::{Bounds2f, PatinaPoint2f, Transform},
+        math::{Bounds2f, PatinaPoint2f, PatinaPoint3f, PatinaVec3f, Transform},
     };
 
     fn get_test_camera_simple() -> PerspectiveCamera {
@@ -125,5 +127,9 @@ mod test_perspective_camera {
         let r = camera
             .generate_ray(&sample)
             .expect("Should generate a valid ray");
+
+        // The ray should point directly down the camera (z = 1).
+        assert_relative_eq!(r.o, PatinaPoint3f::zero());
+        assert_relative_eq!(r.d, PatinaVec3f::new(0.0, 0.0, 1.0));
     }
 }
