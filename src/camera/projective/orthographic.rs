@@ -2,6 +2,8 @@ use crate::{
     camera::{CameraBase, projective::ProjectiveTransforms, r#trait::Camera},
     math::{
         bounding_boxes::Bounds2f,
+        points::PatinaPoint3f,
+        rays::ray3::PatinaRay3f,
         transforms::{Apply, Transform},
         vectors::PatinaVec3f,
     },
@@ -45,10 +47,16 @@ impl Camera for OrthographicCamera {
         &self,
         sample: &crate::camera::CameraSample,
     ) -> Option<crate::math::rays::ray3::PatinaRay3f> {
-        todo!()
+        let p_film = PatinaPoint3f::new(sample.p_film.x, sample.p_film.y, 0.0);
+        let p_camera = self.projective.camera_from_raster.apply(p_film);
+
+        let ray = PatinaRay3f::new(p_camera, PatinaVec3f::new(0.0, 0.0, 1.0));
+
+        // TODO: Modify for depth of field
+        Some(ray)
     }
 
     fn base(&self) -> &CameraBase {
-        todo!()
+        &self.base
     }
 }
