@@ -6,19 +6,11 @@
 // shrinks (foreshortening).
 mod common;
 
-use common::{Film, Sphere, closest_hit, output_path};
+use common::{Film, Sphere, background_color, closest_hit, output_path};
 use patina::{
     camera::{Camera, CameraSample, OrthographicCamera, RenderingSpace},
     math::{Bounds2f, PatinaFloat, PatinaPoint2f, PatinaPoint3f, PatinaRay3f, Transform},
 };
-
-// Hand rolled coloring for this example. Gives us a gradient.
-fn background_color(ray: &PatinaRay3f) -> [u8; 3] {
-    let r = ((ray.o.x + 1.0) / 2.0 * 255.0) as u8;
-    let g = ((1.0 - ray.o.y) / 2.0 * 255.0) as u8;
-    let b = 255;
-    [r, g, b]
-}
 
 // The depth range of the scene, used to shade every sphere on the same scale: from the front of the
 // nearest sphere to the back of the farthest one.
@@ -42,10 +34,17 @@ fn depth_color(hit: &PatinaPoint3f, (near, far): (PatinaFloat, PatinaFloat)) -> 
     [v, v, v]
 }
 
-fn ray_color(ray: &PatinaRay3f, spheres: &[Sphere], depth: (PatinaFloat, PatinaFloat)) -> [u8; 3] {
+// `p_film` and `resolution` are only used for the background, which is based on the pixel position.
+fn ray_color(
+    ray: &PatinaRay3f,
+    p_film: PatinaPoint2f,
+    resolution: (usize, usize),
+    spheres: &[Sphere],
+    depth: (PatinaFloat, PatinaFloat),
+) -> [u8; 3] {
     match closest_hit(spheres, ray) {
         Some((_, hit)) => depth_color(&hit.p, depth),
-        None => background_color(ray),
+        None => background_color(p_film, resolution.0, resolution.1),
     }
 }
 
@@ -84,14 +83,10 @@ fn main() {
 
     for x in 0..WIDTH {
         for y in 0..HEIGHT {
-            let sample = CameraSample::new(
-                PatinaPoint2f::new(x as f64, y as f64),
-                PatinaPoint2f::zero(),
-                0.5,
-                1.0,
-            );
+            let sample_p_film = PatinaPoint2f::new(x as f64, y as f64);
+            let sample = CameraSample::new(sample_p_film, PatinaPoint2f::zero(), 0.5, 1.0);
             let color = match camera.generate_ray(&sample) {
-                Some(ray) => ray_color(&ray, &spheres, depth),
+                Some(ray) => ray_color(&ray, sample_p_film, (WIDTH, HEIGHT), &spheres, depth),
                 None => [0, 0, 0],
             };
 

@@ -5,7 +5,7 @@
 use std::path::{Path, PathBuf};
 
 use image::{Rgb, RgbImage};
-use patina::math::{PatinaFloat, PatinaPoint3f, PatinaRay3f};
+use patina::math::{PatinaFloat, PatinaPoint2f, PatinaPoint3f, PatinaRay3f};
 
 pub struct Film {
     width: usize,
@@ -56,6 +56,15 @@ pub fn output_path(name: &str) -> PathBuf {
         .nth(1)
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from(format!("renders/{name}.png")))
+}
+
+// Background for rays that hit nothing. It's based on the pixel position rather than the ray, so it looks
+// the same whichever camera generated the ray.
+pub fn background_color(p_film: PatinaPoint2f, width: usize, height: usize) -> [u8; 3] {
+    let r = (p_film.x / width as PatinaFloat * 255.0) as u8;
+    let g = (p_film.y / height as PatinaFloat * 255.0) as u8;
+    let b = 255;
+    [r, g, b]
 }
 
 pub struct Sphere {
