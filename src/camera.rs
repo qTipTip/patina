@@ -1,5 +1,5 @@
 pub mod projective;
-pub mod r#trait;
+pub mod traits;
 
 use crate::math::{
     PatinaFloat,

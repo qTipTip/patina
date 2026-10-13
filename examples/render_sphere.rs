@@ -4,7 +4,7 @@ use image::{Rgb, RgbImage};
 use patina::{
     camera::{
         CameraBase, CameraSample, CameraTransform, RenderingSpace, Shutter,
-        projective::orthographic::OrthographicCamera, r#trait::Camera,
+        projective::orthographic::OrthographicCamera, traits::Camera,
     },
     math::{
         bounding_boxes::Bounds2f, points::PatinaPoint2f, rays::ray3::PatinaRay3f,

@@ -1,5 +1,5 @@
 use crate::{
-    camera::{CameraBase, CameraSample, projective::ProjectiveTransforms, r#trait::Camera},
+    camera::{CameraBase, CameraSample, projective::ProjectiveTransforms, traits::Camera},
     math::{
         bounding_boxes::Bounds2f,
         points::PatinaPoint3f,
@@ -74,7 +74,7 @@ mod test_orthographic_camera {
     use crate::{
         camera::{
             CameraBase, CameraSample, CameraTransform, RenderingSpace, Shutter,
-            projective::orthographic::OrthographicCamera, r#trait::Camera,
+            projective::orthographic::OrthographicCamera, traits::Camera,
         },
         math::{
             bounding_boxes::Bounds2f,
