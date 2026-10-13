@@ -137,6 +137,10 @@ impl Transform {
             m_inv: self.m,
         }
     }
+
+    pub(crate) fn orthographic(arg_1: f64, arg_2: f64) -> Transform {
+        todo!()
+    }
 }
 
 impl Mul for Transform {
