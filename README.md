@@ -33,3 +33,4 @@ library evolves. Render one with `just render <name>`, or all of them with `just
 |---|---|
 | ![](./renders/01_gradient.png) | **01: Gradient.** An orthographic camera generating a ray per pixel, colored by where the ray starts on the screen. |
 | ![](./renders/02_orthographic_sphere_depth.png) | **02: Orthographic spheres.** First render up, using the orthographic camera, as it's the simplest conceptually. Two spheres of the same size, shaded by depth on a shared scale, with the far one twice as far away. The orthographic projection shows them at the same size: no foreshortening. Still no light transport, and no general shape-ray intersections. |
+| ![](./renders/03_perspective_sphere_depth.png) | **03: Perspective spheres.** Second render up, using the perspective camera. Two spheres of the same size, shaded by depth on a shared scale, with the far one twice as far away. The perspective projection shows how the scale differs based on distance to camera. | 
