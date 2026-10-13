@@ -206,7 +206,7 @@ impl Apply<PatinaRay3f> for Transform {
 
     fn apply(&self, r: PatinaRay3f) -> Self::Output {
         // Transform the origin and direction separately
-        PatinaRay3f::new(self.apply(r.o), self.apply(r.d))
+        PatinaRay3f::new(self.apply(r.o), self.apply(r.d), r.t)
     }
 }
 

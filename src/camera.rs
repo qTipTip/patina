@@ -26,7 +26,7 @@ pub struct Shutter {
 
 // Contains shared state between all camera types
 pub struct CameraBase {
-    camera_transform: Transform, // describes how the camera is placed in the world.
+    camera_transform: CameraTransform, // describes how the camera is placed in the world.
     shutter: Shutter,
     resolution_x: u32,
     resolution_y: u32,

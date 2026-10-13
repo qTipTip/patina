@@ -4,12 +4,12 @@ use crate::math::{PatinaFloat, points::PatinaPoint3f, vectors::PatinaVec3f};
 pub struct PatinaRay3f {
     pub o: PatinaPoint3f, // origin
     pub d: PatinaVec3f,   // direction
-    _t: PatinaFloat,      // time
+    pub t: PatinaFloat,   // time
 }
 
 impl PatinaRay3f {
-    pub fn new(o: PatinaPoint3f, d: PatinaVec3f) -> Self {
-        Self { o, d, _t: 0.0 }
+    pub fn new(o: PatinaPoint3f, d: PatinaVec3f, t: PatinaFloat) -> Self {
+        Self { o, d, t }
     }
     pub fn eval(self, t: PatinaFloat) -> PatinaPoint3f {
         debug_assert!(t >= 0.0);
@@ -19,14 +19,17 @@ impl PatinaRay3f {
 
 #[cfg(test)]
 mod test {
-    use crate::math::{points::PatinaPoint3f, rays::ray3::PatinaRay3f, vectors::PatinaVec3f};
+    use crate::math::{
+        PatinaFloat, points::PatinaPoint3f, rays::ray3::PatinaRay3f, vectors::PatinaVec3f,
+    };
 
     #[test]
     fn test_ray_construction() {
         let o = PatinaPoint3f::zero();
         let d = PatinaVec3f::new(1.0, 0.5, 0.0);
+        let t: PatinaFloat = 0.0;
 
-        let r = PatinaRay3f::new(o, d);
+        let r = PatinaRay3f::new(o, d, t);
 
         assert_eq!(r.eval(0.0), o);
         assert_eq!(r.eval(0.5), PatinaPoint3f::new(0.5, 0.25, 0.0));
