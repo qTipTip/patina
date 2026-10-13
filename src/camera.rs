@@ -4,6 +4,7 @@ mod traits;
 // The public camera API: the camera types and the trait they implement. The building blocks they
 // share (CameraBase, CameraTransform, Shutter, ProjectiveTransforms) are crate-private.
 pub use projective::orthographic::OrthographicCamera;
+pub use projective::perspective::PerspectiveCamera;
 pub use traits::Camera;
 
 use crate::math::{
