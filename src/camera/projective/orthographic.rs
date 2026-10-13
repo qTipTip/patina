@@ -69,7 +69,7 @@ impl Camera for OrthographicCamera {
 mod test_orthographic_camera {
     use std::f64::consts::PI;
 
-    use approx::{assert_relative_eq, assert_relative_ne};
+    use approx::assert_relative_eq;
 
     use crate::{
         camera::{
