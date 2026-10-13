@@ -1,6 +1,6 @@
 use std::ops::Mul;
 
-use approx::{AbsDiffEq, relative_ne};
+use approx::{AbsDiffEq, RelativeEq, relative_ne};
 
 use crate::math::{
     PatinaFloat, matrices::Matrix4, normals::PatinaNorm3f, points::PatinaPoint3f,
@@ -23,6 +23,22 @@ impl AbsDiffEq for Transform {
 
     fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
         self.m.abs_diff_eq(&other.m, epsilon) && self.m_inv.abs_diff_eq(&other.m_inv, epsilon)
+    }
+}
+
+impl RelativeEq for Transform {
+    fn default_max_relative() -> Self::Epsilon {
+        1.0e-12
+    }
+
+    fn relative_eq(
+        &self,
+        other: &Self,
+        epsilon: Self::Epsilon,
+        max_relative: Self::Epsilon,
+    ) -> bool {
+        self.m.relative_eq(&other.m, epsilon, max_relative)
+            && self.m_inv.relative_eq(&other.m_inv, epsilon, max_relative)
     }
 }
 
@@ -121,7 +137,7 @@ impl Transform {
 
         let mut m = Matrix4::diag([cos_theta, cos_theta, 1.0, 1.0]);
         m[0][1] = -sin_theta;
-        m[1][0] = -sin_theta;
+        m[1][0] = sin_theta;
 
         // a rotation matrix is orthogonal, so it's inverse is the transpose
         Self {
@@ -136,6 +152,14 @@ impl Transform {
             m: self.m_inv,
             m_inv: self.m,
         }
+    }
+
+    // Computes the orthographic transformation which leaves (x, y) but transforms z-values at
+    // z_near to 0 and z_values to z_far to 1.
+    pub fn orthographic(z_near: PatinaFloat, z_far: PatinaFloat) -> Transform {
+        debug_assert!(z_far > z_near);
+        Self::scale(1.0, 1.0, 1.0 / (z_far - z_near))
+            * Transform::translate(&PatinaVec3f::new(0.0, 0.0, -z_near))
     }
 }
 
@@ -194,7 +218,7 @@ impl Apply<PatinaRay3f> for Transform {
 
     fn apply(&self, r: PatinaRay3f) -> Self::Output {
         // Transform the origin and direction separately
-        PatinaRay3f::new(self.apply(r.o), self.apply(r.d))
+        PatinaRay3f::new(self.apply(r.o), self.apply(r.d), r.t)
     }
 }
 
@@ -250,9 +274,27 @@ mod test_transforms {
     }
 
     #[test]
-    fn test_rotation_around_is_identity() {
+    fn test_rotation_around_x_is_identity() {
         let mut m = Transform::identity();
         let s = Transform::rotate_x(2.0 * PI / 4.0);
+        for _ in 0..4 {
+            m = m * s;
+        }
+        assert_abs_diff_eq!(m, Transform::identity())
+    }
+    #[test]
+    fn test_rotation_around_y_is_identity() {
+        let mut m = Transform::identity();
+        let s = Transform::rotate_y(2.0 * PI / 4.0);
+        for _ in 0..4 {
+            m = m * s;
+        }
+        assert_abs_diff_eq!(m, Transform::identity())
+    }
+    #[test]
+    fn test_rotation_around_z_is_identity() {
+        let mut m = Transform::identity();
+        let s = Transform::rotate_z(2.0 * PI / 4.0);
         for _ in 0..4 {
             m = m * s;
         }

@@ -23,3 +23,12 @@ along.
 You need a [rust compiler](https://rustup.rs/), and the
 [`just`](https://github.com/casey/just) program runner (similar to makefiles).
 
+## Examples
+
+### 01 - Rendered Sphere
+
+First render up, using the orthographic camera - as it's the simplest,
+conceptually. Still no light transport, no general shape-ray intersections.
+Just an example to get something out on a screen.
+
+![](./examples/images/render_sphere.png)
