@@ -1,6 +1,10 @@
 use crate::{
-    camera::{CameraBase, CameraSample, projective::ProjectiveTransforms, traits::Camera},
+    camera::{
+        CameraBase, CameraSample, CameraTransform, RenderingSpace, Shutter,
+        projective::ProjectiveTransforms, traits::Camera,
+    },
     math::{
+        PatinaFloat,
         bounding_boxes::Bounds2f,
         points::PatinaPoint3f,
         rays::ray3::PatinaRay3f,
@@ -18,7 +22,26 @@ pub struct OrthographicCamera {
 }
 
 impl OrthographicCamera {
-    pub fn new(base: CameraBase, screen_window: &Bounds2f) -> Self {
+    // Creates an orthographic camera placed in the world by `world_from_camera`, which renders in
+    // `rendering_space` and generates rays at times in [shutter_open, shutter_close).
+    pub fn new(
+        world_from_camera: &Transform,
+        rendering_space: RenderingSpace,
+        shutter_open: PatinaFloat,
+        shutter_close: PatinaFloat,
+        resolution: (u32, u32),
+        screen_window: &Bounds2f,
+    ) -> Self {
+        let base = CameraBase::new(
+            CameraTransform::new(rendering_space, world_from_camera),
+            Shutter::new(shutter_open, shutter_close),
+            resolution.0,
+            resolution.1,
+        );
+        Self::from_base(base, screen_window)
+    }
+
+    pub(crate) fn from_base(base: CameraBase, screen_window: &Bounds2f) -> Self {
         let screen_from_camera = Transform::orthographic(0.0, 1.0);
         let projective_transforms =
             ProjectiveTransforms::new(screen_from_camera, screen_window, base.resolution());
@@ -101,7 +124,7 @@ mod test_orthographic_camera {
         let screen_window =
             Bounds2f::new(PatinaPoint2f::new(-1.0, -1.0), PatinaPoint2f::new(1.0, 1.0));
 
-        OrthographicCamera::new(b, &screen_window)
+        OrthographicCamera::from_base(b, &screen_window)
     }
 
     fn get_moved_test_camera(space: RenderingSpace) -> OrthographicCamera {
@@ -123,7 +146,7 @@ mod test_orthographic_camera {
         let screen_window =
             Bounds2f::new(PatinaPoint2f::new(-1.0, -1.0), PatinaPoint2f::new(1.0, 1.0));
 
-        OrthographicCamera::new(b, &screen_window)
+        OrthographicCamera::from_base(b, &screen_window)
     }
 
     #[test]

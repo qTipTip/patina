@@ -1,6 +1,6 @@
 use crate::camera::{CameraBase, projective::ProjectiveTransforms};
 
-pub struct PerspectiveCamera {
+pub(crate) struct PerspectiveCamera {
     base: CameraBase,
     projective: ProjectiveTransforms,
 }

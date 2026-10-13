@@ -2,12 +2,12 @@ use crate::math::{
     PatinaFloat, bounding_boxes::Bounds2f, transforms::Transform, vectors::PatinaVec3f,
 };
 
-pub mod orthographic;
-pub mod perspective;
+pub(crate) mod orthographic;
+mod perspective;
 
 // Contains transformations needed for for some of the projective cameras (perspective /
 // orthograpic).
-pub struct ProjectiveTransforms {
+pub(crate) struct ProjectiveTransforms {
     screen_from_camera: Transform,
     camera_from_raster: Transform,
     screen_from_raster: Transform,

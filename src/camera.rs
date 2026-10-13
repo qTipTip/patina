@@ -1,5 +1,10 @@
-pub mod projective;
-pub mod traits;
+mod projective;
+mod traits;
+
+// The public camera API: the camera types and the trait they implement. The building blocks they
+// share (CameraBase, CameraTransform, Shutter, ProjectiveTransforms) are crate-private.
+pub use projective::orthographic::OrthographicCamera;
+pub use traits::Camera;
 
 use crate::math::{
     PatinaFloat,
@@ -32,19 +37,20 @@ impl CameraSample {
 }
 
 // A shutter has an open and close time.
-pub struct Shutter {
+pub(crate) struct Shutter {
     open: PatinaFloat,
     close: PatinaFloat,
 }
 
 impl Shutter {
-    pub fn new(open: PatinaFloat, close: PatinaFloat) -> Self {
+    pub(crate) fn new(open: PatinaFloat, close: PatinaFloat) -> Self {
         debug_assert!(open <= close);
         Self { open, close }
     }
 }
 
-// Contains shared state between all camera types
+// Contains shared state between all camera types. Public only because `Camera::base` returns it;
+// it has no public fields or constructor.
 pub struct CameraBase {
     camera_transform: CameraTransform, // describes how the camera is placed in the world.
     shutter: Shutter,
@@ -53,7 +59,7 @@ pub struct CameraBase {
 }
 
 impl CameraBase {
-    pub fn new(
+    pub(crate) fn new(
         camera_transform: CameraTransform,
         shutter: Shutter,
         resolution_x: u32,
@@ -73,7 +79,7 @@ impl CameraBase {
 }
 
 // A camera transform helps us switch which coordinate system we perform the rendering in.
-pub struct CameraTransform {
+pub(crate) struct CameraTransform {
     render_from_camera: Transform, // TODO: Make this an animated transform.
     world_from_render: Transform,
 }
@@ -94,7 +100,7 @@ pub enum RenderingSpace {
 }
 
 impl CameraTransform {
-    pub fn new(space: RenderingSpace, world_from_camera: &Transform) -> Self {
+    pub(crate) fn new(space: RenderingSpace, world_from_camera: &Transform) -> Self {
         // The world_from_render transform is computed based on which space we are rendering in.
         // TODO: Handle AnimatedTransforms here.
         //

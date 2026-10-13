@@ -2,14 +2,8 @@ use std::path::PathBuf;
 
 use image::{Rgb, RgbImage};
 use patina::{
-    camera::{
-        CameraBase, CameraSample, CameraTransform, RenderingSpace, Shutter,
-        projective::orthographic::OrthographicCamera, traits::Camera,
-    },
-    math::{
-        bounding_boxes::Bounds2f, points::PatinaPoint2f, rays::ray3::PatinaRay3f,
-        transforms::Transform,
-    },
+    camera::{Camera, CameraSample, OrthographicCamera, RenderingSpace},
+    math::{Bounds2f, PatinaPoint2f, PatinaRay3f, Transform},
 };
 
 struct Film {
@@ -59,14 +53,15 @@ fn main() {
 
     // An orthographic camera at the world origin, rendering in camera space, so render space is
     // camera space.
-    let base = CameraBase::new(
-        CameraTransform::new(RenderingSpace::Camera, &Transform::identity()),
-        Shutter::new(0.0, 1.0),
-        WIDTH as u32,
-        HEIGHT as u32,
-    );
     let screen_window = Bounds2f::new(PatinaPoint2f::new(-1.0, -1.0), PatinaPoint2f::new(1.0, 1.0));
-    let camera = OrthographicCamera::new(base, &screen_window);
+    let camera = OrthographicCamera::new(
+        &Transform::identity(),
+        RenderingSpace::Camera,
+        0.0,
+        1.0,
+        (WIDTH as u32, HEIGHT as u32),
+        &screen_window,
+    );
 
     for x in 0..WIDTH {
         for y in 0..HEIGHT {

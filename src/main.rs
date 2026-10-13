@@ -1,7 +1,4 @@
-use patina::math::{
-    PatinaFloat, PatinaInt, normals::normal3::Normal3, points::point2::Point2,
-    vectors::vec3::Vector3,
-};
+use patina::math::{Normal3, PatinaFloat, PatinaInt, Point2, Vector3};
 
 fn main() {
     let t = Vector3::<PatinaFloat>::new(0.0, 1.0, 2.0);
