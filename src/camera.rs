@@ -1,11 +1,14 @@
 pub mod projective;
 pub mod r#trait;
 
-use crate::math::{
-    PatinaFloat,
-    points::{PatinaPoint2f, PatinaPoint3f},
-    transforms::{Apply, Transform},
-    vectors::PatinaVec3f,
+use crate::{
+    camera::r#trait::Camera,
+    math::{
+        PatinaFloat,
+        points::{PatinaPoint2f, PatinaPoint3f},
+        transforms::{Apply, Transform},
+        vectors::PatinaVec3f,
+    },
 };
 
 pub struct CameraSample {
@@ -27,6 +30,12 @@ pub struct CameraBase {
     shutter: Shutter,
     resolution_x: u32,
     resolution_y: u32,
+}
+
+impl CameraBase {
+    pub fn resolution(&self) -> (u32, u32) {
+        (self.resolution_x, self.resolution_y)
+    }
 }
 
 // A camera transform helps us switch which coordinate system we perform the rendering in.

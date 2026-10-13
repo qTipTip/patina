@@ -18,8 +18,7 @@ impl ProjectiveTransforms {
     fn new(
         screen_from_camera: Transform,
         screen_window: &Bounds2f,
-        raster_width: u32,
-        raster_height: u32,
+        raster_resolution: (u32, u32),
     ) -> Self {
         // Scales and translates screen into NDC (0, 1)-coordinates.
         let ndc_from_screen = Transform::scale(
@@ -33,8 +32,8 @@ impl ProjectiveTransforms {
         ));
         // Scales the NDC coordinates into raster coordinates.
         let raster_from_ndc = Transform::scale(
-            raster_width as PatinaFloat,
-            -(raster_height as PatinaFloat),
+            raster_resolution.0 as PatinaFloat,
+            -(raster_resolution.1 as PatinaFloat),
             1.0,
         );
 
@@ -66,8 +65,7 @@ mod test_projections {
         let p = ProjectiveTransforms::new(
             Transform::identity(),
             &Bounds2f::new(PatinaPoint2f::new(-1.0, -1.0), PatinaPoint2f::new(1.0, 1.0)),
-            100,
-            50,
+            (100, 50),
         );
 
         // In the following, note how upper_left in screen space = (-1, 1, z), as the y-coord is "inverted".
