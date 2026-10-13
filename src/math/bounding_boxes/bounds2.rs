@@ -177,3 +177,27 @@ mod test {
         );
     }
 }
+
+#[cfg(test)]
+mod test_approx {
+    use approx::{assert_relative_eq, relative_ne};
+
+    use crate::math::{bounding_boxes::Bounds2f, points::PatinaPoint2f};
+
+    #[test]
+    fn test_bounds_compare_both_corners() {
+        let b = Bounds2f::new(
+            PatinaPoint2f::new(0.1 + 0.2, 0.0),
+            PatinaPoint2f::new(1.0, 1.0),
+        );
+
+        assert_relative_eq!(
+            b,
+            Bounds2f::new(PatinaPoint2f::new(0.3, 0.0), PatinaPoint2f::new(1.0, 1.0))
+        );
+        assert!(relative_ne!(
+            b,
+            Bounds2f::new(PatinaPoint2f::new(0.3, 0.0), PatinaPoint2f::new(1.0, 2.0))
+        ));
+    }
+}

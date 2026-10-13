@@ -601,3 +601,31 @@ mod test_integer_tuples {
         assert_eq!(t * r, Tuple3::<PatinaInt, TypeVector>::new(100, 4, 5));
     }
 }
+
+#[cfg(test)]
+mod test_approx {
+    use approx::{abs_diff_eq, abs_diff_ne, assert_relative_eq, relative_eq};
+
+    use crate::math::{PatinaFloat, tuples::TypeVector, tuples::tuple3::Tuple3};
+
+    type V = Tuple3<PatinaFloat, TypeVector>;
+
+    #[test]
+    fn test_abs_diff_eq_uses_epsilon() {
+        let a = V::new(1.0, 2.0, 3.0);
+        let b = V::new(1.0, 2.0, 3.0 + 1e-6);
+
+        assert!(abs_diff_ne!(a, b));
+        assert!(abs_diff_eq!(a, b, epsilon = 1e-5));
+    }
+
+    #[test]
+    fn test_relative_eq_scales_with_magnitude() {
+        let a = V::new(1e6, 0.0, 0.0);
+        let b = V::new(1e6 + 1e-3, 0.0, 0.0);
+
+        assert!(!relative_eq!(a, b));
+        assert!(relative_eq!(a, b, max_relative = 1e-8));
+        assert_relative_eq!(V::new(0.1 + 0.2, 0.0, 0.0), V::new(0.3, 0.0, 0.0));
+    }
+}

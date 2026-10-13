@@ -69,3 +69,24 @@ mod test {
         assert_eq!(r.eval(1.0), PatinaPoint3f::new(1.0, 0.5, 0.0));
     }
 }
+
+#[cfg(test)]
+mod test_approx {
+    use approx::{assert_relative_eq, relative_ne};
+
+    use crate::math::{points::PatinaPoint3f, rays::ray3::PatinaRay3f, vectors::PatinaVec3f};
+
+    #[test]
+    fn test_rays_compare_every_field() {
+        let o = PatinaPoint3f::new(0.1 + 0.2, 0.0, 0.0);
+        let d = PatinaVec3f::new(0.0, 0.0, 1.0);
+        let r = PatinaRay3f::new(o, d, 0.5);
+
+        assert_relative_eq!(
+            r,
+            PatinaRay3f::new(PatinaPoint3f::new(0.3, 0.0, 0.0), d, 0.5)
+        );
+        assert!(relative_ne!(r, PatinaRay3f::new(o, d, 0.6)));
+        assert!(relative_ne!(r, PatinaRay3f::new(o, -d, 0.5)));
+    }
+}

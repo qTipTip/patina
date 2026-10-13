@@ -521,3 +521,22 @@ mod test_tuple3_functions {
         assert_eq!(a.hprod(), -20.0);
     }
 }
+
+#[cfg(test)]
+mod test_approx {
+    use approx::{abs_diff_eq, abs_diff_ne, assert_relative_eq};
+
+    use crate::math::{PatinaFloat, tuples::TypePoint, tuples::tuple2::Tuple2};
+
+    type P = Tuple2<PatinaFloat, TypePoint>;
+
+    #[test]
+    fn test_abs_diff_eq_uses_epsilon() {
+        let a = P::new(1.0, 2.0);
+        let b = P::new(1.0, 2.0 + 1e-6);
+
+        assert!(abs_diff_ne!(a, b));
+        assert!(abs_diff_eq!(a, b, epsilon = 1e-5));
+        assert_relative_eq!(P::new(0.1 + 0.2, 1.0), P::new(0.3, 1.0));
+    }
+}

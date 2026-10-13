@@ -353,3 +353,28 @@ mod test {
         }
     }
 }
+
+#[cfg(test)]
+mod test_approx {
+    use approx::{assert_abs_diff_eq, assert_relative_eq, relative_ne};
+
+    use crate::math::matrices::Matrix4;
+
+    #[test]
+    fn test_inverse_product_is_approximately_identity() {
+        let m = Matrix4::new([
+            [2.0, 0.0, 1.0, 3.0],
+            [1.0, 1.0, 0.0, 2.0],
+            [0.0, 4.0, 1.0, 1.0],
+            [3.0, 1.0, 2.0, 0.0],
+        ]);
+        let product = m * m.inverse().expect("matrix is invertible");
+
+        assert_abs_diff_eq!(product, Matrix4::identity());
+        assert_relative_eq!(product, Matrix4::identity());
+        assert!(relative_ne!(
+            Matrix4::diag([1.0, 1.0, 1.0, 1.0 + 1e-6]),
+            Matrix4::identity()
+        ));
+    }
+}
