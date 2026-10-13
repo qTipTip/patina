@@ -166,15 +166,17 @@ impl Transform {
     // z_far planes.
     pub fn perspective(fov: PatinaFloat, z_near: PatinaFloat, z_far: PatinaFloat) -> Transform {
         // Compute the transform for perspecitve projection
-        let mut p = Self::identity();
-        p.m[2][2] = z_far / (z_far - z_near);
-        p.m[3][2] = 1.0;
-        p.m[2][3] = -z_far * z_near / (z_far - z_near);
+        let mut m = Matrix4::identity();
+        m[2][2] = z_far / (z_far - z_near);
+        m[2][3] = -z_far * z_near / (z_far - z_near);
+        m[3][2] = 1.0;
+        m[3][3] = 0.0;
 
+        let t = Self::from_matrix(&m).expect("perspective matrix is invertible");
         // Field of view compensation
         let inv_tan_angle = 1.0 / (fov * 0.5).tan();
 
-        Self::scale(inv_tan_angle, inv_tan_angle, 1.0) * p
+        Self::scale(inv_tan_angle, inv_tan_angle, 1.0) * t
     }
 }
 
