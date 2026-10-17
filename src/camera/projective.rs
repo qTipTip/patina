@@ -3,7 +3,7 @@ use crate::math::{
 };
 
 pub(crate) mod orthographic;
-mod perspective;
+pub(crate) mod perspective;
 
 // Contains transformations needed for for some of the projective cameras (perspective /
 // orthograpic).

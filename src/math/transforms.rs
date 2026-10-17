@@ -161,6 +161,28 @@ impl Transform {
         Self::scale(1.0, 1.0, 1.0 / (z_far - z_near))
             * Transform::translate(&PatinaVec3f::new(0.0, 0.0, -z_near))
     }
+
+    // Computes the perspective projection. Takes a field of view andle and distances to the z_near,
+    // z_far planes.
+    pub fn perspective(fov: PatinaFloat, z_near: PatinaFloat, z_far: PatinaFloat) -> Transform {
+        debug_assert!(
+            z_near > 0.0,
+            "z_near must be strictly positive, otherwise the transform has no inverse"
+        );
+        debug_assert!(z_far > z_near);
+        // Compute the transform for perspecitve projection
+        let mut m = Matrix4::identity();
+        m[2][2] = z_far / (z_far - z_near);
+        m[2][3] = -z_far * z_near / (z_far - z_near);
+        m[3][2] = 1.0;
+        m[3][3] = 0.0;
+
+        let t = Self::from_matrix(&m).expect("perspective matrix is invertible");
+        // Field of view compensation
+        let inv_tan_angle = 1.0 / (fov * 0.5).tan();
+
+        Self::scale(inv_tan_angle, inv_tan_angle, 1.0) * t
+    }
 }
 
 impl Mul for Transform {
