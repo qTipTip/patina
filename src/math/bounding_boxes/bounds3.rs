@@ -4,7 +4,7 @@ use approx::{AbsDiffEq, RelativeEq};
 use num_traits::{Bounded, Float, Num};
 
 use crate::math::{
-    PatinaFloat, PatinaPoint3f, PatinaVec3f, points::point3::Point3, traits::CheckNan,
+    PatinaFloat, PatinaPoint3f, PatinaVec3f, gamma, points::point3::Point3, traits::CheckNan,
 };
 
 #[derive(PartialEq, Debug)]
@@ -134,6 +134,7 @@ impl<T: Float + Copy + PartialOrd + CheckNan> Bounds3<T> {
             if t_near > t_far {
                 swap(&mut t_near, &mut t_far);
             };
+            t_far *= 1.0 + 2.0 * gamma(3);
 
             if t_near > t0 {
                 t0 = t_near;
@@ -267,7 +268,7 @@ mod test_ray_interactions {
 
         assert!(i.t0 < i.t1);
         assert_relative_eq!(i.t0, 1.0);
-        assert_relative_eq!(i.t1, 3.0);
+        assert_relative_eq!(i.t1, 3.0, epsilon = 1.0e-12);
 
         assert_relative_eq!(r.eval(i.t0), PatinaPoint3f::zero());
         assert_relative_eq!(r.eval(i.t1), PatinaPoint3f::new(2.0, 2.0, 2.0));
