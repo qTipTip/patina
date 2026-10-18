@@ -122,10 +122,10 @@ impl Bounds3<PatinaFloat> {
         &self,
         o: &PatinaPoint3f,
         d: &PatinaVec3f,
-        t_max: Option<PatinaFloat>,
+        t_max: PatinaFloat,
     ) -> Option<BoundsIntersection> {
         let mut t0 = 0.0;
-        let mut t1 = t_max.unwrap_or(f64::INFINITY);
+        let mut t1 = t_max;
         for i in 0..3 {
             let ray_dir_inv = 1.0 / d[i];
             let mut t_near = (self.p_min[i] - o[i]) * ray_dir_inv;
@@ -249,7 +249,7 @@ mod test {
 mod test_ray_interactions {
     use approx::assert_relative_eq;
 
-    use crate::math::{Bounds3, PatinaPoint3f, PatinaRay3f, PatinaVec3f};
+    use crate::math::{Bounds3, PatinaFloat, PatinaPoint3f, PatinaRay3f, PatinaVec3f};
 
     #[test]
     fn test_ray_bounds_intersection() {
@@ -264,7 +264,7 @@ mod test_ray_interactions {
             0.0,
         );
 
-        let res = a.intersects(&r.o, &r.d, None);
+        let res = a.intersects(&r.o, &r.d, PatinaFloat::INFINITY);
         assert!(res.is_some());
         let i = res.unwrap();
 
@@ -289,7 +289,7 @@ mod test_ray_interactions {
             0.0,
         );
 
-        let res = a.intersects(&r.o, &r.d, None);
+        let res = a.intersects(&r.o, &r.d, PatinaFloat::INFINITY);
         assert!(res.is_none());
     }
 }
