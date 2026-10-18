@@ -114,8 +114,8 @@ impl<T: Num + Copy + PartialOrd + CheckNan> Bounds3<T> {
 }
 
 pub struct BoundsIntersection {
-    t0: PatinaFloat,
-    t1: PatinaFloat,
+    pub t0: PatinaFloat,
+    pub t1: PatinaFloat,
 }
 impl Bounds3<PatinaFloat> {
     pub fn intersects(
