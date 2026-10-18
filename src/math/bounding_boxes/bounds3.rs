@@ -1,9 +1,11 @@
-use std::ops::Index;
+use std::{mem::swap, ops::Index};
 
 use approx::{AbsDiffEq, RelativeEq};
-use num_traits::{Bounded, Num};
+use num_traits::{Bounded, Float, Num};
 
-use crate::math::{PatinaFloat, points::point3::Point3, traits::CheckNan};
+use crate::math::{
+    PatinaFloat, PatinaPoint3f, PatinaVec3f, Vector3, points::point3::Point3, traits::CheckNan,
+};
 
 #[derive(PartialEq, Debug)]
 pub struct Bounds3<T> {
@@ -108,6 +110,42 @@ impl<T: Num + Copy + PartialOrd + CheckNan> Bounds3<T> {
             p_min: Point3::min(self.p_min, p),
             p_max: Point3::max(self.p_max, p),
         }
+    }
+}
+
+pub struct BoundsIntersection {
+    t0: PatinaFloat,
+    t1: PatinaFloat,
+}
+impl<T: Float + Copy + PartialOrd + CheckNan> Bounds3<T> {
+    pub fn intersects(
+        &self,
+        o: &PatinaPoint3f,
+        d: &PatinaVec3f,
+        t_max: Option<PatinaFloat>,
+    ) -> Option<BoundsIntersection> {
+        let mut t0 = 0.0;
+        let mut t1 = t_max.unwrap_or(f64::INFINITY);
+        for i in 0..3 {
+            let ray_dir_inv = 1.0 / d[i];
+            let mut t_near = (self.p_min[i].to_f64().unwrap() - o[i]) * ray_dir_inv;
+            let mut t_far = (self.p_max[i].to_f64().unwrap() - o[i]) * ray_dir_inv;
+
+            if t_near > t_far {
+                swap(&mut t_near, &mut t_far);
+            };
+
+            if t_near > t0 {
+                t0 = t_near;
+            };
+            if t_far < t1 {
+                t1 = t_far;
+            };
+            if t0 > t1 {
+                return None;
+            };
+        }
+        Some(BoundsIntersection { t0, t1 })
     }
 }
 
