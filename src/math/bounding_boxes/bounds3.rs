@@ -241,3 +241,52 @@ mod test {
         );
     }
 }
+
+#[cfg(test)]
+mod test_ray_interactions {
+    use approx::assert_relative_eq;
+
+    use crate::math::{Bounds3, PatinaPoint3f, PatinaRay3f, PatinaVec3f};
+
+    #[test]
+    fn test_ray_bounds_intersection() {
+        let a = Bounds3::new(
+            PatinaPoint3f::new(0.0, 0.0, 0.0),
+            PatinaPoint3f::new(2.0, 2.0, 2.0),
+        );
+
+        let r = PatinaRay3f::new(
+            PatinaPoint3f::new(-1.0, -1.0, -1.0),
+            PatinaVec3f::new(1.0, 1.0, 1.0),
+            0.0,
+        );
+
+        let res = a.intersects(&r.o, &r.d, None);
+        assert!(res.is_some());
+        let i = res.unwrap();
+
+        assert!(i.t0 < i.t1);
+        assert_relative_eq!(i.t0, 1.0);
+        assert_relative_eq!(i.t1, 3.0);
+
+        assert_relative_eq!(r.eval(i.t0), PatinaPoint3f::zero());
+        assert_relative_eq!(r.eval(i.t1), PatinaPoint3f::new(2.0, 2.0, 2.0));
+    }
+
+    #[test]
+    fn test_ray_bounds_no_intersection() {
+        let a = Bounds3::new(
+            PatinaPoint3f::new(0.0, 0.0, 0.0),
+            PatinaPoint3f::new(2.0, 2.0, 2.0),
+        );
+
+        let r = PatinaRay3f::new(
+            PatinaPoint3f::new(3.0, 3.0, 3.0),
+            PatinaVec3f::new(1.0, 1.0, 1.0),
+            0.0,
+        );
+
+        let res = a.intersects(&r.o, &r.d, None);
+        assert!(res.is_none());
+    }
+}
