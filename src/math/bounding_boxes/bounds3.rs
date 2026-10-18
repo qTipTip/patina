@@ -4,7 +4,7 @@ use approx::{AbsDiffEq, RelativeEq};
 use num_traits::{Bounded, Float, Num};
 
 use crate::math::{
-    PatinaFloat, PatinaPoint3f, PatinaVec3f, Vector3, points::point3::Point3, traits::CheckNan,
+    PatinaFloat, PatinaPoint3f, PatinaVec3f, points::point3::Point3, traits::CheckNan,
 };
 
 #[derive(PartialEq, Debug)]
