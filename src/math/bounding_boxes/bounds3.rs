@@ -1,7 +1,7 @@
 use std::{mem::swap, ops::Index};
 
 use approx::{AbsDiffEq, RelativeEq};
-use num_traits::{Bounded, Float, Num};
+use num_traits::{Bounded, Num};
 
 use crate::math::{
     PatinaFloat, PatinaPoint3f, PatinaVec3f, gamma, points::point3::Point3, traits::CheckNan,
