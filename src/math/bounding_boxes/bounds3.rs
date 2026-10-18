@@ -117,7 +117,7 @@ pub struct BoundsIntersection {
     t0: PatinaFloat,
     t1: PatinaFloat,
 }
-impl<T: Float + Copy + PartialOrd + CheckNan> Bounds3<T> {
+impl Bounds3<PatinaFloat> {
     pub fn intersects(
         &self,
         o: &PatinaPoint3f,
@@ -128,12 +128,14 @@ impl<T: Float + Copy + PartialOrd + CheckNan> Bounds3<T> {
         let mut t1 = t_max.unwrap_or(f64::INFINITY);
         for i in 0..3 {
             let ray_dir_inv = 1.0 / d[i];
-            let mut t_near = (self.p_min[i].to_f64().unwrap() - o[i]) * ray_dir_inv;
-            let mut t_far = (self.p_max[i].to_f64().unwrap() - o[i]) * ray_dir_inv;
+            let mut t_near = (self.p_min[i] - o[i]) * ray_dir_inv;
+            let mut t_far = (self.p_max[i] - o[i]) * ray_dir_inv;
 
             if t_near > t_far {
                 swap(&mut t_near, &mut t_far);
             };
+
+            // TODO: Compare renders with and without this.
             t_far *= 1.0 + 2.0 * gamma(3);
 
             if t_near > t0 {
