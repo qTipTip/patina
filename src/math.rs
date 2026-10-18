@@ -29,6 +29,12 @@ pub use vectors::{
 pub type PatinaFloat = f64;
 pub type PatinaInt = i64;
 
+pub const MACHINE_EPSILON: PatinaFloat = PatinaFloat::EPSILON * 0.5;
+pub const fn gamma(n: i32) -> PatinaFloat {
+    let n = n as PatinaFloat;
+    (n * MACHINE_EPSILON) / (1.0 - n * MACHINE_EPSILON)
+}
+
 #[derive(Clone, Copy)]
 pub(crate) struct Point2D<T> {
     pub x: T,
