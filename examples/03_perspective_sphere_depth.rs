@@ -1,13 +1,17 @@
 // An perspective camera looking at two spheres at different depths, shaded by depth in front of a
-// gradient. The second render with ray-object intersections, still without light transport.
+// gradient. The second render with ray-object intersections, still without light transport. The
+// spheres are the library's Sphere shape, placed in the scene with a transform.
 mod common;
 
 use std::f64::consts::PI;
 
-use common::{Film, Sphere, background_color, closest_hit, depth_color, depth_range, output_path};
+use common::{
+    Film, background_color, closest_hit, depth_color, depth_range, output_path, sphere_at,
+};
 use patina::{
     camera::{Camera, CameraSample, PerspectiveCamera, RenderingSpace},
     math::{Bounds2f, PatinaFloat, PatinaPoint2f, PatinaPoint3f, PatinaRay3f, Transform},
+    shapes::Sphere,
 };
 
 // `p_film` and `resolution` are only used for the background, which is based on the pixel position.
@@ -19,7 +23,7 @@ fn ray_color(
     depth: (PatinaFloat, PatinaFloat),
 ) -> [u8; 3] {
     match closest_hit(spheres, ray) {
-        Some((_, hit)) => depth_color(&hit.p, depth),
+        Some(isect) => depth_color(&isect.interaction.p, depth),
         None => background_color(p_film, resolution.0, resolution.1),
     }
 }
@@ -45,14 +49,8 @@ fn main() {
     // The camera looks down +z from the origin and sees x, y in [-1, 1]. Two spheres of the same
     // size: one at z = 3, and one twice as far away, offset so the near sphere partly covers it.
     let spheres = [
-        Sphere {
-            origin: PatinaPoint3f::new(-0.5, 0.0, 3.0),
-            radius: 0.5,
-        },
-        Sphere {
-            origin: PatinaPoint3f::new(0.3, 0.2, 6.0),
-            radius: 0.5,
-        },
+        sphere_at(PatinaPoint3f::new(-0.5, 0.0, 3.0), 0.5),
+        sphere_at(PatinaPoint3f::new(0.3, 0.2, 6.0), 0.5),
     ];
     let depth = depth_range(&spheres);
 

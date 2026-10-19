@@ -3,7 +3,7 @@ use std::f64::consts::PI;
 use crate::math::{
     PatinaFloat, safe_asin,
     traits::CheckNan,
-    tuples::{TupleLength, TypeVector, tuple2::Tuple2},
+    tuples::{TypeVector, tuple2::Tuple2},
 };
 use num_traits::{Num, ToPrimitive};
 
@@ -13,33 +13,10 @@ impl<T> Vector2<T>
 where
     T: Num + Copy + CheckNan + ToPrimitive,
 {
-    pub fn len_squared(&self) -> T {
-        self.x * self.x + self.y * self.y
-    }
-
-    pub fn len(&self) -> TupleLength {
-        self.len_squared()
-            .to_f64()
-            .expect("Conversion to f64 failed")
-            .sqrt()
-    }
-
     pub fn cross(&self, rhs: &Self) -> T {
         // TODO: Compute this using a difference of products (using FMA), as it's more numerically
         // stable, even at f32.
         self.x * rhs.y - self.y * rhs.x
-    }
-
-    // normalize cannot return Vector2<T>, as an integer vector normalized requires float values.
-    pub fn normalize(&self) -> Vector2<TupleLength> {
-        let len = self.len();
-        if len == 0.0 {
-            return Vector2::<TupleLength>::new(0.0, 0.0);
-        }
-        Vector2::<TupleLength>::new(
-            self.x.to_f64().expect("Conversion to f64 failed") / len,
-            self.y.to_f64().expect("Conversion to f64 failed") / len,
-        )
     }
 
     pub fn angle_between(&self, rhs: &Self) -> PatinaFloat {

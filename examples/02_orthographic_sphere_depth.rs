@@ -6,10 +6,13 @@
 // shrinks (foreshortening).
 mod common;
 
-use common::{Film, Sphere, background_color, closest_hit, depth_color, depth_range, output_path};
+use common::{
+    Film, background_color, closest_hit, depth_color, depth_range, output_path, sphere_at,
+};
 use patina::{
     camera::{Camera, CameraSample, OrthographicCamera, RenderingSpace},
     math::{Bounds2f, PatinaFloat, PatinaPoint2f, PatinaPoint3f, PatinaRay3f, Transform},
+    shapes::Sphere,
 };
 
 // `p_film` and `resolution` are only used for the background, which is based on the pixel position.
@@ -21,7 +24,7 @@ fn ray_color(
     depth: (PatinaFloat, PatinaFloat),
 ) -> [u8; 3] {
     match closest_hit(spheres, ray) {
-        Some((_, hit)) => depth_color(&hit.p, depth),
+        Some(isect) => depth_color(&isect.interaction.p, depth),
         None => background_color(p_film, resolution.0, resolution.1),
     }
 }
@@ -48,14 +51,8 @@ fn main() {
     // With no world-to-render transform for geometry yet, the spheres are given directly in render
     // space (= camera space here).
     let spheres = [
-        Sphere {
-            origin: PatinaPoint3f::new(-0.5, 0.0, 3.0),
-            radius: 0.5,
-        },
-        Sphere {
-            origin: PatinaPoint3f::new(0.3, 0.2, 6.0),
-            radius: 0.5,
-        },
+        sphere_at(PatinaPoint3f::new(-0.5, 0.0, 3.0), 0.5),
+        sphere_at(PatinaPoint3f::new(0.3, 0.2, 6.0), 0.5),
     ];
     let depth = depth_range(&spheres);
 

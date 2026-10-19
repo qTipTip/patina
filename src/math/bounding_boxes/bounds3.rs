@@ -1,9 +1,11 @@
-use std::ops::Index;
+use std::{mem::swap, ops::Index};
 
 use approx::{AbsDiffEq, RelativeEq};
 use num_traits::{Bounded, Num};
 
-use crate::math::{PatinaFloat, points::point3::Point3, traits::CheckNan};
+use crate::math::{
+    PatinaFloat, PatinaPoint3f, PatinaVec3f, gamma, points::point3::Point3, traits::CheckNan,
+};
 
 #[derive(PartialEq, Debug)]
 pub struct Bounds3<T> {
@@ -111,6 +113,45 @@ impl<T: Num + Copy + PartialOrd + CheckNan> Bounds3<T> {
     }
 }
 
+pub struct BoundsIntersection {
+    pub t0: PatinaFloat,
+    pub t1: PatinaFloat,
+}
+impl Bounds3<PatinaFloat> {
+    pub fn intersects(
+        &self,
+        o: &PatinaPoint3f,
+        d: &PatinaVec3f,
+        t_max: PatinaFloat,
+    ) -> Option<BoundsIntersection> {
+        let mut t0 = 0.0;
+        let mut t1 = t_max;
+        for i in 0..3 {
+            let ray_dir_inv = 1.0 / d[i];
+            let mut t_near = (self.p_min[i] - o[i]) * ray_dir_inv;
+            let mut t_far = (self.p_max[i] - o[i]) * ray_dir_inv;
+
+            if t_near > t_far {
+                swap(&mut t_near, &mut t_far);
+            };
+
+            // TODO: Compare renders with and without this.
+            t_far *= 1.0 + 2.0 * gamma(3);
+
+            if t_near > t0 {
+                t0 = t_near;
+            };
+            if t_far < t1 {
+                t1 = t_far;
+            };
+            if t0 > t1 {
+                return None;
+            };
+        }
+        Some(BoundsIntersection { t0, t1 })
+    }
+}
+
 impl<T> Index<usize> for Bounds3<T> {
     type Output = Point3<T>;
 
@@ -201,5 +242,54 @@ mod test {
                 PatinaPoint3f::new(2.0, 2.0, 2.0)
             )
         );
+    }
+}
+
+#[cfg(test)]
+mod test_ray_interactions {
+    use approx::assert_relative_eq;
+
+    use crate::math::{Bounds3, PatinaFloat, PatinaPoint3f, PatinaRay3f, PatinaVec3f};
+
+    #[test]
+    fn test_ray_bounds_intersection() {
+        let a = Bounds3::new(
+            PatinaPoint3f::new(0.0, 0.0, 0.0),
+            PatinaPoint3f::new(2.0, 2.0, 2.0),
+        );
+
+        let r = PatinaRay3f::new(
+            PatinaPoint3f::new(-1.0, -1.0, -1.0),
+            PatinaVec3f::new(1.0, 1.0, 1.0),
+            0.0,
+        );
+
+        let res = a.intersects(&r.o, &r.d, PatinaFloat::INFINITY);
+        assert!(res.is_some());
+        let i = res.unwrap();
+
+        assert!(i.t0 < i.t1);
+        assert_relative_eq!(i.t0, 1.0);
+        assert_relative_eq!(i.t1, 3.0, epsilon = 1.0e-12);
+
+        assert_relative_eq!(r.eval(i.t0), PatinaPoint3f::zero());
+        assert_relative_eq!(r.eval(i.t1), PatinaPoint3f::new(2.0, 2.0, 2.0));
+    }
+
+    #[test]
+    fn test_ray_bounds_no_intersection() {
+        let a = Bounds3::new(
+            PatinaPoint3f::new(0.0, 0.0, 0.0),
+            PatinaPoint3f::new(2.0, 2.0, 2.0),
+        );
+
+        let r = PatinaRay3f::new(
+            PatinaPoint3f::new(3.0, 3.0, 3.0),
+            PatinaVec3f::new(1.0, 1.0, 1.0),
+            0.0,
+        );
+
+        let res = a.intersects(&r.o, &r.d, PatinaFloat::INFINITY);
+        assert!(res.is_none());
     }
 }

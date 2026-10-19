@@ -29,6 +29,12 @@ pub use vectors::{
 pub type PatinaFloat = f64;
 pub type PatinaInt = i64;
 
+pub(crate) const MACHINE_EPSILON: PatinaFloat = PatinaFloat::EPSILON * 0.5;
+pub(crate) const fn gamma(n: i32) -> PatinaFloat {
+    let n = n as PatinaFloat;
+    (n * MACHINE_EPSILON) / (1.0 - n * MACHINE_EPSILON)
+}
+
 #[derive(Clone, Copy)]
 pub(crate) struct Point2D<T> {
     pub x: T,
@@ -42,4 +48,28 @@ pub(crate) fn safe_asin(x: PatinaFloat) -> PatinaFloat {
 #[allow(dead_code)]
 pub(crate) fn safe_acos(x: PatinaFloat) -> PatinaFloat {
     x.clamp(-1.0, 1.0).acos()
+}
+
+impl From<PatinaVec3f> for PatinaPoint3f {
+    fn from(value: PatinaVec3f) -> Self {
+        PatinaPoint3f::new(value.x, value.y, value.z)
+    }
+}
+
+impl From<PatinaVec2f> for PatinaPoint2f {
+    fn from(value: PatinaVec2f) -> Self {
+        PatinaPoint2f::new(value.x, value.y)
+    }
+}
+
+impl From<PatinaPoint3f> for PatinaVec3f {
+    fn from(value: PatinaPoint3f) -> Self {
+        PatinaVec3f::new(value.x, value.y, value.z)
+    }
+}
+
+impl From<PatinaPoint2f> for PatinaVec2f {
+    fn from(value: PatinaPoint2f) -> Self {
+        PatinaVec2f::new(value.x, value.y)
+    }
 }

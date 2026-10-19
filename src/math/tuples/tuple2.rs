@@ -4,12 +4,12 @@ use std::{
 };
 
 use approx::{AbsDiffEq, RelativeEq};
-use num_traits::{Float, Num, float::FloatCore};
+use num_traits::{Float, Num, ToPrimitive, float::FloatCore};
 
 use crate::math::{
     PatinaFloat,
     traits::CheckNan,
-    tuples::{Difference, Direction},
+    tuples::{Difference, Direction, TupleLength},
 };
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -137,6 +137,33 @@ impl<T: Float + CheckNan, Type> Tuple2<T, Type> {
 }
 
 // Dot product between any two directions: vector or normal, in either order.
+// Lengths are defined for directions (vectors and normals), not for points.
+impl<T: Num + Copy + CheckNan + ToPrimitive, Type: Direction> Tuple2<T, Type> {
+    pub fn len_squared(&self) -> T {
+        self.x * self.x + self.y * self.y
+    }
+
+    pub fn len(&self) -> TupleLength {
+        self.len_squared()
+            .to_f64()
+            .expect("Conversion to f64 failed")
+            .sqrt()
+    }
+
+    // Keeps the tag, so a normalized normal is still a normal. It can't return Tuple2<T, Type>, as
+    // a normalized integer tuple needs float values.
+    pub fn normalize(&self) -> Tuple2<TupleLength, Type> {
+        let len = self.len();
+        if len == 0.0 {
+            return Tuple2::new(0.0, 0.0);
+        }
+        Tuple2::new(
+            self.x.to_f64().expect("Conversion to f64 failed") / len,
+            self.y.to_f64().expect("Conversion to f64 failed") / len,
+        )
+    }
+}
+
 impl<T: Num + Copy, Type: Direction> Tuple2<T, Type> {
     pub fn dot<Rhs: Direction>(&self, rhs: &Tuple2<T, Rhs>) -> T {
         self.x * rhs.x + self.y * rhs.y

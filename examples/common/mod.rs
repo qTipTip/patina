@@ -5,7 +5,12 @@
 use std::path::{Path, PathBuf};
 
 use image::{Rgb, RgbImage};
-use patina::math::{PatinaFloat, PatinaPoint2f, PatinaPoint3f, PatinaRay3f};
+use std::f64::consts::PI;
+
+use patina::{
+    math::{PatinaFloat, PatinaPoint2f, PatinaPoint3f, PatinaRay3f, PatinaVec3f, Transform},
+    shapes::{Shape, ShapeIntersection, Sphere},
+};
 
 pub struct Film {
     width: usize,
@@ -67,71 +72,37 @@ pub fn background_color(p_film: PatinaPoint2f, width: usize, height: usize) -> [
     [r, g, b]
 }
 
-pub struct Sphere {
-    pub origin: PatinaPoint3f,
-    pub radius: PatinaFloat,
+// A full sphere of the given radius, centered at `center`. The library's spheres are centered at
+// the origin of their object space, and placed with a render_from_object transform.
+pub fn sphere_at(center: PatinaPoint3f, radius: PatinaFloat) -> Sphere {
+    let render_from_object = Transform::translate(&PatinaVec3f::from(center));
+    Sphere::new(radius, render_from_object, -radius, radius, 2.0 * PI, false)
 }
 
-// A ray-sphere hit. the distance along the ray, and the point it hits.
-pub struct Hit {
-    pub t: PatinaFloat,
-    pub p: PatinaPoint3f,
-}
-
-impl Sphere {
-    // Returns the closest hit in front of the ray's origin with t < t_max, if any.
-    pub fn intersect(&self, ray: &PatinaRay3f, t_max: PatinaFloat) -> Option<Hit> {
-        // Vector from the sphere's center to the ray's origin (Point - Point = Vector).
-        let oc = ray.o - self.origin;
-
-        let a = ray.d.dot(&ray.d);
-        let b = 2.0 * oc.dot(&ray.d);
-        let c = oc.dot(&oc) - self.radius * self.radius;
-
-        let discriminant = b * b - 4.0 * a * c;
-        if discriminant < 0.0 {
-            return None;
-        }
-
-        // The two solutions, nearest first. Use the nearest one in [0, t_max).
-        let sqrt_discriminant = discriminant.sqrt();
-        let t0 = (-b - sqrt_discriminant) / (2.0 * a);
-        let t1 = (-b + sqrt_discriminant) / (2.0 * a);
-        let t = [t0, t1].into_iter().find(|t| (0.0..t_max).contains(t))?;
-
-        Some(Hit { t, p: ray.eval(t) })
-    }
-
-    // Returns the closest point where the ray hits the sphere, if it hits at all (t >= 0).
-    pub fn ray_intersection(&self, ray: &PatinaRay3f) -> Option<PatinaPoint3f> {
-        self.intersect(ray, PatinaFloat::INFINITY).map(|hit| hit.p)
-    }
-}
-
-// The closest hit among several spheres, together with the sphere that was hit. Each hit lowers
-// t_max, so spheres behind the closest one so far are rejected.
-pub fn closest_hit<'a>(spheres: &'a [Sphere], ray: &PatinaRay3f) -> Option<(&'a Sphere, Hit)> {
+// The closest intersection among the spheres. Each hit lowers t_max, so spheres behind the closest
+// one so far are rejected.
+pub fn closest_hit(spheres: &[Sphere], ray: &PatinaRay3f) -> Option<ShapeIntersection> {
     let mut closest = None;
     let mut t_max = PatinaFloat::INFINITY;
     for sphere in spheres {
-        if let Some(hit) = sphere.intersect(ray, t_max) {
-            t_max = hit.t;
-            closest = Some((sphere, hit));
+        if let Some(isect) = sphere.intersect(ray, Some(t_max)) {
+            t_max = isect.t_hit;
+            closest = Some(isect);
         }
     }
     closest
 }
 
-// The depth range of the scene, used to shade every sphere on the same scale: from the front of the
-// nearest sphere to the back of the farthest one.
+// The depth range of the scene, from the spheres' bounding boxes: the front of the nearest sphere to
+// the back of the farthest one.
 pub fn depth_range(spheres: &[Sphere]) -> (PatinaFloat, PatinaFloat) {
-    let near = spheres
-        .iter()
-        .map(|s| s.origin.z - s.radius)
+    let bounds = spheres.iter().map(|s| s.bounds());
+    let near = bounds
+        .clone()
+        .map(|b| b.p_min.z)
         .fold(PatinaFloat::INFINITY, PatinaFloat::min);
-    let far = spheres
-        .iter()
-        .map(|s| s.origin.z + s.radius)
+    let far = bounds
+        .map(|b| b.p_max.z)
         .fold(PatinaFloat::NEG_INFINITY, PatinaFloat::max);
     (near, far)
 }
