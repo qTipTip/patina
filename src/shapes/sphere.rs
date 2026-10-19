@@ -1,13 +1,46 @@
 use crate::{
-    math::{Bounds3f, PatinaFloat, PatinaPoint2f, PatinaRay3f, PatinaVec3f},
+    math::{Bounds3f, PatinaFloat, PatinaPoint2f, PatinaRay3f, PatinaVec3f, Transform},
     shapes::Shape,
 };
 
 use super::{ShapeSample, ShapeSampleContext};
 
-pub struct Sphere;
+/// A sphere is sweeped out using polar coordinates around the origin (in object space). A
+/// transformation (render_from_object/object_from_render) is used to place the sphere in render
+/// space.
+pub struct Sphere {
+    // Radius of the sphere
+    radius: PatinaFloat,
+    // Whether to reverse the direction of surface normals to point inwards.
+    reverse_orientation: bool,
+    render_from_object: Transform,
+    object_from_render: Transform,
+    z_min: PatinaFloat,
+    z_max: PatinaFloat,
+    phi_max: PatinaFloat,
+}
 
-impl Sphere {}
+impl Sphere {
+    pub fn new(
+        radius: PatinaFloat,
+        render_from_object: Transform,
+        z_min: PatinaFloat,
+        z_max: PatinaFloat,
+        phi_max: PatinaFloat,
+        reverse_orientation: bool,
+    ) -> Self {
+        let object_from_render = render_from_object.inverse();
+        Self {
+            radius,
+            reverse_orientation,
+            render_from_object,
+            object_from_render,
+            z_min,
+            z_max,
+            phi_max,
+        }
+    }
+}
 
 impl Shape for Sphere {
     fn bounds() -> Bounds3f {
