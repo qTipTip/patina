@@ -37,14 +37,21 @@ impl Sphere {
         phi_max: PatinaFloat,
         reverse_orientation: bool,
     ) -> Self {
+        // Like pbrt, accept z_min and z_max in either order and clamp them to the sphere, where
+        // -radius and radius mean the sphere isn't cut at that end. phi_max is in radians, and is
+        // clamped to a full turn.
+        let z_min_clamped = z_min.min(z_max).clamp(-radius, radius);
+        let z_max_clamped = z_min.max(z_max).clamp(-radius, radius);
+        let phi_max = phi_max.clamp(0.0, 2.0 * PI);
+
         let object_from_render = render_from_object.inverse();
         Self {
             radius,
             reverse_orientation,
             render_from_object,
             object_from_render,
-            z_min,
-            z_max,
+            z_min: z_min_clamped,
+            z_max: z_max_clamped,
             phi_max,
         }
     }
@@ -56,10 +63,6 @@ impl Sphere {
         r: PatinaRay3f,
         t_max: PatinaFloat,
     ) -> Option<QuadraticIntersection> {
-        debug_assert!(self.z_min < self.z_max);
-        debug_assert!(self.z_min > -self.radius && self.z_min < self.radius);
-        debug_assert!(self.z_max > -self.radius && self.z_max < self.radius);
-
         // Intersect in object space, where the sphere is centered at the origin.
         let r_object = self.object_from_render.apply(r);
         let o = PatinaVec3f::from(r_object.o);
@@ -202,5 +205,240 @@ impl Shape for Sphere {
 
     fn pdf_from_point(&self, ctx: &ShapeSampleContext, w_incident: PatinaVec3f) -> PatinaFloat {
         todo!()
+    }
+}
+
+#[cfg(test)]
+mod test_basic_intersection {
+    use std::f64::consts::PI;
+
+    use approx::assert_relative_eq;
+
+    use crate::{
+        math::{PatinaFloat, PatinaPoint3f, PatinaRay3f, PatinaVec3f, Transform},
+        shapes::sphere::Sphere,
+    };
+
+    fn ray(
+        o: (PatinaFloat, PatinaFloat, PatinaFloat),
+        d: (PatinaFloat, PatinaFloat, PatinaFloat),
+    ) -> PatinaRay3f {
+        PatinaRay3f::new(
+            PatinaPoint3f::new(o.0, o.1, o.2),
+            PatinaVec3f::new(d.0, d.1, d.2),
+            0.0,
+        )
+    }
+
+    // A full sphere of the given radius, centered at the origin of render space.
+    fn full_sphere(radius: PatinaFloat) -> Sphere {
+        Sphere::new(
+            radius,
+            Transform::identity(),
+            -radius,
+            radius,
+            2.0 * PI,
+            false,
+        )
+    }
+
+    #[test]
+    fn test_hit_from_outside() {
+        let s = full_sphere(1.0);
+        let hit = s
+            .basic_intersection(
+                ray((0.0, 0.0, -5.0), (0.0, 0.0, 1.0)),
+                PatinaFloat::INFINITY,
+            )
+            .expect("ray through the center should hit");
+
+        assert_relative_eq!(hit.t_hit, 4.0);
+        assert_relative_eq!(hit.p_object.z, -1.0);
+    }
+
+    #[test]
+    fn test_hit_off_axis() {
+        // Hits at z = -sqrt(1 - 0.5^2 - 0.5^2) = -sqrt(0.5), at an angle of 45 degrees around z.
+        let s = full_sphere(1.0);
+        let hit = s
+            .basic_intersection(
+                ray((0.5, 0.5, -5.0), (0.0, 0.0, 1.0)),
+                PatinaFloat::INFINITY,
+            )
+            .expect("ray should hit");
+
+        let z = -(0.5 as PatinaFloat).sqrt();
+        assert_relative_eq!(hit.t_hit, 5.0 + z);
+        assert_relative_eq!(hit.p_object, PatinaPoint3f::new(0.5, 0.5, z));
+        assert_relative_eq!(hit.phi, PI / 4.0);
+    }
+
+    #[test]
+    fn test_hit_point_is_on_surface() {
+        let s = full_sphere(2.0);
+        let hit = s
+            .basic_intersection(
+                ray((0.3, -0.7, -10.0), (0.1, 0.05, 1.0)),
+                PatinaFloat::INFINITY,
+            )
+            .expect("ray should hit");
+
+        assert_relative_eq!(hit.p_object.distance(PatinaPoint3f::zero()), 2.0);
+    }
+
+    #[test]
+    fn test_hit_on_axis_nudges_x() {
+        // A hit exactly on the z-axis is moved slightly off it, so phi is well defined.
+        let s = full_sphere(1.0);
+        let hit = s
+            .basic_intersection(
+                ray((0.0, 0.0, -5.0), (0.0, 0.0, 1.0)),
+                PatinaFloat::INFINITY,
+            )
+            .expect("ray should hit");
+
+        assert_relative_eq!(hit.p_object.x, 1e-5);
+        assert_relative_eq!(hit.p_object.y, 0.0);
+    }
+
+    #[test]
+    fn test_miss() {
+        let s = full_sphere(1.0);
+        let hit = s.basic_intersection(
+            ray((2.0, 0.0, -5.0), (0.0, 0.0, 1.0)),
+            PatinaFloat::INFINITY,
+        );
+
+        assert!(hit.is_none());
+    }
+
+    #[test]
+    fn test_sphere_behind_ray() {
+        let s = full_sphere(1.0);
+        let hit =
+            s.basic_intersection(ray((0.0, 0.0, 5.0), (0.0, 0.0, 1.0)), PatinaFloat::INFINITY);
+
+        assert!(hit.is_none());
+    }
+
+    #[test]
+    fn test_origin_inside_hits_far_side() {
+        let s = full_sphere(1.0);
+        let hit = s
+            .basic_intersection(ray((0.0, 0.0, 0.0), (0.0, 0.0, 1.0)), PatinaFloat::INFINITY)
+            .expect("ray from inside should hit the far side");
+
+        assert_relative_eq!(hit.t_hit, 1.0);
+        assert_relative_eq!(hit.p_object.z, 1.0);
+    }
+
+    #[test]
+    fn test_t_max_before_sphere() {
+        // The sphere is entered at t = 4, beyond t_max.
+        let s = full_sphere(1.0);
+        let hit = s.basic_intersection(ray((0.0, 0.0, -5.0), (0.0, 0.0, 1.0)), 3.0);
+
+        assert!(hit.is_none());
+    }
+
+    #[test]
+    fn test_z_cut_falls_through_to_far_hit() {
+        // Only the bottom half (z <= 0) exists, so a ray from above passes through the missing top
+        // and hits the inside of the bottom.
+        let s = Sphere::new(1.0, Transform::identity(), -1.0, 0.0, 2.0 * PI, false);
+        let hit = s
+            .basic_intersection(
+                ray((0.0, 0.0, 5.0), (0.0, 0.0, -1.0)),
+                PatinaFloat::INFINITY,
+            )
+            .expect("ray should hit the bottom half");
+
+        assert_relative_eq!(hit.t_hit, 6.0);
+        assert_relative_eq!(hit.p_object.z, -1.0);
+    }
+
+    #[test]
+    fn test_z_cut_on_both_hits() {
+        // A band around the equator: a ray along the z-axis hits the sphere only where it's cut away.
+        let s = Sphere::new(1.0, Transform::identity(), -0.5, 0.5, 2.0 * PI, false);
+        let hit = s.basic_intersection(
+            ray((0.0, 0.0, -5.0), (0.0, 0.0, 1.0)),
+            PatinaFloat::INFINITY,
+        );
+
+        assert!(hit.is_none());
+    }
+
+    #[test]
+    fn test_phi_cut_falls_through_to_far_hit() {
+        // Only phi in [0, pi] exists (y >= 0). The near hit has y < 0 and is cut away and the far hit at
+        // y = sqrt(0.75) remains.
+        let s = Sphere::new(1.0, Transform::identity(), -1.0, 1.0, PI, false);
+        let hit = s
+            .basic_intersection(
+                ray((0.5, -5.0, 0.0), (0.0, 1.0, 0.0)),
+                PatinaFloat::INFINITY,
+            )
+            .expect("ray should hit the remaining half");
+
+        let y = (0.75 as PatinaFloat).sqrt();
+        assert_relative_eq!(hit.t_hit, 5.0 + y);
+        assert_relative_eq!(hit.p_object, PatinaPoint3f::new(0.5, y, 0.0));
+        assert_relative_eq!(hit.phi, PI / 3.0);
+    }
+
+    #[test]
+    fn test_render_from_object_transform() {
+        // A sphere moved to z = 10 in render space. The hit is reported in object space, where the
+        // sphere is still centered at the origin.
+        let s = Sphere::new(
+            1.0,
+            Transform::translate(&PatinaVec3f::new(0.0, 0.0, 10.0)),
+            -1.0,
+            1.0,
+            2.0 * PI,
+            false,
+        );
+        let hit = s
+            .basic_intersection(ray((0.0, 0.0, 0.0), (0.0, 0.0, 1.0)), PatinaFloat::INFINITY)
+            .expect("ray should hit the moved sphere");
+
+        assert_relative_eq!(hit.t_hit, 9.0);
+        assert_relative_eq!(hit.p_object.z, -1.0);
+    }
+}
+
+#[cfg(test)]
+mod test_constructor {
+    use std::f64::consts::PI;
+
+    use approx::assert_relative_eq;
+
+    use crate::{math::Transform, shapes::sphere::Sphere};
+
+    #[test]
+    fn test_z_range_is_ordered_and_clamped() {
+        // Swapped, and both outside the sphere.
+        let s = Sphere::new(1.0, Transform::identity(), 2.0, -3.0, 2.0 * PI, false);
+
+        assert_relative_eq!(s.z_min, -1.0);
+        assert_relative_eq!(s.z_max, 1.0);
+    }
+
+    #[test]
+    fn test_z_range_inside_sphere_is_kept() {
+        let s = Sphere::new(2.0, Transform::identity(), 0.5, -0.25, 2.0 * PI, false);
+
+        assert_relative_eq!(s.z_min, -0.25);
+        assert_relative_eq!(s.z_max, 0.5);
+    }
+
+    #[test]
+    fn test_phi_max_is_clamped() {
+        let too_large = Sphere::new(1.0, Transform::identity(), -1.0, 1.0, 10.0, false);
+        let negative = Sphere::new(1.0, Transform::identity(), -1.0, 1.0, -1.0, false);
+
+        assert_relative_eq!(too_large.phi_max, 2.0 * PI);
+        assert_relative_eq!(negative.phi_max, 0.0);
     }
 }
