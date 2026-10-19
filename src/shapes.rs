@@ -1,3 +1,5 @@
+pub mod sphere;
+
 use crate::math::{Bounds3f, PatinaFloat, PatinaRay3f};
 
 pub struct SurfaceInteraction;
