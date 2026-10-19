@@ -1,4 +1,4 @@
-pub mod sphere;
+pub(crate) mod sphere;
 
 use crate::math::{Bounds3f, PatinaFloat, PatinaRay3f};
 
@@ -23,4 +23,7 @@ pub trait Shape {
 
     // TODO: Implement direction-cone
     // fn normal_bounds() -> DirectionCone;
+
+    /// Returns the surface area of the shape in question. Useful specifically for emitters.
+    fn area(&self) -> PatinaFloat;
 }
