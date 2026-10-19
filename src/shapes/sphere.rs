@@ -56,6 +56,10 @@ impl Sphere {
         r: PatinaRay3f,
         t_max: PatinaFloat,
     ) -> Option<QuadraticIntersection> {
+        debug_assert!(self.z_min < self.z_max);
+        debug_assert!(self.z_min > -self.radius && self.z_min < self.radius);
+        debug_assert!(self.z_max > -self.radius && self.z_max < self.radius);
+
         // Intersect in object space, where the sphere is centered at the origin.
         let r_object = self.object_from_render.apply(r);
         let o = PatinaVec3f::from(r_object.o);
