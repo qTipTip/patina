@@ -13,10 +13,13 @@ pub struct Sphere {
     radius: PatinaFloat,
     // Whether to reverse the direction of surface normals to point inwards.
     reverse_orientation: bool,
+    // Places the object in rendering space.
     render_from_object: Transform,
     object_from_render: Transform,
+    // z_min and z_max for truncated sphere if desired
     z_min: PatinaFloat,
     z_max: PatinaFloat,
+    // phi_max for partial sphere
     phi_max: PatinaFloat,
 }
 
