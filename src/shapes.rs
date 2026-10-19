@@ -1,5 +1,7 @@
 pub(crate) mod sphere;
 
+pub use sphere::Sphere;
+
 use crate::math::{
     Bounds3f, PatinaFloat, PatinaNorm3f, PatinaPoint2f, PatinaPoint3f, PatinaRay3f, PatinaVec3f,
 };
