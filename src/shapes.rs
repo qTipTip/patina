@@ -4,10 +4,27 @@ use crate::math::{
     Bounds3f, PatinaFloat, PatinaNorm3f, PatinaPoint2f, PatinaPoint3f, PatinaRay3f, PatinaVec3f,
 };
 
-pub struct SurfaceInteraction;
+/// The local geometry at a ray-surface hit, in render space. A minimal version of pbrt's
+/// SurfaceInteraction: partial derivatives (dpdu, dpdv, dndu, dndv) are left out until a later
+/// chapter needs them.
+pub struct SurfaceInteraction {
+    /// The hit point.
+    pub p: PatinaPoint3f,
+    /// The geometric surface normal, normalized. Points outwards unless the shape's orientation
+    /// is reversed.
+    pub n: PatinaNorm3f,
+    /// The shape's (u, v) parameterization of the hit point, each in [0, 1].
+    pub uv: PatinaPoint2f,
+    /// The normalized direction back along the ray, towards its origin.
+    pub wo: PatinaVec3f,
+    /// The time of the ray that produced the hit.
+    pub time: PatinaFloat,
+}
+
 pub struct ShapeIntersection {
-    interaction: SurfaceInteraction,
-    t_hit: PatinaFloat,
+    pub interaction: SurfaceInteraction,
+    /// The distance along the ray to the hit.
+    pub t_hit: PatinaFloat,
 }
 
 pub struct Interaction;

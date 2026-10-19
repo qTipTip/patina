@@ -2,13 +2,13 @@ use std::{f64::consts::PI, mem::swap};
 
 use crate::{
     math::{
-        Apply, Bounds3f, PatinaFloat, PatinaPoint2f, PatinaPoint3f, PatinaRay3f, PatinaVec3f,
-        Transform,
+        Apply, Bounds3f, PatinaFloat, PatinaNorm3f, PatinaPoint2f, PatinaPoint3f, PatinaRay3f,
+        PatinaVec3f, Transform, safe_acos,
     },
     shapes::Shape,
 };
 
-use super::{ShapeSample, ShapeSampleContext};
+use super::{ShapeIntersection, ShapeSample, ShapeSampleContext, SurfaceInteraction};
 
 /// A sphere is sweeped out using polar coordinates around the origin (in object space). A
 /// transformation (render_from_object/object_from_render) is used to place the sphere in render
@@ -26,6 +26,9 @@ pub struct Sphere {
     z_max: PatinaFloat,
     // phi_max for partial sphere
     phi_max: PatinaFloat,
+    // The polar angles of z_min and z_max, used for the v coordinate of a hit.
+    theta_z_min: PatinaFloat,
+    theta_z_max: PatinaFloat,
 }
 
 impl Sphere {
@@ -44,6 +47,9 @@ impl Sphere {
         let z_max_clamped = z_min.max(z_max).clamp(-radius, radius);
         let phi_max = phi_max.clamp(0.0, 2.0 * PI);
 
+        let theta_z_min = safe_acos(z_min_clamped / radius);
+        let theta_z_max = safe_acos(z_max_clamped / radius);
+
         let object_from_render = render_from_object.inverse();
         Self {
             radius,
@@ -53,6 +59,8 @@ impl Sphere {
             z_min: z_min_clamped,
             z_max: z_max_clamped,
             phi_max,
+            theta_z_min,
+            theta_z_max,
         }
     }
 
@@ -157,6 +165,40 @@ impl Sphere {
             || (self.z_max < self.radius && p_hit.z > self.z_max)
             || phi > self.phi_max
     }
+
+    // Builds the SurfaceInteraction for a hit found by basic_intersection, transformed to render
+    // space. `wo` is the direction back towards the ray's origin, in render space.
+    fn interaction_from_intersection(
+        &self,
+        isect: &QuadraticIntersection,
+        wo: PatinaVec3f,
+        time: PatinaFloat,
+    ) -> SurfaceInteraction {
+        let p_object = isect.p_object;
+
+        // (u, v): u goes around the z-axis from 0 to phi_max, v from z_min up to z_max.
+        let u = isect.phi / self.phi_max;
+        let theta = safe_acos(p_object.z / self.radius);
+        let v = (theta - self.theta_z_min) / (self.theta_z_max - self.theta_z_min);
+
+        // On a sphere centered at the origin, the outward normal points along the hit point.
+        let mut n_object = PatinaNorm3f::from(PatinaVec3f::from(p_object) / self.radius);
+        if self.reverse_orientation {
+            n_object = -n_object;
+        }
+
+        // Normals transform with the inverse transpose, which doesn't keep them normalized under
+        // scaling, so normalize again in render space.
+        let n = self.render_from_object.apply(n_object).normalize();
+
+        SurfaceInteraction {
+            p: self.render_from_object.apply(p_object),
+            n,
+            uv: PatinaPoint2f::new(u, v),
+            wo: wo.normalize(),
+            time,
+        }
+    }
 }
 
 // The result of a ray-sphere intersection in object space. pbrt calls this QuadricIntersection, as
@@ -179,8 +221,14 @@ impl Shape for Sphere {
         &self,
         ray: &PatinaRay3f,
         t_max: Option<PatinaFloat>,
-    ) -> Option<super::ShapeIntersection> {
-        todo!()
+    ) -> Option<ShapeIntersection> {
+        let isect = self.basic_intersection(*ray, t_max.unwrap_or(PatinaFloat::INFINITY))?;
+        let interaction = self.interaction_from_intersection(&isect, -ray.d, ray.t);
+
+        Some(ShapeIntersection {
+            interaction,
+            t_hit: isect.t_hit,
+        })
     }
 
     fn intersects(&self, ray: &PatinaRay3f, t_max: Option<PatinaFloat>) -> bool {
@@ -440,5 +488,110 @@ mod test_constructor {
 
         assert_relative_eq!(too_large.phi_max, 2.0 * PI);
         assert_relative_eq!(negative.phi_max, 0.0);
+    }
+}
+
+#[cfg(test)]
+mod test_intersect {
+    use std::f64::consts::PI;
+
+    use approx::assert_relative_eq;
+
+    use crate::{
+        math::{
+            PatinaFloat, PatinaNorm3f, PatinaPoint2f, PatinaPoint3f, PatinaRay3f, PatinaVec3f,
+            Transform,
+        },
+        shapes::{Shape, sphere::Sphere},
+    };
+
+    // A unit sphere moved to z = 10 in render space.
+    fn moved_sphere(reverse_orientation: bool) -> Sphere {
+        Sphere::new(
+            1.0,
+            Transform::translate(&PatinaVec3f::new(0.0, 0.0, 10.0)),
+            -1.0,
+            1.0,
+            2.0 * PI,
+            reverse_orientation,
+        )
+    }
+
+    // An off-axis ray along +z from the origin. It hits the moved sphere at object space point
+    // (0.5, 0.5, -sqrt(0.5)), at phi = pi/4 and theta = 3pi/4.
+    fn off_axis_ray() -> PatinaRay3f {
+        PatinaRay3f::new(
+            PatinaPoint3f::new(0.5, 0.5, 0.0),
+            PatinaVec3f::new(0.0, 0.0, 1.0),
+            0.25,
+        )
+    }
+
+    #[test]
+    fn test_intersection_in_render_space() {
+        let s = moved_sphere(false);
+        let isect = s
+            .intersect(&off_axis_ray(), None)
+            .expect("ray should hit the sphere");
+        let z = (0.5 as PatinaFloat).sqrt();
+
+        assert_relative_eq!(isect.t_hit, 10.0 - z);
+        assert_relative_eq!(isect.interaction.p, PatinaPoint3f::new(0.5, 0.5, 10.0 - z));
+        // The outward normal at the hit points back towards the ray's side of the sphere.
+        assert_relative_eq!(isect.interaction.n, PatinaNorm3f::new(0.5, 0.5, -z));
+        assert_relative_eq!(isect.interaction.wo, PatinaVec3f::new(0.0, 0.0, -1.0));
+        assert_relative_eq!(isect.interaction.time, 0.25);
+    }
+
+    #[test]
+    fn test_uv() {
+        // u = phi / phi_max = (pi/4) / (2pi). v goes from 0 at z_min (theta = pi) to 1 at z_max
+        // (theta = 0), so theta = 3pi/4 gives v = 1/4.
+        let s = moved_sphere(false);
+        let isect = s.intersect(&off_axis_ray(), None).expect("ray should hit");
+
+        assert_relative_eq!(isect.interaction.uv, PatinaPoint2f::new(0.125, 0.25));
+    }
+
+    #[test]
+    fn test_reverse_orientation_flips_normal() {
+        let s = moved_sphere(true);
+        let isect = s.intersect(&off_axis_ray(), None).expect("ray should hit");
+        let z = (0.5 as PatinaFloat).sqrt();
+
+        assert_relative_eq!(isect.interaction.n, PatinaNorm3f::new(-0.5, -0.5, z));
+    }
+
+    #[test]
+    fn test_normal_is_normalized_under_scaling() {
+        // A sphere scaled non-uniformly into an ellipsoid. The normal must still be unit length.
+        let s = Sphere::new(
+            1.0,
+            Transform::scale(2.0, 1.0, 0.5),
+            -1.0,
+            1.0,
+            2.0 * PI,
+            false,
+        );
+        let ray = PatinaRay3f::new(
+            PatinaPoint3f::new(0.7, 0.3, -5.0),
+            PatinaVec3f::new(0.0, 0.0, 1.0),
+            0.0,
+        );
+        let n = s
+            .intersect(&ray, None)
+            .expect("ray should hit")
+            .interaction
+            .n;
+
+        assert_relative_eq!(n.len(), 1.0);
+    }
+
+    #[test]
+    fn test_t_max() {
+        let s = moved_sphere(false);
+
+        assert!(s.intersect(&off_axis_ray(), Some(5.0)).is_none());
+        assert!(s.intersect(&off_axis_ray(), Some(20.0)).is_some());
     }
 }
