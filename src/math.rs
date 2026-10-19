@@ -54,8 +54,8 @@ pub(crate) fn safe_acos(x: PatinaFloat) -> PatinaFloat {
     x.clamp(-1.0, 1.0).acos()
 }
 
-impl From<PatinaVec3f> for PatinaPoint3f {
-    fn from(value: PatinaVec3f) -> Self {
+impl<S> From<PatinaVec3f<S>> for PatinaPoint3f<S> {
+    fn from(value: PatinaVec3f<S>) -> Self {
         PatinaPoint3f::new(value.x, value.y, value.z)
     }
 }
@@ -66,8 +66,8 @@ impl From<PatinaVec2f> for PatinaPoint2f {
     }
 }
 
-impl From<PatinaPoint3f> for PatinaVec3f {
-    fn from(value: PatinaPoint3f) -> Self {
+impl<S> From<PatinaPoint3f<S>> for PatinaVec3f<S> {
+    fn from(value: PatinaPoint3f<S>) -> Self {
         PatinaVec3f::new(value.x, value.y, value.z)
     }
 }

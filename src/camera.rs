@@ -192,13 +192,18 @@ mod test_camera_transform {
             render_from_world.apply(p),
             PatinaPoint3f::new(v.x, v.y, v.z)
         );
-        // world directions are unchanged
+        // world directions are unchanged: the render-space vector has the same components
         let w = PatinaVec3f::new(3.2, 1.2, -2.3);
-        assert_eq!(render_from_world.apply(w), w);
+        assert_eq!(render_from_world.apply(w), PatinaVec3f::new(w.x, w.y, w.z));
 
-        // camera keeps it's world orientation
+        // camera keeps it's world orientation: its directions have the same components in render
+        // space as in world space
         let v = PatinaVec3f::new(3.2, 1.2, -2.3);
-        assert_eq!(c.render_from_camera.apply(v), world_from_camera.apply(v));
+        let v_world = world_from_camera.apply(v);
+        assert_eq!(
+            c.render_from_camera.apply(v),
+            PatinaVec3f::new(v_world.x, v_world.y, v_world.z)
+        );
     }
 
     #[test]

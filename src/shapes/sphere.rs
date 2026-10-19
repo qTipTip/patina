@@ -68,7 +68,7 @@ impl Sphere {
     /// The hit is reported in object space; `intersect` turns it into a SurfaceInteraction.
     fn basic_intersection(
         &self,
-        r: PatinaRay3f,
+        r: PatinaRay3f<RenderSpace>,
         t_max: PatinaFloat,
     ) -> Option<QuadraticIntersection> {
         // Intersect in object space, where the sphere is centered at the origin.
@@ -140,9 +140,9 @@ impl Sphere {
     // The object-space point at distance t along the ray, and its angle phi around the z-axis.
     fn hit_point_and_phi(
         &self,
-        r_object: &PatinaRay3f,
+        r_object: &PatinaRay3f<ObjectSpace>,
         t: PatinaFloat,
-    ) -> (PatinaPoint3f, PatinaFloat) {
+    ) -> (PatinaPoint3f<ObjectSpace>, PatinaFloat) {
         let mut p_hit = r_object.eval(t);
 
         // Refine the hit point by projecting it back onto the sphere's surface.
@@ -160,7 +160,7 @@ impl Sphere {
     }
 
     // Whether a hit point lies outside the part of the sphere bounded by z_min, z_max and phi_max.
-    fn is_cut_away(&self, p_hit: &PatinaPoint3f, phi: PatinaFloat) -> bool {
+    fn is_cut_away(&self, p_hit: &PatinaPoint3f<ObjectSpace>, phi: PatinaFloat) -> bool {
         (self.z_min > -self.radius && p_hit.z < self.z_min)
             || (self.z_max < self.radius && p_hit.z > self.z_max)
             || phi > self.phi_max
@@ -171,7 +171,7 @@ impl Sphere {
     fn interaction_from_intersection(
         &self,
         isect: &QuadraticIntersection,
-        wo: PatinaVec3f,
+        wo: PatinaVec3f<RenderSpace>,
         time: PatinaFloat,
     ) -> SurfaceInteraction {
         let p_object = isect.p_object;
@@ -205,13 +205,13 @@ impl Sphere {
 // it's shared by the quadric shapes (spheres, cylinders, disks).
 struct QuadraticIntersection {
     t_hit: PatinaFloat,
-    p_object: PatinaPoint3f,
+    p_object: PatinaPoint3f<ObjectSpace>,
     phi: PatinaFloat,
 }
 
 #[allow(unused_variables)]
 impl Shape for Sphere {
-    fn bounds(&self) -> Bounds3f {
+    fn bounds(&self) -> Bounds3f<RenderSpace> {
         self.render_from_object.apply(Bounds3f::new(
             PatinaPoint3f::new(-self.radius, -self.radius, self.z_min),
             PatinaPoint3f::new(self.radius, self.radius, self.z_max),
@@ -220,7 +220,7 @@ impl Shape for Sphere {
 
     fn intersect(
         &self,
-        ray: &PatinaRay3f,
+        ray: &PatinaRay3f<RenderSpace>,
         t_max: Option<PatinaFloat>,
     ) -> Option<ShapeIntersection> {
         let isect = self.basic_intersection(*ray, t_max.unwrap_or(PatinaFloat::INFINITY))?;
@@ -232,7 +232,7 @@ impl Shape for Sphere {
         })
     }
 
-    fn intersects(&self, ray: &PatinaRay3f, t_max: Option<PatinaFloat>) -> bool {
+    fn intersects(&self, ray: &PatinaRay3f<RenderSpace>, t_max: Option<PatinaFloat>) -> bool {
         todo!()
     }
 
@@ -252,7 +252,11 @@ impl Shape for Sphere {
         todo!()
     }
 
-    fn pdf_from_point(&self, ctx: &ShapeSampleContext, w_incident: PatinaVec3f) -> PatinaFloat {
+    fn pdf_from_point(
+        &self,
+        ctx: &ShapeSampleContext,
+        w_incident: PatinaVec3f<RenderSpace>,
+    ) -> PatinaFloat {
         todo!()
     }
 }
@@ -264,14 +268,14 @@ mod test_basic_intersection {
     use approx::assert_relative_eq;
 
     use crate::{
-        math::{PatinaFloat, PatinaPoint3f, PatinaRay3f, PatinaVec3f, Transform},
+        math::{PatinaFloat, PatinaPoint3f, PatinaRay3f, PatinaVec3f, RenderSpace, Transform},
         shapes::sphere::Sphere,
     };
 
     fn ray(
         o: (PatinaFloat, PatinaFloat, PatinaFloat),
         d: (PatinaFloat, PatinaFloat, PatinaFloat),
-    ) -> PatinaRay3f {
+    ) -> PatinaRay3f<RenderSpace> {
         PatinaRay3f::new(
             PatinaPoint3f::new(o.0, o.1, o.2),
             PatinaVec3f::new(d.0, d.1, d.2),
@@ -501,7 +505,7 @@ mod test_intersect {
     use crate::{
         math::{
             PatinaFloat, PatinaNorm3f, PatinaPoint2f, PatinaPoint3f, PatinaRay3f, PatinaVec3f,
-            Transform,
+            RenderSpace, Transform,
         },
         shapes::{Shape, sphere::Sphere},
     };
@@ -520,7 +524,7 @@ mod test_intersect {
 
     // An off-axis ray along +z from the origin. It hits the moved sphere at object space point
     // (0.5, 0.5, -sqrt(0.5)), at phi = pi/4 and theta = 3pi/4.
-    fn off_axis_ray() -> PatinaRay3f {
+    fn off_axis_ray() -> PatinaRay3f<RenderSpace> {
         PatinaRay3f::new(
             PatinaPoint3f::new(0.5, 0.5, 0.0),
             PatinaVec3f::new(0.0, 0.0, 1.0),

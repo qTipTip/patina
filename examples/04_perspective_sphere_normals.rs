@@ -13,7 +13,7 @@ use patina::{
     camera::{Camera, CameraSample, PerspectiveCamera, RenderingSpace},
     math::{
         Bounds2f, ObjectSpace, PatinaFloat, PatinaNorm3f, PatinaPoint2f, PatinaPoint3f,
-        PatinaRay3f, PatinaVec3f, Transform,
+        PatinaRay3f, PatinaVec3f, RenderSpace, Transform,
     },
     shapes::Sphere,
 };
@@ -25,12 +25,12 @@ const BACKGROUND: [u8; 3] = [40, 40, 40];
 // Maps each component of a unit normal from [-1, 1] to [0, 255]: x to red, y to green, z to blue.
 // The camera looks down +z, so surfaces facing it have a negative z and little blue, and normals
 // pointing right are red and pointing up are green.
-fn normal_color(n: &PatinaNorm3f) -> [u8; 3] {
+fn normal_color(n: &PatinaNorm3f<RenderSpace>) -> [u8; 3] {
     let channel = |c: PatinaFloat| ((c + 1.0) / 2.0 * 255.0) as u8;
     [channel(n.x), channel(n.y), channel(n.z)]
 }
 
-fn ray_color(ray: &PatinaRay3f, spheres: &[Sphere]) -> [u8; 3] {
+fn ray_color(ray: &PatinaRay3f<RenderSpace>, spheres: &[Sphere]) -> [u8; 3] {
     match closest_hit(spheres, ray) {
         Some(isect) => normal_color(&isect.interaction.n),
         None => BACKGROUND,

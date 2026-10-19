@@ -4,7 +4,7 @@ use crate::{
         projective::ProjectiveTransforms, traits::Camera,
     },
     math::{
-        CameraSpace, PatinaFloat, WorldSpace,
+        CameraSpace, PatinaFloat, RasterSpace, RenderSpace, WorldSpace,
         bounding_boxes::Bounds2f,
         points::PatinaPoint3f,
         rays::ray3::PatinaRay3f,
@@ -17,8 +17,8 @@ pub struct OrthographicCamera {
     base: CameraBase,
     projective: ProjectiveTransforms,
 
-    _camera_dx: PatinaVec3f,
-    _camera_dy: PatinaVec3f,
+    _camera_dx: PatinaVec3f<CameraSpace>,
+    _camera_dy: PatinaVec3f<CameraSpace>,
 }
 
 impl OrthographicCamera {
@@ -66,8 +66,9 @@ impl OrthographicCamera {
 }
 
 impl Camera for OrthographicCamera {
-    fn generate_ray(&self, sample: &CameraSample) -> Option<PatinaRay3f> {
-        let p_film = PatinaPoint3f::new(sample.p_film.x, sample.p_film.y, 0.0);
+    fn generate_ray(&self, sample: &CameraSample) -> Option<PatinaRay3f<RenderSpace>> {
+        let p_film: PatinaPoint3f<RasterSpace> =
+            PatinaPoint3f::new(sample.p_film.x, sample.p_film.y, 0.0);
         let p_camera = self.projective.camera_from_raster.apply(p_film);
 
         // Construct a ray with the given sample time
@@ -268,13 +269,13 @@ mod test_orthographic_camera {
 
         // (name, space, render-space origin of middle ray, of top-left ray, render-space direction)
         let cases = [
-            // Render space is world space.
+            // Render space is world space, so the render-space rays have the world-space values.
             (
                 "World",
                 RenderingSpace::World,
-                world_middle_o,
-                world_top_left_o,
-                world_d,
+                PatinaPoint3f::new(-10.0, 0.0, 0.0),
+                PatinaPoint3f::new(-10.0, 1.0, 1.0),
+                PatinaVec3f::new(1.0, 0.0, 0.0),
             ),
             // Render space is world space translated so the camera is at the origin. The camera
             // is still rotated relative to it.
@@ -283,7 +284,7 @@ mod test_orthographic_camera {
                 RenderingSpace::CameraWorld,
                 PatinaPoint3f::new(0.0, 0.0, 0.0),
                 PatinaPoint3f::new(0.0, 1.0, 1.0),
-                world_d,
+                PatinaVec3f::new(1.0, 0.0, 0.0),
             ),
             // Render space is camera space, so the rays are those of an unmoved camera.
             (

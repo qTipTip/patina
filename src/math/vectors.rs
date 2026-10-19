@@ -9,5 +9,5 @@ pub mod vec3;
 
 pub type PatinaVec2f = Vector2<PatinaFloat>;
 pub type PatinaVec2i = Vector2<PatinaInt>;
-pub type PatinaVec3f = Vector3<PatinaFloat>;
-pub type PatinaVec3i = Vector3<PatinaInt>;
+pub type PatinaVec3f<S> = Vector3<PatinaFloat, S>;
+pub type PatinaVec3i<S> = Vector3<PatinaInt, S>;

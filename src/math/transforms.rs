@@ -30,6 +30,17 @@ use crate::math::{
 /// let render_from_world: Transform<RenderSpace, WorldSpace> = Transform::identity();
 /// let wrong = world_from_camera * render_from_world;
 /// ```
+///
+/// Points, vectors, normals, rays and bounds carry their space too, and a transform only applies to
+/// values in its `From` space:
+///
+/// ```compile_fail
+/// use patina::math::{Apply, CameraSpace, ObjectSpace, PatinaPoint3f, RenderSpace, Transform};
+///
+/// let render_from_object: Transform<RenderSpace, ObjectSpace> = Transform::identity();
+/// let p_camera: PatinaPoint3f<CameraSpace> = PatinaPoint3f::new(0.0, 0.0, 1.0);
+/// let wrong = render_from_object.apply(p_camera);
+/// ```
 pub struct Transform<To, From> {
     m: Matrix4,
     m_inv: Matrix4,
@@ -121,7 +132,8 @@ impl<To, From> Transform<To, From> {
         Transform::from_parts(self.m, self.m_inv)
     }
 
-    pub fn translate(u: &PatinaVec3f) -> Self {
+    // Translates by `u`, given in the target space.
+    pub fn translate(u: &PatinaVec3f<To>) -> Self {
         let mut m = Matrix4::identity();
         let mut m_inv = Matrix4::identity();
 
@@ -240,10 +252,10 @@ impl<A, B, C> Mul<Transform<B, C>> for Transform<A, B> {
     }
 }
 
-impl<To, From> Apply<PatinaPoint3f> for Transform<To, From> {
-    type Output = PatinaPoint3f;
+impl<To, From> Apply<PatinaPoint3f<From>> for Transform<To, From> {
+    type Output = PatinaPoint3f<To>;
 
-    fn apply(&self, p: PatinaPoint3f) -> Self::Output {
+    fn apply(&self, p: PatinaPoint3f<From>) -> Self::Output {
         let v = [p.x, p.y, p.z, 1.0];
         let q = self.m * v;
 
@@ -256,10 +268,10 @@ impl<To, From> Apply<PatinaPoint3f> for Transform<To, From> {
     }
 }
 
-impl<To, From> Apply<PatinaVec3f> for Transform<To, From> {
-    type Output = PatinaVec3f;
+impl<To, From> Apply<PatinaVec3f<From>> for Transform<To, From> {
+    type Output = PatinaVec3f<To>;
 
-    fn apply(&self, v: PatinaVec3f) -> Self::Output {
+    fn apply(&self, v: PatinaVec3f<From>) -> Self::Output {
         let v = [v.x, v.y, v.z, 0.0];
         let q = self.m * v;
 
@@ -267,10 +279,10 @@ impl<To, From> Apply<PatinaVec3f> for Transform<To, From> {
     }
 }
 
-impl<To, From> Apply<PatinaNorm3f> for Transform<To, From> {
-    type Output = PatinaNorm3f;
+impl<To, From> Apply<PatinaNorm3f<From>> for Transform<To, From> {
+    type Output = PatinaNorm3f<To>;
     // Normals do not transform like vectors. They instead transform by the transposed inverse.
-    fn apply(&self, n: PatinaNorm3f) -> Self::Output {
+    fn apply(&self, n: PatinaNorm3f<From>) -> Self::Output {
         let v = [n.x, n.y, n.z, 0.0];
         let inv_t = self.m_inv.transpose();
 
@@ -279,19 +291,19 @@ impl<To, From> Apply<PatinaNorm3f> for Transform<To, From> {
     }
 }
 
-impl<To, From> Apply<PatinaRay3f> for Transform<To, From> {
-    type Output = PatinaRay3f;
+impl<To, From> Apply<PatinaRay3f<From>> for Transform<To, From> {
+    type Output = PatinaRay3f<To>;
 
-    fn apply(&self, r: PatinaRay3f) -> Self::Output {
+    fn apply(&self, r: PatinaRay3f<From>) -> Self::Output {
         // Transform the origin and direction separately
         PatinaRay3f::new(self.apply(r.o), self.apply(r.d), r.t)
     }
 }
 
-impl<To, From> Apply<Bounds3f> for Transform<To, From> {
-    type Output = Bounds3f;
+impl<To, From> Apply<Bounds3f<From>> for Transform<To, From> {
+    type Output = Bounds3f<To>;
 
-    fn apply(&self, x: Bounds3f) -> Self::Output {
+    fn apply(&self, x: Bounds3f<From>) -> Self::Output {
         Bounds3f::new(self.apply(x.p_min), self.apply(x.p_max))
     }
 }

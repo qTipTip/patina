@@ -8,12 +8,12 @@ use crate::math::{
 };
 
 #[derive(PartialEq, Debug)]
-pub struct Bounds3<T> {
-    pub p_min: Point3<T>,
-    pub p_max: Point3<T>,
+pub struct Bounds3<T, S> {
+    pub p_min: Point3<T, S>,
+    pub p_max: Point3<T, S>,
 }
 
-impl AbsDiffEq for Bounds3<PatinaFloat> {
+impl<S: PartialEq> AbsDiffEq for Bounds3<PatinaFloat, S> {
     type Epsilon = PatinaFloat;
 
     fn default_epsilon() -> Self::Epsilon {
@@ -26,7 +26,7 @@ impl AbsDiffEq for Bounds3<PatinaFloat> {
     }
 }
 
-impl RelativeEq for Bounds3<PatinaFloat> {
+impl<S: PartialEq> RelativeEq for Bounds3<PatinaFloat, S> {
     fn default_max_relative() -> Self::Epsilon {
         1.0e-12
     }
@@ -42,7 +42,7 @@ impl RelativeEq for Bounds3<PatinaFloat> {
     }
 }
 
-impl<T: Num + Bounded + Copy + CheckNan> Default for Bounds3<T> {
+impl<T: Num + Bounded + Copy + CheckNan, S> Default for Bounds3<T, S> {
     fn default() -> Self {
         // Create a default "empty" (but invalid) bounding box, where pMin is set to the largest
         // possible values, and pMax is set to the lowest.
@@ -56,8 +56,8 @@ impl<T: Num + Bounded + Copy + CheckNan> Default for Bounds3<T> {
 }
 
 // Instantiate a bounding box from a single point.
-impl<T: Copy> From<Point3<T>> for Bounds3<T> {
-    fn from(value: Point3<T>) -> Self {
+impl<T: Copy, S> From<Point3<T, S>> for Bounds3<T, S> {
+    fn from(value: Point3<T, S>) -> Self {
         Self {
             p_min: value,
             p_max: value,
@@ -65,20 +65,20 @@ impl<T: Copy> From<Point3<T>> for Bounds3<T> {
     }
 }
 
-impl<T: Num + Copy + PartialOrd + CheckNan> Bounds3<T> {
-    pub fn new(p1: Point3<T>, p2: Point3<T>) -> Self {
+impl<T: Num + Copy + PartialOrd + CheckNan, S> Bounds3<T, S> {
+    pub fn new(p1: Point3<T, S>, p2: Point3<T, S>) -> Self {
         Self {
             p_min: Point3::min(p1, p2),
             p_max: Point3::max(p1, p2),
         }
     }
 
-    pub fn from_point(p1: Point3<T>) -> Self {
+    pub fn from_point(p1: Point3<T, S>) -> Self {
         Self::from(p1)
     }
 
     // Return the i'th out of the eight corners of the bounding box.
-    pub fn get_corner(&self, corner: usize) -> Point3<T> {
+    pub fn get_corner(&self, corner: usize) -> Point3<T, S> {
         // There are exactly eight possible combination of the corner & 1, corner & 2 and corner & 4
         // indices, so they enumerate the corners.
         Point3::new(
@@ -105,7 +105,7 @@ impl<T: Num + Copy + PartialOrd + CheckNan> Bounds3<T> {
     }
 
     // Returns a bounding box that encompasses the point.
-    pub fn union_point(&self, p: Point3<T>) -> Self {
+    pub fn union_point(&self, p: Point3<T, S>) -> Self {
         Self {
             p_min: Point3::min(self.p_min, p),
             p_max: Point3::max(self.p_max, p),
@@ -117,11 +117,11 @@ pub struct BoundsIntersection {
     pub t0: PatinaFloat,
     pub t1: PatinaFloat,
 }
-impl Bounds3<PatinaFloat> {
+impl<S> Bounds3<PatinaFloat, S> {
     pub fn intersects(
         &self,
-        o: &PatinaPoint3f,
-        d: &PatinaVec3f,
+        o: &PatinaPoint3f<S>,
+        d: &PatinaVec3f<S>,
         t_max: PatinaFloat,
     ) -> Option<BoundsIntersection> {
         let mut t0 = 0.0;
@@ -152,8 +152,8 @@ impl Bounds3<PatinaFloat> {
     }
 }
 
-impl<T> Index<usize> for Bounds3<T> {
-    type Output = Point3<T>;
+impl<T, S> Index<usize> for Bounds3<T, S> {
+    type Output = Point3<T, S>;
 
     fn index(&self, index: usize) -> &Self::Output {
         debug_assert!(
@@ -167,25 +167,26 @@ impl<T> Index<usize> for Bounds3<T> {
 
 #[cfg(test)]
 mod test {
+    use crate::math::WorldSpace;
 
     use crate::math::{bounding_boxes::bounds3::Bounds3, points::PatinaPoint3f};
 
     #[test]
     fn test_corner_enumeration() {
         let b = Bounds3::new(
-            PatinaPoint3f::new(0.0, 0.0, 0.0),
-            PatinaPoint3f::new(1.0, 1.0, 1.0),
+            PatinaPoint3f::<WorldSpace>::new(0.0, 0.0, 0.0),
+            PatinaPoint3f::<WorldSpace>::new(1.0, 1.0, 1.0),
         );
 
         let expected_corners = [
-            PatinaPoint3f::new(0.0, 0.0, 0.0),
-            PatinaPoint3f::new(1.0, 0.0, 0.0),
-            PatinaPoint3f::new(0.0, 1.0, 0.0),
-            PatinaPoint3f::new(1.0, 1.0, 0.0),
-            PatinaPoint3f::new(0.0, 0.0, 1.0),
-            PatinaPoint3f::new(1.0, 0.0, 1.0),
-            PatinaPoint3f::new(0.0, 1.0, 1.0),
-            PatinaPoint3f::new(1.0, 1.0, 1.0),
+            PatinaPoint3f::<WorldSpace>::new(0.0, 0.0, 0.0),
+            PatinaPoint3f::<WorldSpace>::new(1.0, 0.0, 0.0),
+            PatinaPoint3f::<WorldSpace>::new(0.0, 1.0, 0.0),
+            PatinaPoint3f::<WorldSpace>::new(1.0, 1.0, 0.0),
+            PatinaPoint3f::<WorldSpace>::new(0.0, 0.0, 1.0),
+            PatinaPoint3f::<WorldSpace>::new(1.0, 0.0, 1.0),
+            PatinaPoint3f::<WorldSpace>::new(0.0, 1.0, 1.0),
+            PatinaPoint3f::<WorldSpace>::new(1.0, 1.0, 1.0),
         ];
 
         for (i, &corner) in expected_corners.iter().enumerate() {
@@ -196,19 +197,19 @@ mod test {
     #[test]
     fn test_bounds_union() {
         let a = Bounds3::new(
-            PatinaPoint3f::new(0.0, 0.0, 0.0),
-            PatinaPoint3f::new(2.0, 2.0, 2.0),
+            PatinaPoint3f::<WorldSpace>::new(0.0, 0.0, 0.0),
+            PatinaPoint3f::<WorldSpace>::new(2.0, 2.0, 2.0),
         );
         let b = Bounds3::new(
-            PatinaPoint3f::new(1.0, 1.0, 1.0),
-            PatinaPoint3f::new(3.0, 3.0, 3.0),
+            PatinaPoint3f::<WorldSpace>::new(1.0, 1.0, 1.0),
+            PatinaPoint3f::<WorldSpace>::new(3.0, 3.0, 3.0),
         );
 
         assert_eq!(
             a.union(&b),
             Bounds3::new(
-                PatinaPoint3f::new(0.0, 0.0, 0.0),
-                PatinaPoint3f::new(3.0, 3.0, 3.0)
+                PatinaPoint3f::<WorldSpace>::new(0.0, 0.0, 0.0),
+                PatinaPoint3f::<WorldSpace>::new(3.0, 3.0, 3.0)
             )
         );
     }
@@ -216,10 +217,10 @@ mod test {
     #[test]
     fn test_bounds_point_union() {
         let a = Bounds3::new(
-            PatinaPoint3f::new(0.0, 0.0, 0.0),
-            PatinaPoint3f::new(2.0, 2.0, 2.0),
+            PatinaPoint3f::<WorldSpace>::new(0.0, 0.0, 0.0),
+            PatinaPoint3f::<WorldSpace>::new(2.0, 2.0, 2.0),
         );
-        let p = PatinaPoint3f::new(1.0, 1.0, 1.0);
+        let p = PatinaPoint3f::<WorldSpace>::new(1.0, 1.0, 1.0);
 
         assert_eq!(a.union_point(p), a);
     }
@@ -227,19 +228,19 @@ mod test {
     #[test]
     fn test_bounds_intersection() {
         let a = Bounds3::new(
-            PatinaPoint3f::new(0.0, 0.0, 0.0),
-            PatinaPoint3f::new(2.0, 2.0, 2.0),
+            PatinaPoint3f::<WorldSpace>::new(0.0, 0.0, 0.0),
+            PatinaPoint3f::<WorldSpace>::new(2.0, 2.0, 2.0),
         );
         let b = Bounds3::new(
-            PatinaPoint3f::new(1.0, 1.0, 1.0),
-            PatinaPoint3f::new(3.0, 3.0, 3.0),
+            PatinaPoint3f::<WorldSpace>::new(1.0, 1.0, 1.0),
+            PatinaPoint3f::<WorldSpace>::new(3.0, 3.0, 3.0),
         );
 
         assert_eq!(
             a.intersection(&b),
             Bounds3::new(
-                PatinaPoint3f::new(1.0, 1.0, 1.0),
-                PatinaPoint3f::new(2.0, 2.0, 2.0)
+                PatinaPoint3f::<WorldSpace>::new(1.0, 1.0, 1.0),
+                PatinaPoint3f::<WorldSpace>::new(2.0, 2.0, 2.0)
             )
         );
     }
@@ -247,6 +248,7 @@ mod test {
 
 #[cfg(test)]
 mod test_ray_interactions {
+    use crate::math::WorldSpace;
     use approx::assert_relative_eq;
 
     use crate::math::{Bounds3, PatinaFloat, PatinaPoint3f, PatinaRay3f, PatinaVec3f};
@@ -254,13 +256,13 @@ mod test_ray_interactions {
     #[test]
     fn test_ray_bounds_intersection() {
         let a = Bounds3::new(
-            PatinaPoint3f::new(0.0, 0.0, 0.0),
-            PatinaPoint3f::new(2.0, 2.0, 2.0),
+            PatinaPoint3f::<WorldSpace>::new(0.0, 0.0, 0.0),
+            PatinaPoint3f::<WorldSpace>::new(2.0, 2.0, 2.0),
         );
 
-        let r = PatinaRay3f::new(
-            PatinaPoint3f::new(-1.0, -1.0, -1.0),
-            PatinaVec3f::new(1.0, 1.0, 1.0),
+        let r = PatinaRay3f::<WorldSpace>::new(
+            PatinaPoint3f::<WorldSpace>::new(-1.0, -1.0, -1.0),
+            PatinaVec3f::<WorldSpace>::new(1.0, 1.0, 1.0),
             0.0,
         );
 
@@ -272,20 +274,23 @@ mod test_ray_interactions {
         assert_relative_eq!(i.t0, 1.0);
         assert_relative_eq!(i.t1, 3.0, epsilon = 1.0e-12);
 
-        assert_relative_eq!(r.eval(i.t0), PatinaPoint3f::zero());
-        assert_relative_eq!(r.eval(i.t1), PatinaPoint3f::new(2.0, 2.0, 2.0));
+        assert_relative_eq!(r.eval(i.t0), PatinaPoint3f::<WorldSpace>::zero());
+        assert_relative_eq!(
+            r.eval(i.t1),
+            PatinaPoint3f::<WorldSpace>::new(2.0, 2.0, 2.0)
+        );
     }
 
     #[test]
     fn test_ray_bounds_no_intersection() {
         let a = Bounds3::new(
-            PatinaPoint3f::new(0.0, 0.0, 0.0),
-            PatinaPoint3f::new(2.0, 2.0, 2.0),
+            PatinaPoint3f::<WorldSpace>::new(0.0, 0.0, 0.0),
+            PatinaPoint3f::<WorldSpace>::new(2.0, 2.0, 2.0),
         );
 
-        let r = PatinaRay3f::new(
-            PatinaPoint3f::new(3.0, 3.0, 3.0),
-            PatinaVec3f::new(1.0, 1.0, 1.0),
+        let r = PatinaRay3f::<WorldSpace>::new(
+            PatinaPoint3f::<WorldSpace>::new(3.0, 3.0, 3.0),
+            PatinaVec3f::<WorldSpace>::new(1.0, 1.0, 1.0),
             0.0,
         );
 
