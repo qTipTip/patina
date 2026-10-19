@@ -209,6 +209,7 @@ struct QuadraticIntersection {
     phi: PatinaFloat,
 }
 
+#[allow(unused_variables)]
 impl Shape for Sphere {
     fn bounds(&self) -> Bounds3f {
         self.render_from_object.apply(Bounds3f::new(

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 pub(crate) mod sphere;
 
 pub use sphere::Sphere;
