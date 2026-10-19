@@ -3,7 +3,10 @@ use crate::{
         Camera, CameraBase, CameraSample, CameraTransform, RenderingSpace, Shutter,
         projective::ProjectiveTransforms,
     },
-    math::{Apply, Bounds2f, PatinaFloat, PatinaPoint3f, PatinaRay3f, PatinaVec3f, Transform},
+    math::{
+        Apply, Bounds2f, CameraSpace, PatinaFloat, PatinaPoint3f, PatinaRay3f, PatinaVec3f,
+        Transform, WorldSpace,
+    },
 };
 
 pub struct PerspectiveCamera {
@@ -16,7 +19,7 @@ pub struct PerspectiveCamera {
 
 impl PerspectiveCamera {
     pub fn new(
-        world_from_camera: &Transform,
+        world_from_camera: &Transform<WorldSpace, CameraSpace>,
         rendering_space: RenderingSpace,
         shutter_open: PatinaFloat,
         shutter_close: PatinaFloat,

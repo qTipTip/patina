@@ -1,5 +1,6 @@
 use crate::math::{
-    PatinaFloat, bounding_boxes::Bounds2f, transforms::Transform, vectors::PatinaVec3f,
+    CameraSpace, NdcSpace, PatinaFloat, RasterSpace, ScreenSpace, bounding_boxes::Bounds2f,
+    transforms::Transform, vectors::PatinaVec3f,
 };
 
 pub(crate) mod orthographic;
@@ -9,30 +10,31 @@ pub(crate) mod perspective;
 // orthograpic).
 #[allow(dead_code)]
 pub(crate) struct ProjectiveTransforms {
-    screen_from_camera: Transform,
-    camera_from_raster: Transform,
-    screen_from_raster: Transform,
-    raster_from_screen: Transform,
+    screen_from_camera: Transform<ScreenSpace, CameraSpace>,
+    camera_from_raster: Transform<CameraSpace, RasterSpace>,
+    screen_from_raster: Transform<ScreenSpace, RasterSpace>,
+    raster_from_screen: Transform<RasterSpace, ScreenSpace>,
 }
 
 impl ProjectiveTransforms {
     fn new(
-        screen_from_camera: Transform,
+        screen_from_camera: Transform<ScreenSpace, CameraSpace>,
         screen_window: &Bounds2f,
         raster_resolution: (u32, u32),
     ) -> Self {
-        // Scales and translates screen into NDC (0, 1)-coordinates.
-        let ndc_from_screen = Transform::scale(
+        // Translates (within screen space) and scales screen into NDC (0, 1)-coordinates.
+        let ndc_from_screen: Transform<NdcSpace, ScreenSpace> = Transform::scale(
             1.0 / (screen_window.p_max.x - screen_window.p_min.x),
             1.0 / (screen_window.p_max.y - screen_window.p_min.y),
             1.0,
-        ) * Transform::translate(&PatinaVec3f::new(
-            -screen_window.p_min.x,
-            -screen_window.p_max.y,
-            0.0,
-        ));
+        ) * Transform::<
+            ScreenSpace,
+            ScreenSpace,
+        >::translate(
+            &PatinaVec3f::new(-screen_window.p_min.x, -screen_window.p_max.y, 0.0),
+        );
         // Scales the NDC coordinates into raster coordinates.
-        let raster_from_ndc = Transform::scale(
+        let raster_from_ndc: Transform<RasterSpace, NdcSpace> = Transform::scale(
             raster_resolution.0 as PatinaFloat,
             -(raster_resolution.1 as PatinaFloat),
             1.0,

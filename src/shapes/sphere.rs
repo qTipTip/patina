@@ -2,8 +2,8 @@ use std::{f64::consts::PI, mem::swap};
 
 use crate::{
     math::{
-        Apply, Bounds3f, PatinaFloat, PatinaNorm3f, PatinaPoint2f, PatinaPoint3f, PatinaRay3f,
-        PatinaVec3f, Transform, safe_acos,
+        Apply, Bounds3f, ObjectSpace, PatinaFloat, PatinaNorm3f, PatinaPoint2f, PatinaPoint3f,
+        PatinaRay3f, PatinaVec3f, RenderSpace, Transform, safe_acos,
     },
     shapes::Shape,
 };
@@ -19,8 +19,8 @@ pub struct Sphere {
     // Whether to reverse the direction of surface normals to point inwards.
     reverse_orientation: bool,
     // Places the object in rendering space.
-    render_from_object: Transform,
-    object_from_render: Transform,
+    render_from_object: Transform<RenderSpace, ObjectSpace>,
+    object_from_render: Transform<ObjectSpace, RenderSpace>,
     // z_min and z_max for truncated sphere if desired
     z_min: PatinaFloat,
     z_max: PatinaFloat,
@@ -34,7 +34,7 @@ pub struct Sphere {
 impl Sphere {
     pub fn new(
         radius: PatinaFloat,
-        render_from_object: Transform,
+        render_from_object: Transform<RenderSpace, ObjectSpace>,
         z_min: PatinaFloat,
         z_max: PatinaFloat,
         phi_max: PatinaFloat,

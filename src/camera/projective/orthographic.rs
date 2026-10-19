@@ -4,7 +4,7 @@ use crate::{
         projective::ProjectiveTransforms, traits::Camera,
     },
     math::{
-        PatinaFloat,
+        CameraSpace, PatinaFloat, WorldSpace,
         bounding_boxes::Bounds2f,
         points::PatinaPoint3f,
         rays::ray3::PatinaRay3f,
@@ -25,7 +25,7 @@ impl OrthographicCamera {
     // Creates an orthographic camera placed in the world by `world_from_camera`, which renders in
     // `rendering_space` and generates rays at times in [shutter_open, shutter_close).
     pub fn new(
-        world_from_camera: &Transform,
+        world_from_camera: &Transform<WorldSpace, CameraSpace>,
         rendering_space: RenderingSpace,
         shutter_open: PatinaFloat,
         shutter_close: PatinaFloat,
@@ -100,6 +100,7 @@ mod test_orthographic_camera {
             projective::orthographic::OrthographicCamera, traits::Camera,
         },
         math::{
+            CameraSpace, WorldSpace,
             bounding_boxes::Bounds2f,
             points::{PatinaPoint2f, PatinaPoint3f},
             transforms::{Apply, Transform},
@@ -132,8 +133,9 @@ mod test_orthographic_camera {
         // world x-axis, then translate to (-10, 0, 0).
         //
         // Remember that a camera generates a ray in render-space.
-        let t = Transform::translate(&PatinaVec3f::new(-10.0, 0.0, 0.0))
-            * Transform::rotate_y(PI / 2.0);
+        let t: Transform<WorldSpace, CameraSpace> =
+            Transform::translate(&PatinaVec3f::new(-10.0, 0.0, 0.0))
+                * Transform::<CameraSpace, CameraSpace>::rotate_y(PI / 2.0);
         let b = CameraBase {
             camera_transform: CameraTransform::new(space, &t),
             shutter: Shutter {

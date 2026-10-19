@@ -3,6 +3,7 @@ pub(crate) mod matrices;
 pub(crate) mod normals;
 pub(crate) mod points;
 pub(crate) mod rays;
+pub(crate) mod spaces;
 mod traits;
 pub(crate) mod transforms;
 pub(crate) mod tuples;
@@ -20,6 +21,9 @@ pub use points::{
     PatinaPoint2f, PatinaPoint2i, PatinaPoint3f, PatinaPoint3i, point2::Point2, point3::Point3,
 };
 pub use rays::{ray2::PatinaRay2f, ray3::PatinaRay3f};
+pub use spaces::{
+    CameraSpace, NdcSpace, ObjectSpace, RasterSpace, RenderSpace, ScreenSpace, WorldSpace,
+};
 pub use transforms::{Apply, Transform};
 pub use tuples::{TupleLength, TypeNormal, TypePoint, TypeVector, tuple2::Tuple2, tuple3::Tuple3};
 pub use vectors::{
