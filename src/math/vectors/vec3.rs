@@ -5,7 +5,7 @@ use std::f64::consts::PI;
 use crate::math::{
     PatinaFloat, safe_asin,
     traits::CheckNan,
-    tuples::{TupleLength, TypeVector, tuple3::Tuple3},
+    tuples::{TypeVector, tuple3::Tuple3},
 };
 
 pub type Vector3<T> = Tuple3<T, TypeVector>;
@@ -14,17 +14,6 @@ impl<T> Vector3<T>
 where
     T: Num + Copy + CheckNan + ToPrimitive,
 {
-    pub fn len_squared(&self) -> T {
-        self.x * self.x + self.y * self.y + self.z * self.z
-    }
-
-    pub fn len(&self) -> TupleLength {
-        self.len_squared()
-            .to_f64()
-            .expect("Conversion to f64 failed")
-            .sqrt()
-    }
-
     pub fn cross(&self, rhs: &Self) -> Self {
         // TODO: Compute this using a difference of products (using FMA), as it's more numerically
         // stable, even at f32.
@@ -32,19 +21,6 @@ where
             self.y * rhs.z - self.z * rhs.y,
             self.z * rhs.x - self.x * rhs.z,
             self.x * rhs.y - self.y * rhs.x,
-        )
-    }
-
-    // normalize cannot return Vector3<T>, as an integer vector normalized requires float values.
-    pub fn normalize(&self) -> Vector3<TupleLength> {
-        let len = self.len();
-        if len == 0.0 {
-            return Vector3::<TupleLength>::new(0.0, 0.0, 0.0);
-        }
-        Vector3::<TupleLength>::new(
-            self.x.to_f64().expect("Conversion to f64 failed") / len,
-            self.y.to_f64().expect("Conversion to f64 failed") / len,
-            self.z.to_f64().expect("Conversion to f64 failed") / len,
         )
     }
 
