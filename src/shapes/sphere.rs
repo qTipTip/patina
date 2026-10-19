@@ -1,5 +1,8 @@
 use crate::{
-    math::{Bounds3f, PatinaFloat, PatinaPoint2f, PatinaRay3f, PatinaVec3f, Transform},
+    math::{
+        Apply, Bounds3f, PatinaFloat, PatinaPoint2f, PatinaPoint3f, PatinaRay3f, PatinaVec3f,
+        Transform,
+    },
     shapes::Shape,
 };
 
@@ -46,18 +49,22 @@ impl Sphere {
 }
 
 impl Shape for Sphere {
-    fn bounds() -> Bounds3f {
-        todo!()
+    fn bounds(&self) -> Bounds3f {
+        self.render_from_object.apply(Bounds3f::new(
+            PatinaPoint3f::new(-self.radius, -self.radius, self.z_min),
+            PatinaPoint3f::new(self.radius, self.radius, self.z_max),
+        ))
     }
 
     fn intersect(
+        &self,
         ray: &PatinaRay3f,
         t_max: Option<PatinaFloat>,
     ) -> Option<super::ShapeIntersection> {
         todo!()
     }
 
-    fn intersects(ray: &PatinaRay3f, t_max: Option<PatinaFloat>) -> bool {
+    fn intersects(&self, ray: &PatinaRay3f, t_max: Option<PatinaFloat>) -> bool {
         todo!()
     }
 
@@ -73,11 +80,11 @@ impl Shape for Sphere {
         todo!()
     }
 
-    fn sample_from_point(ctx: &ShapeSampleContext, u: PatinaPoint2f) -> Option<ShapeSample> {
+    fn sample_from_point(&self, ctx: &ShapeSampleContext, u: PatinaPoint2f) -> Option<ShapeSample> {
         todo!()
     }
 
-    fn pdf_from_point(ctx: &ShapeSampleContext, w_incident: PatinaVec3f) -> PatinaFloat {
+    fn pdf_from_point(&self, ctx: &ShapeSampleContext, w_incident: PatinaVec3f) -> PatinaFloat {
         todo!()
     }
 }

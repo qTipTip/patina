@@ -3,7 +3,7 @@ use std::ops::Mul;
 use approx::{AbsDiffEq, RelativeEq, relative_ne};
 
 use crate::math::{
-    PatinaFloat, matrices::Matrix4, normals::PatinaNorm3f, points::PatinaPoint3f,
+    Bounds3f, PatinaFloat, matrices::Matrix4, normals::PatinaNorm3f, points::PatinaPoint3f,
     rays::ray3::PatinaRay3f, vectors::PatinaVec3f,
 };
 
@@ -241,6 +241,14 @@ impl Apply<PatinaRay3f> for Transform {
     fn apply(&self, r: PatinaRay3f) -> Self::Output {
         // Transform the origin and direction separately
         PatinaRay3f::new(self.apply(r.o), self.apply(r.d), r.t)
+    }
+}
+
+impl Apply<Bounds3f> for Transform {
+    type Output = Bounds3f;
+
+    fn apply(&self, x: Bounds3f) -> Self::Output {
+        Bounds3f::new(self.apply(x.p_min), self.apply(x.p_max))
     }
 }
 

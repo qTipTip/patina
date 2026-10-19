@@ -25,17 +25,18 @@ pub struct ShapeSampleContext {
 
 pub trait Shape {
     /// Return the axis aligned bounding box encompassing this shape.
-    fn bounds() -> Bounds3f;
+    fn bounds(&self) -> Bounds3f;
     /// Return a single ray-shape intersection (if any) corresponding to the first intersection
     /// in the interval [0, t_max]. With t_max = PatinaFloat::infinity if not set.
     ///
     /// Note that the ray is in rendering space. Must be converted by the struct implementing this
     /// trait to another space if needed.
-    fn intersect(ray: &PatinaRay3f, t_max: Option<PatinaFloat>) -> Option<ShapeIntersection>;
+    fn intersect(&self, ray: &PatinaRay3f, t_max: Option<PatinaFloat>)
+    -> Option<ShapeIntersection>;
 
     /// Returns a boolean representing whether the ray intersects the shape or not in the interval
     /// [0, t_max].
-    fn intersects(ray: &PatinaRay3f, t_max: Option<PatinaFloat>) -> bool;
+    fn intersects(&self, ray: &PatinaRay3f, t_max: Option<PatinaFloat>) -> bool;
 
     // TODO: Implement direction-cone
     // fn normal_bounds() -> DirectionCone;
@@ -54,9 +55,9 @@ pub trait Shape {
 
     /// Returns a point on the surface using a distribution with respect to the solid angle from the
     /// reference point (provided in the sampling context).
-    fn sample_from_point(ctx: &ShapeSampleContext, u: PatinaPoint2f) -> Option<ShapeSample>;
+    fn sample_from_point(&self, ctx: &ShapeSampleContext, u: PatinaPoint2f) -> Option<ShapeSample>;
 
     /// Returns the shape's probability of sampling a point on the light such that the incident
     /// direction at the point ctx.p is w_incident.
-    fn pdf_from_point(ctx: &ShapeSampleContext, w_incident: PatinaVec3f) -> PatinaFloat;
+    fn pdf_from_point(&self, ctx: &ShapeSampleContext, w_incident: PatinaVec3f) -> PatinaFloat;
 }
