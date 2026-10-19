@@ -12,8 +12,8 @@ use common::{Film, closest_hit, output_path, sphere_at};
 use patina::{
     camera::{Camera, CameraSample, PerspectiveCamera, RenderingSpace},
     math::{
-        Bounds2f, PatinaFloat, PatinaNorm3f, PatinaPoint2f, PatinaPoint3f, PatinaRay3f,
-        PatinaVec3f, Transform,
+        Bounds2f, ObjectSpace, PatinaFloat, PatinaNorm3f, PatinaPoint2f, PatinaPoint3f,
+        PatinaRay3f, PatinaVec3f, Transform,
     },
     shapes::Sphere,
 };
@@ -59,7 +59,8 @@ fn main() {
     // stretched along x and flattened along y.
     let ellipsoid = Sphere::new(
         1.0,
-        Transform::translate(&PatinaVec3f::new(0.7, -0.8, 4.0)) * Transform::scale(0.6, 0.25, 0.4),
+        Transform::translate(&PatinaVec3f::new(0.7, -0.8, 4.0))
+            * Transform::<ObjectSpace, ObjectSpace>::scale(0.6, 0.25, 0.4),
         -1.0,
         1.0,
         2.0 * PI,
