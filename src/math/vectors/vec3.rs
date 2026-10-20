@@ -8,9 +8,9 @@ use crate::math::{
     tuples::{TypeVector, tuple3::Tuple3},
 };
 
-pub type Vector3<T> = Tuple3<T, TypeVector>;
+pub type Vector3<T, S> = Tuple3<T, TypeVector, S>;
 
-impl<T> Vector3<T>
+impl<T, S> Vector3<T, S>
 where
     T: Num + Copy + CheckNan + ToPrimitive,
 {
@@ -44,7 +44,7 @@ where
         self - w * self.dot(&w)
     }
 }
-impl<T: Float + CheckNan> Vector3<T> {
+impl<T: Float + CheckNan, S> Vector3<T, S> {
     // Given a vector normalized vector u (self), compute a local coordinate system such that the
     // three vectors are mutually perpendicular. We use the numerically stable method by Frisvad &
     // Duff: https://jcgt.org/published/0006/01/01/.
@@ -65,6 +65,7 @@ impl<T: Float + CheckNan> Vector3<T> {
 
 #[cfg(test)]
 mod test_construction {
+    use crate::math::WorldSpace;
     use std::f64::consts::PI;
 
     use approx::assert_relative_eq;
@@ -74,53 +75,53 @@ mod test_construction {
 
     #[test]
     fn test_vec3_constructor() {
-        let t = PatinaVec3f::new(0.0, 1.0, 2.0);
-        let r = PatinaVec3f::new(1.0, 2.0, 3.0);
+        let t = PatinaVec3f::<WorldSpace>::new(0.0, 1.0, 2.0);
+        let r = PatinaVec3f::<WorldSpace>::new(1.0, 2.0, 3.0);
 
-        assert_eq!(t + r, PatinaVec3f::new(1.0, 3.0, 5.0));
+        assert_eq!(t + r, PatinaVec3f::<WorldSpace>::new(1.0, 3.0, 5.0));
     }
 
     #[test]
     fn test_vec3_length_squared() {
-        let t = PatinaVec3f::new(0.0, 1.0, 2.0);
+        let t = PatinaVec3f::<WorldSpace>::new(0.0, 1.0, 2.0);
         assert_eq!(t.len_squared(), 5.0);
     }
 
     #[test]
     fn test_vec3_length() {
-        let t = PatinaVec3f::new(0.0, 1.0, 2.0);
+        let t = PatinaVec3f::<WorldSpace>::new(0.0, 1.0, 2.0);
         assert_eq!(t.len(), TupleLength::sqrt(5.0));
     }
 
     #[test]
     fn test_vec3_normalize() {
-        let t = PatinaVec3f::new(0.0, 1.0, 2.0);
+        let t = PatinaVec3f::<WorldSpace>::new(0.0, 1.0, 2.0);
         assert_eq!(
             t.normalize(),
-            PatinaVec3f::new(0.0, 1.0 / 5.0.sqrt(), 2.0 / 5.0.sqrt())
+            PatinaVec3f::<WorldSpace>::new(0.0, 1.0 / 5.0.sqrt(), 2.0 / 5.0.sqrt())
         );
     }
 
     #[test]
     fn test_angle_between() {
-        let e1 = PatinaVec3f::new(1.0, 0.0, 0.0);
-        let e2 = PatinaVec3f::new(0.0, 1.0, 0.0);
+        let e1 = PatinaVec3f::<WorldSpace>::new(1.0, 0.0, 0.0);
+        let e2 = PatinaVec3f::<WorldSpace>::new(0.0, 1.0, 0.0);
 
         assert_relative_eq!(e1.angle_between(&e2), PI / 2.0);
     }
 
     #[test]
     fn test_cross_product() {
-        let e1 = PatinaVec3f::new(1.0, 0.0, 0.0);
-        let e2 = PatinaVec3f::new(0.0, 1.0, 0.0);
+        let e1 = PatinaVec3f::<WorldSpace>::new(1.0, 0.0, 0.0);
+        let e2 = PatinaVec3f::<WorldSpace>::new(0.0, 1.0, 0.0);
 
-        assert_eq!(e1.cross(&e2), PatinaVec3f::new(0.0, 0.0, 1.0));
+        assert_eq!(e1.cross(&e2), PatinaVec3f::<WorldSpace>::new(0.0, 0.0, 1.0));
     }
 
     #[test]
     fn test_gram_schmidt() {
-        let u = PatinaVec3f::new(1.0, 1.2, -3.2);
-        let v = PatinaVec3f::new(1.2, 0.0, 3.2).normalize();
+        let u = PatinaVec3f::<WorldSpace>::new(1.0, 1.2, -3.2);
+        let v = PatinaVec3f::<WorldSpace>::new(1.2, 0.0, 3.2).normalize();
 
         let w = u.gram_schmidt(v);
         assert_relative_eq!(v.dot(&w), 0.0);
@@ -128,7 +129,7 @@ mod test_construction {
 
     #[test]
     fn test_coordinate_system() {
-        let u = PatinaVec3f::new(1.0, 1.2, -3.2);
+        let u = PatinaVec3f::<WorldSpace>::new(1.0, 1.2, -3.2);
         let (e1, e2, e3) = u.normalize().coordinate_system();
 
         assert_relative_eq!(e1.dot(&e2), 0.0);

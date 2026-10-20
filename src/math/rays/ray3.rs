@@ -3,13 +3,13 @@ use approx::{AbsDiffEq, RelativeEq};
 use crate::math::{PatinaFloat, points::PatinaPoint3f, vectors::PatinaVec3f};
 
 #[derive(Copy, Clone, PartialEq, Debug)]
-pub struct PatinaRay3f {
-    pub o: PatinaPoint3f, // origin
-    pub d: PatinaVec3f,   // direction
-    pub t: PatinaFloat,   // time
+pub struct PatinaRay3f<S> {
+    pub o: PatinaPoint3f<S>, // origin
+    pub d: PatinaVec3f<S>,   // direction
+    pub t: PatinaFloat,      // time
 }
 
-impl AbsDiffEq for PatinaRay3f {
+impl<S: PartialEq> AbsDiffEq for PatinaRay3f<S> {
     type Epsilon = PatinaFloat;
 
     fn default_epsilon() -> Self::Epsilon {
@@ -23,7 +23,7 @@ impl AbsDiffEq for PatinaRay3f {
     }
 }
 
-impl RelativeEq for PatinaRay3f {
+impl<S: PartialEq> RelativeEq for PatinaRay3f<S> {
     fn default_max_relative() -> Self::Epsilon {
         1.0e-12
     }
@@ -40,11 +40,11 @@ impl RelativeEq for PatinaRay3f {
     }
 }
 
-impl PatinaRay3f {
-    pub fn new(o: PatinaPoint3f, d: PatinaVec3f, t: PatinaFloat) -> Self {
+impl<S> PatinaRay3f<S> {
+    pub fn new(o: PatinaPoint3f<S>, d: PatinaVec3f<S>, t: PatinaFloat) -> Self {
         Self { o, d, t }
     }
-    pub fn eval(self, t: PatinaFloat) -> PatinaPoint3f {
+    pub fn eval(self, t: PatinaFloat) -> PatinaPoint3f<S> {
         debug_assert!(t >= 0.0);
         self.o + self.d * t
     }
@@ -52,41 +52,46 @@ impl PatinaRay3f {
 
 #[cfg(test)]
 mod test {
+    use crate::math::WorldSpace;
     use crate::math::{
         PatinaFloat, points::PatinaPoint3f, rays::ray3::PatinaRay3f, vectors::PatinaVec3f,
     };
 
     #[test]
     fn test_ray_construction() {
-        let o = PatinaPoint3f::zero();
-        let d = PatinaVec3f::new(1.0, 0.5, 0.0);
+        let o = PatinaPoint3f::<WorldSpace>::zero();
+        let d = PatinaVec3f::<WorldSpace>::new(1.0, 0.5, 0.0);
         let t: PatinaFloat = 0.0;
 
-        let r = PatinaRay3f::new(o, d, t);
+        let r = PatinaRay3f::<WorldSpace>::new(o, d, t);
 
         assert_eq!(r.eval(0.0), o);
-        assert_eq!(r.eval(0.5), PatinaPoint3f::new(0.5, 0.25, 0.0));
-        assert_eq!(r.eval(1.0), PatinaPoint3f::new(1.0, 0.5, 0.0));
+        assert_eq!(
+            r.eval(0.5),
+            PatinaPoint3f::<WorldSpace>::new(0.5, 0.25, 0.0)
+        );
+        assert_eq!(r.eval(1.0), PatinaPoint3f::<WorldSpace>::new(1.0, 0.5, 0.0));
     }
 }
 
 #[cfg(test)]
 mod test_approx {
+    use crate::math::WorldSpace;
     use approx::{assert_relative_eq, relative_ne};
 
     use crate::math::{points::PatinaPoint3f, rays::ray3::PatinaRay3f, vectors::PatinaVec3f};
 
     #[test]
     fn test_rays_compare_every_field() {
-        let o = PatinaPoint3f::new(0.1 + 0.2, 0.0, 0.0);
-        let d = PatinaVec3f::new(0.0, 0.0, 1.0);
-        let r = PatinaRay3f::new(o, d, 0.5);
+        let o = PatinaPoint3f::<WorldSpace>::new(0.1 + 0.2, 0.0, 0.0);
+        let d = PatinaVec3f::<WorldSpace>::new(0.0, 0.0, 1.0);
+        let r = PatinaRay3f::<WorldSpace>::new(o, d, 0.5);
 
         assert_relative_eq!(
             r,
-            PatinaRay3f::new(PatinaPoint3f::new(0.3, 0.0, 0.0), d, 0.5)
+            PatinaRay3f::<WorldSpace>::new(PatinaPoint3f::<WorldSpace>::new(0.3, 0.0, 0.0), d, 0.5)
         );
-        assert!(relative_ne!(r, PatinaRay3f::new(o, d, 0.6)));
-        assert!(relative_ne!(r, PatinaRay3f::new(o, -d, 0.5)));
+        assert!(relative_ne!(r, PatinaRay3f::<WorldSpace>::new(o, d, 0.6)));
+        assert!(relative_ne!(r, PatinaRay3f::<WorldSpace>::new(o, -d, 0.5)));
     }
 }

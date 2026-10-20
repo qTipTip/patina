@@ -8,7 +8,7 @@ pub use projective::perspective::PerspectiveCamera;
 pub use traits::Camera;
 
 use crate::math::{
-    PatinaFloat,
+    CameraSpace, PatinaFloat, RenderSpace, WorldSpace,
     points::{PatinaPoint2f, PatinaPoint3f},
     transforms::{Apply, Transform},
     vectors::PatinaVec3f,
@@ -81,8 +81,8 @@ impl CameraBase {
 
 // A camera transform helps us switch which coordinate system we perform the rendering in.
 pub(crate) struct CameraTransform {
-    render_from_camera: Transform, // TODO: Make this an animated transform.
-    _world_from_render: Transform,
+    render_from_camera: Transform<RenderSpace, CameraSpace>, // TODO: Make this an animated transform.
+    _world_from_render: Transform<WorldSpace, RenderSpace>,
 }
 
 // Camera-space: we obtain lots of accuracy cloest to the camera, but it deteriorates
@@ -101,13 +101,17 @@ pub enum RenderingSpace {
 }
 
 impl CameraTransform {
-    pub(crate) fn new(space: RenderingSpace, world_from_camera: &Transform) -> Self {
+    pub(crate) fn new(
+        space: RenderingSpace,
+        world_from_camera: &Transform<WorldSpace, CameraSpace>,
+    ) -> Self {
         // The world_from_render transform is computed based on which space we are rendering in.
         // TODO: Handle AnimatedTransforms here.
         //
         // Given a point in render space, where is it in the world space?
-        let _world_from_render = match space {
-            RenderingSpace::Camera => *world_from_camera,
+        let _world_from_render: Transform<WorldSpace, RenderSpace> = match space {
+            // Render space is camera space, so world_from_render is world_from_camera.
+            RenderingSpace::Camera => world_from_camera.assume_spaces(),
             RenderingSpace::CameraWorld => {
                 let p_camera = world_from_camera.apply(PatinaPoint3f::zero());
                 Transform::translate(&PatinaVec3f::new(p_camera.x, p_camera.y, p_camera.z))
@@ -132,6 +136,7 @@ mod test_camera_transform {
     use crate::{
         camera::{CameraTransform, RenderingSpace},
         math::{
+            CameraSpace, WorldSpace,
             points::PatinaPoint3f,
             transforms::{Apply, Transform},
             vectors::PatinaVec3f,
@@ -140,9 +145,10 @@ mod test_camera_transform {
 
     #[test]
     fn test_camera_transforms_camera() {
-        let world_from_camera = Transform::rotate_x(0.3)
-            * Transform::rotate_z(1.2)
-            * Transform::translate(&PatinaVec3f::new(10.0, -1.0, 2.3));
+        let world_from_camera: Transform<WorldSpace, CameraSpace> =
+            Transform::<WorldSpace, WorldSpace>::rotate_x(0.3)
+                * Transform::<WorldSpace, WorldSpace>::rotate_z(1.2)
+                * Transform::translate(&PatinaVec3f::new(10.0, -1.0, 2.3));
         let c = CameraTransform::new(RenderingSpace::Camera, &world_from_camera);
 
         // world_from_render * render_from_camera should equal world_from_camera
@@ -155,9 +161,10 @@ mod test_camera_transform {
 
     #[test]
     fn test_camera_transforms_camera_world() {
-        let world_from_camera = Transform::rotate_x(0.3)
-            * Transform::rotate_z(1.2)
-            * Transform::translate(&PatinaVec3f::new(10.0, -1.0, 2.3));
+        let world_from_camera: Transform<WorldSpace, CameraSpace> =
+            Transform::<WorldSpace, WorldSpace>::rotate_x(0.3)
+                * Transform::<WorldSpace, WorldSpace>::rotate_z(1.2)
+                * Transform::translate(&PatinaVec3f::new(10.0, -1.0, 2.3));
         let c = CameraTransform::new(RenderingSpace::CameraWorld, &world_from_camera);
 
         // world_from_render * render_from_camera should equal world_from_camera
@@ -185,20 +192,26 @@ mod test_camera_transform {
             render_from_world.apply(p),
             PatinaPoint3f::new(v.x, v.y, v.z)
         );
-        // world directions are unchanged
+        // world directions are unchanged: the render-space vector has the same components
         let w = PatinaVec3f::new(3.2, 1.2, -2.3);
-        assert_eq!(render_from_world.apply(w), w);
+        assert_eq!(render_from_world.apply(w), PatinaVec3f::new(w.x, w.y, w.z));
 
-        // camera keeps it's world orientation
+        // camera keeps it's world orientation: its directions have the same components in render
+        // space as in world space
         let v = PatinaVec3f::new(3.2, 1.2, -2.3);
-        assert_eq!(c.render_from_camera.apply(v), world_from_camera.apply(v));
+        let v_world = world_from_camera.apply(v);
+        assert_eq!(
+            c.render_from_camera.apply(v),
+            PatinaVec3f::new(v_world.x, v_world.y, v_world.z)
+        );
     }
 
     #[test]
     fn test_camera_transforms_world() {
-        let world_from_camera = Transform::rotate_x(0.3)
-            * Transform::rotate_z(1.2)
-            * Transform::translate(&PatinaVec3f::new(10.0, -1.0, 2.3));
+        let world_from_camera: Transform<WorldSpace, CameraSpace> =
+            Transform::<WorldSpace, WorldSpace>::rotate_x(0.3)
+                * Transform::<WorldSpace, WorldSpace>::rotate_z(1.2)
+                * Transform::translate(&PatinaVec3f::new(10.0, -1.0, 2.3));
         let c = CameraTransform::new(RenderingSpace::World, &world_from_camera);
 
         // world_from_render * render_from_camera should equal world_from_camera

@@ -10,13 +10,15 @@ use common::{
 };
 use patina::{
     camera::{Camera, CameraSample, PerspectiveCamera, RenderingSpace},
-    math::{Bounds2f, PatinaFloat, PatinaPoint2f, PatinaPoint3f, PatinaRay3f, Transform},
+    math::{
+        Bounds2f, PatinaFloat, PatinaPoint2f, PatinaPoint3f, PatinaRay3f, RenderSpace, Transform,
+    },
     shapes::Sphere,
 };
 
 // `p_film` and `resolution` are only used for the background, which is based on the pixel position.
 fn ray_color(
-    ray: &PatinaRay3f,
+    ray: &PatinaRay3f<RenderSpace>,
     p_film: PatinaPoint2f,
     resolution: (usize, usize),
     spheres: &[Sphere],

@@ -8,7 +8,9 @@ use image::{Rgb, RgbImage};
 use std::f64::consts::PI;
 
 use patina::{
-    math::{PatinaFloat, PatinaPoint2f, PatinaPoint3f, PatinaRay3f, PatinaVec3f, Transform},
+    math::{
+        PatinaFloat, PatinaPoint2f, PatinaPoint3f, PatinaRay3f, PatinaVec3f, RenderSpace, Transform,
+    },
     shapes::{Shape, ShapeIntersection, Sphere},
 };
 
@@ -74,14 +76,17 @@ pub fn background_color(p_film: PatinaPoint2f, width: usize, height: usize) -> [
 
 // A full sphere of the given radius, centered at `center`. The library's spheres are centered at
 // the origin of their object space, and placed with a render_from_object transform.
-pub fn sphere_at(center: PatinaPoint3f, radius: PatinaFloat) -> Sphere {
+pub fn sphere_at(center: PatinaPoint3f<RenderSpace>, radius: PatinaFloat) -> Sphere {
     let render_from_object = Transform::translate(&PatinaVec3f::from(center));
     Sphere::new(radius, render_from_object, -radius, radius, 2.0 * PI, false)
 }
 
 // The closest intersection among the spheres. Each hit lowers t_max, so spheres behind the closest
 // one so far are rejected.
-pub fn closest_hit(spheres: &[Sphere], ray: &PatinaRay3f) -> Option<ShapeIntersection> {
+pub fn closest_hit(
+    spheres: &[Sphere],
+    ray: &PatinaRay3f<RenderSpace>,
+) -> Option<ShapeIntersection> {
     let mut closest = None;
     let mut t_max = PatinaFloat::INFINITY;
     for sphere in spheres {
@@ -109,7 +114,10 @@ pub fn depth_range(spheres: &[Sphere]) -> (PatinaFloat, PatinaFloat) {
 
 // Grayscale by depth: white at `near`, black at `far`. Depth is the hit point's z in render space,
 // which is camera depth only when rendering in RenderingSpace::Camera, as the examples do.
-pub fn depth_color(hit: &PatinaPoint3f, (near, far): (PatinaFloat, PatinaFloat)) -> [u8; 3] {
+pub fn depth_color(
+    hit: &PatinaPoint3f<RenderSpace>,
+    (near, far): (PatinaFloat, PatinaFloat),
+) -> [u8; 3] {
     let brightness = (1.0 - (hit.z - near) / (far - near)).clamp(0.0, 1.0);
     let v = (brightness * 255.0) as u8;
     [v, v, v]

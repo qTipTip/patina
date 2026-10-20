@@ -3,20 +3,23 @@ use crate::{
         Camera, CameraBase, CameraSample, CameraTransform, RenderingSpace, Shutter,
         projective::ProjectiveTransforms,
     },
-    math::{Apply, Bounds2f, PatinaFloat, PatinaPoint3f, PatinaRay3f, PatinaVec3f, Transform},
+    math::{
+        Apply, Bounds2f, CameraSpace, PatinaFloat, PatinaPoint3f, PatinaRay3f, PatinaVec3f,
+        RasterSpace, RenderSpace, Transform, WorldSpace,
+    },
 };
 
 pub struct PerspectiveCamera {
     base: CameraBase,
     projective: ProjectiveTransforms,
 
-    _camera_dx: PatinaVec3f,
-    _camera_dy: PatinaVec3f,
+    _camera_dx: PatinaVec3f<CameraSpace>,
+    _camera_dy: PatinaVec3f<CameraSpace>,
 }
 
 impl PerspectiveCamera {
     pub fn new(
-        world_from_camera: &Transform,
+        world_from_camera: &Transform<WorldSpace, CameraSpace>,
         rendering_space: RenderingSpace,
         shutter_open: PatinaFloat,
         shutter_close: PatinaFloat,
@@ -63,15 +66,16 @@ impl PerspectiveCamera {
 }
 
 impl Camera for PerspectiveCamera {
-    fn generate_ray(&self, sample: &CameraSample) -> Option<PatinaRay3f> {
+    fn generate_ray(&self, sample: &CameraSample) -> Option<PatinaRay3f<RenderSpace>> {
         // Given a point on the film (x, y), we find the corresponding point in the camera space on
         // the near-plane (z = 0).
-        let p_film = PatinaPoint3f::new(sample.p_film.x, sample.p_film.y, 0.0);
+        let p_film: PatinaPoint3f<RasterSpace> =
+            PatinaPoint3f::new(sample.p_film.x, sample.p_film.y, 0.0);
         let p_camera = self.projective.camera_from_raster.apply(p_film);
 
         // The direction is then given by the vector between the origin (0, 0, 0) and p_camera (as
         // all rays originate at (0, 0, 0)).
-        let v_camera = PatinaVec3f::new(p_camera.x, p_camera.y, p_camera.z).normalize();
+        let v_camera = PatinaVec3f::from(p_camera).normalize();
 
         // Construct a ray with the given sample time
         let ray = PatinaRay3f::new(

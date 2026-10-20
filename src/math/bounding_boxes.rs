@@ -8,5 +8,5 @@ pub mod bounds3;
 
 pub type Bounds2f = Bounds2<PatinaFloat>;
 pub type Bounds2i = Bounds2<PatinaInt>;
-pub type Bounds3f = Bounds3<PatinaFloat>;
-pub type Bounds3i = Bounds3<PatinaInt>;
+pub type Bounds3f<S> = Bounds3<PatinaFloat, S>;
+pub type Bounds3i<S> = Bounds3<PatinaInt, S>;

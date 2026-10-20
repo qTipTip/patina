@@ -5,6 +5,7 @@ pub use sphere::Sphere;
 
 use crate::math::{
     Bounds3f, PatinaFloat, PatinaNorm3f, PatinaPoint2f, PatinaPoint3f, PatinaRay3f, PatinaVec3f,
+    RenderSpace,
 };
 
 /// The local geometry at a ray-surface hit, in render space. A minimal version of pbrt's
@@ -12,14 +13,14 @@ use crate::math::{
 /// chapter needs them.
 pub struct SurfaceInteraction {
     /// The hit point.
-    pub p: PatinaPoint3f,
+    pub p: PatinaPoint3f<RenderSpace>,
     /// The geometric surface normal, normalized. Points outwards unless the shape's orientation
     /// is reversed.
-    pub n: PatinaNorm3f,
+    pub n: PatinaNorm3f<RenderSpace>,
     /// The shape's (u, v) parameterization of the hit point, each in [0, 1].
     pub uv: PatinaPoint2f,
     /// The normalized direction back along the ray, towards its origin.
-    pub wo: PatinaVec3f,
+    pub wo: PatinaVec3f<RenderSpace>,
     /// The time of the ray that produced the hit.
     pub time: PatinaFloat,
 }
@@ -37,26 +38,29 @@ pub struct ShapeSample {
 }
 
 pub struct ShapeSampleContext {
-    p: PatinaPoint3f,
-    surface_normal: PatinaNorm3f,
-    shading_normal: PatinaNorm3f,
+    p: PatinaPoint3f<RenderSpace>,
+    surface_normal: PatinaNorm3f<RenderSpace>,
+    shading_normal: PatinaNorm3f<RenderSpace>,
     time: PatinaFloat,
 }
 
 pub trait Shape {
     /// Return the axis aligned bounding box encompassing this shape.
-    fn bounds(&self) -> Bounds3f;
+    fn bounds(&self) -> Bounds3f<RenderSpace>;
     /// Return a single ray-shape intersection (if any) corresponding to the first intersection
     /// in the interval [0, t_max]. With t_max = PatinaFloat::infinity if not set.
     ///
     /// Note that the ray is in rendering space. Must be converted by the struct implementing this
     /// trait to another space if needed.
-    fn intersect(&self, ray: &PatinaRay3f, t_max: Option<PatinaFloat>)
-    -> Option<ShapeIntersection>;
+    fn intersect(
+        &self,
+        ray: &PatinaRay3f<RenderSpace>,
+        t_max: Option<PatinaFloat>,
+    ) -> Option<ShapeIntersection>;
 
     /// Returns a boolean representing whether the ray intersects the shape or not in the interval
     /// [0, t_max].
-    fn intersects(&self, ray: &PatinaRay3f, t_max: Option<PatinaFloat>) -> bool;
+    fn intersects(&self, ray: &PatinaRay3f<RenderSpace>, t_max: Option<PatinaFloat>) -> bool;
 
     // TODO: Implement direction-cone
     // fn normal_bounds() -> DirectionCone;
@@ -79,5 +83,9 @@ pub trait Shape {
 
     /// Returns the shape's probability of sampling a point on the light such that the incident
     /// direction at the point ctx.p is w_incident.
-    fn pdf_from_point(&self, ctx: &ShapeSampleContext, w_incident: PatinaVec3f) -> PatinaFloat;
+    fn pdf_from_point(
+        &self,
+        ctx: &ShapeSampleContext,
+        w_incident: PatinaVec3f<RenderSpace>,
+    ) -> PatinaFloat;
 }

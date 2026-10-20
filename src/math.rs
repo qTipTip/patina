@@ -3,6 +3,7 @@ pub(crate) mod matrices;
 pub(crate) mod normals;
 pub(crate) mod points;
 pub(crate) mod rays;
+pub(crate) mod spaces;
 mod traits;
 pub(crate) mod transforms;
 pub(crate) mod tuples;
@@ -20,6 +21,9 @@ pub use points::{
     PatinaPoint2f, PatinaPoint2i, PatinaPoint3f, PatinaPoint3i, point2::Point2, point3::Point3,
 };
 pub use rays::{ray2::PatinaRay2f, ray3::PatinaRay3f};
+pub use spaces::{
+    CameraSpace, NdcSpace, ObjectSpace, RasterSpace, RenderSpace, ScreenSpace, WorldSpace,
+};
 pub use transforms::{Apply, Transform};
 pub use tuples::{TupleLength, TypeNormal, TypePoint, TypeVector, tuple2::Tuple2, tuple3::Tuple3};
 pub use vectors::{
@@ -50,8 +54,8 @@ pub(crate) fn safe_acos(x: PatinaFloat) -> PatinaFloat {
     x.clamp(-1.0, 1.0).acos()
 }
 
-impl From<PatinaVec3f> for PatinaPoint3f {
-    fn from(value: PatinaVec3f) -> Self {
+impl<S> From<PatinaVec3f<S>> for PatinaPoint3f<S> {
+    fn from(value: PatinaVec3f<S>) -> Self {
         PatinaPoint3f::new(value.x, value.y, value.z)
     }
 }
@@ -62,8 +66,8 @@ impl From<PatinaVec2f> for PatinaPoint2f {
     }
 }
 
-impl From<PatinaPoint3f> for PatinaVec3f {
-    fn from(value: PatinaPoint3f) -> Self {
+impl<S> From<PatinaPoint3f<S>> for PatinaVec3f<S> {
+    fn from(value: PatinaPoint3f<S>) -> Self {
         PatinaVec3f::new(value.x, value.y, value.z)
     }
 }

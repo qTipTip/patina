@@ -5,12 +5,12 @@ mod common;
 use common::{Film, output_path};
 use patina::{
     camera::{Camera, CameraSample, OrthographicCamera, RenderingSpace},
-    math::{Bounds2f, PatinaPoint2f, PatinaRay3f, Transform},
+    math::{Bounds2f, PatinaPoint2f, PatinaRay3f, RenderSpace, Transform},
 };
 
 // The screen window spans [-1, 1] x [-1, 1], with screen y pointing up and raster y pointing down,
 // so this gives red increasing to the right and green increasing downwards.
-fn ray_color(ray: &PatinaRay3f) -> [u8; 3] {
+fn ray_color(ray: &PatinaRay3f<RenderSpace>) -> [u8; 3] {
     let r = ((ray.o.x + 1.0) / 2.0 * 255.0) as u8;
     let g = ((1.0 - ray.o.y) / 2.0 * 255.0) as u8;
     let b = 255;
