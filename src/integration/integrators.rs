@@ -1,3 +1,5 @@
+use rayon::iter::ParallelIterator;
+
 use crate::{
     camera::{
         Camera, CameraSample,
@@ -30,41 +32,49 @@ pub trait Integrator {
 /// Renders the scene onto the film, with `samples_per_pixel` camera samples for every pixel.
 ///
 /// Each pixel has its own sampler, seeded from `seed` and the pixel's position.
+///
+/// Rows are rendered in parallel (with rayon).
 pub fn render(
-    integrator: &impl Integrator,
-    camera: &impl Camera,
+    integrator: &(impl Integrator + Sync),
+    camera: &(impl Camera + Sync),
     film: &mut Film,
     samples_per_pixel: u32,
     seed: u64,
 ) {
-    for p_pixel in film.pixels() {
-        let pixel_seed = seed ^ ((p_pixel.y as u64) << 32 | p_pixel.x as u64);
-        let mut sampler = IndependentSampler::new(samples_per_pixel, pixel_seed);
-        for _ in 0..samples_per_pixel {
-            evaluate_pixel_sample(integrator, camera, &mut sampler, p_pixel, film);
+    film.par_rows_mut().for_each(|(y, row)| {
+        for (x, pixel) in row.iter_mut().enumerate() {
+            let p_pixel = PixelCoord::new(x as u32, y);
+            let pixel_seed = seed ^ ((p_pixel.y as u64) << 32 | p_pixel.x as u64);
+            let mut sampler = IndependentSampler::new(samples_per_pixel, pixel_seed);
+            for _ in 0..samples_per_pixel {
+                if let Some((l, weight)) =
+                    evaluate_pixel_sample(integrator, camera, &mut sampler, p_pixel)
+                {
+                    pixel.add_sample(l, weight);
+                }
+            }
         }
-    }
+    });
 }
 
+// Traces one camera sample through the pixel, returning its radiance and filter weight, or None if
+// the camera generates no ray for it.
 fn evaluate_pixel_sample(
     integrator: &impl Integrator,
     camera: &impl Camera,
     sampler: &mut impl Sampler,
     p_pixel: PixelCoord,
-    film: &mut Film,
-) {
+) -> Option<(SampledSpectrum, PatinaFloat)> {
     // Given a pixel (x, y), creates an offset in [0, 1), so we get an arbitrary point within the
     // pixel (so to speak).
     let p_film = p_pixel.film_point(sampler.get_pixel_2d());
     let p_lens = sampler.get_2d();
     let sample = CameraSample::new(p_film, p_lens, sampler.get_1d(), 1.0);
 
-    // Generate a ray from the sample
-    if let Some(ray) = camera.generate_ray(&sample) {
-        // Compute the light contribution along the ray and add it to the film
-        let l = integrator.li(&ray, sampler);
-        film.add_sample(l, p_pixel, 1.0);
-    }
+    // Generate a ray from the sample, and compute the light arriving along it. With a box filter,
+    // every sample has weight 1.
+    let ray = camera.generate_ray(&sample)?;
+    Some((integrator.li(&ray, sampler), 1.0))
 }
 
 struct RayIntegrator {

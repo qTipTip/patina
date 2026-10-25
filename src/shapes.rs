@@ -81,7 +81,8 @@ pub struct ShapeSampleContext {
     time: PatinaFloat,
 }
 
-pub trait Shape {
+// Send + Sync: shapes are shared between the threads of the render loop.
+pub trait Shape: Send + Sync {
     /// Return the axis aligned bounding box encompassing this shape.
     fn bounds(&self) -> Bounds3f<RenderSpace>;
     /// Return a single ray-shape intersection (if any) corresponding to the first intersection

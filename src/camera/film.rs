@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use image::{Rgb, RgbImage};
+use rayon::prelude::*;
 
 use crate::{
     math::{PatinaFloat, PatinaPoint2f},
@@ -38,9 +39,17 @@ pub struct Film {
 // A pixel accumulates the weighted sum of its samples and the sum of their weights. We do it like
 // this so we don't have to keep a running average.
 #[derive(Clone, Copy, Default)]
-struct Pixel {
+pub(crate) struct Pixel {
     rgb_sum: SampledSpectrum,
     weight_sum: PatinaFloat,
+}
+
+impl Pixel {
+    pub(crate) fn add_sample(&mut self, sample: SampledSpectrum, weight: PatinaFloat) {
+        debug_assert!(!sample.has_nan(), "NaN sample added to a pixel");
+        self.rgb_sum += sample * weight;
+        self.weight_sum += weight;
+    }
 }
 
 impl Film {
@@ -75,12 +84,19 @@ impl Film {
         p_pixel: PixelCoord,
         weight: PatinaFloat,
     ) {
-        debug_assert!(!sample.has_nan(), "NaN sample added to pixel {p_pixel:?}");
-
         let idx = self.index(p_pixel);
-        let pixel = &mut self.pixels[idx];
-        pixel.rgb_sum += sample * weight;
-        pixel.weight_sum += weight;
+        self.pixels[idx].add_sample(sample, weight);
+    }
+
+    /// The film's rows as mutable slices of pixels, with their row index y, to be filled in
+    /// parallel. Each row is handed out once, so threads never share a pixel.
+    pub(crate) fn par_rows_mut(
+        &mut self,
+    ) -> impl IndexedParallelIterator<Item = (u32, &mut [Pixel])> {
+        self.pixels
+            .par_chunks_mut(self.width)
+            .enumerate()
+            .map(|(y, row)| (y as u32, row))
     }
 
     pub fn width(&self) -> usize {
