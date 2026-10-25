@@ -1,12 +1,18 @@
 use crate::{
-    integration::integrators::SampledSpectrum,
-    math::{PatinaFloat, PatinaPoint2i},
+    math::{PatinaFloat, PatinaPoint2i, points::PatinaPoint2u},
+    spectrum::SampledSpectrum,
 };
 
 pub struct Film {
     width: usize,
     height: usize,
-    pixels: Vec<[u8; 3]>,
+    pixels: Vec<Pixel>,
+}
+
+#[derive(Clone, Copy)]
+struct Pixel {
+    rgb_sum: [PatinaFloat; 3],
+    weight_sum: PatinaFloat,
 }
 
 impl Film {
@@ -14,23 +20,27 @@ impl Film {
         Self {
             width,
             height,
-            pixels: vec![[0, 0, 0]; width * height],
+            pixels: vec![
+                Pixel {
+                    rgb_sum: [0.0, 0.0, 0.0],
+                    weight_sum: 0.0
+                };
+                width * height
+            ],
         }
-    }
-
-    pub fn set(&mut self, x: usize, y: usize, value: [u8; 3]) {
-        debug_assert!(x < self.width && y < self.height);
-
-        let idx = y * self.width + x;
-        self.pixels[idx] = value;
     }
 
     pub fn add_sample(
         &mut self,
         sample: SampledSpectrum,
-        p_pixel: PatinaPoint2i,
+        p_pixel: PatinaPoint2u,
         weight: PatinaFloat,
     ) {
-        todo!();
+        debug_assert!(p_pixel.x >= 0 && (p_pixel.x as usize) < self.width);
+        debug_assert!(p_pixel.y >= 0 && (p_pixel.y as usize) < self.height);
+
+        let idx = p_pixel.y as usize * self.width + p_pixel.x as usize;
+        self.pixels[idx].rgb_sum += sample.rgb;
+        self.pixels[idx].weight_sum += sample.weight;
     }
 }

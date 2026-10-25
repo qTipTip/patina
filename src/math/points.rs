@@ -11,3 +11,4 @@ pub type PatinaPoint3i<S> = Point3<PatinaInt, S>;
 
 pub type PatinaPoint2f = Point2<PatinaFloat>;
 pub type PatinaPoint2i = Point2<PatinaInt>;
+pub type PatinaPoint2u = Point2<u32>;
