@@ -4,7 +4,7 @@ use rand::{RngExt, SeedableRng, distr};
 use crate::math::{PatinaFloat, PatinaPoint2f};
 use crate::sampling::traits::Sampler;
 
-struct IndependentSampler {
+pub struct IndependentSampler {
     samples_per_pixel: u32,
     rng: StdRng,
     uniform: distr::Uniform<PatinaFloat>,
