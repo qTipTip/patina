@@ -2,7 +2,9 @@
 
 use crate::math::PatinaFloat;
 pub mod bilinear;
+pub mod independent_sampler;
 pub mod linear;
+pub mod traits;
 
 // Given a set of values (not normalized) {x_1, x_2, ..., x_n}, a uniform random sample u, return the index of one
 // of the values with propability proportional to it's value. This is used for sampling a discrete
