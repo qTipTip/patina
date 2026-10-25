@@ -1,6 +1,10 @@
+pub mod bsdf;
+pub mod bxdfs;
 pub mod camera;
 pub mod integration;
+pub mod materials;
 pub mod math;
+pub mod primitive;
 pub mod sampling;
 pub mod shapes;
 pub mod spectrum;
