@@ -1,3 +1,7 @@
+use std::path::Path;
+
+use image::{Rgb, RgbImage};
+
 use crate::{
     math::{PatinaFloat, PatinaPoint2f},
     spectrum::SampledSpectrum,
@@ -78,6 +82,50 @@ impl Film {
         pixel.rgb_sum += sample * weight;
         pixel.weight_sum += weight;
     }
+
+    pub fn width(&self) -> usize {
+        self.width
+    }
+
+    pub fn height(&self) -> usize {
+        self.height
+    }
+
+    /// The pixel's value, which is the weighted average of its samples, or black if it has none.
+    pub fn pixel_value(&self, p: PixelCoord) -> SampledSpectrum {
+        let pixel = self.pixels[self.index(p)];
+        if pixel.weight_sum == 0.0 {
+            return SampledSpectrum::default();
+        }
+        pixel.rgb_sum / pixel.weight_sum
+    }
+
+    /// The film as an 8-bit sRGB image.
+    pub fn to_image(&self) -> RgbImage {
+        let mut image = RgbImage::new(self.width as u32, self.height as u32);
+        for p in self.pixels() {
+            let v = self.pixel_value(p);
+            image.put_pixel(p.x, p.y, Rgb([0, 1, 2].map(|i| srgb_8bit(v[i]))));
+        }
+        image
+    }
+
+    /// Writes the film to an image file, in the format given by the path's extension (e.g. .png).
+    pub fn save(&self, path: &Path) -> image::ImageResult<()> {
+        self.to_image().save(path)
+    }
+}
+
+// A linear value as an 8-bit sRGB value. The sRGB curve spends more of the 256 levels on dark values,
+// where the eye is more sensitive; writing linear values directly makes images look too dark.
+fn srgb_8bit(linear: PatinaFloat) -> u8 {
+    let v = linear.clamp(0.0, 1.0);
+    let encoded = if v <= 0.0031308 {
+        12.92 * v
+    } else {
+        1.055 * v.powf(1.0 / 2.4) - 0.055
+    };
+    (encoded * 255.0).round() as u8
 }
 
 #[cfg(test)]
@@ -149,5 +197,45 @@ mod test_film {
         let p = PixelCoord::new(3, 7).film_point(PatinaPoint2f::new(0.25, 0.5));
 
         assert_eq!(p, PatinaPoint2f::new(3.25, 7.5));
+    }
+
+    #[test]
+    fn test_pixel_value_is_the_weighted_average() {
+        let mut film = Film::new(2, 2);
+        let p = PixelCoord::new(1, 1);
+        film.add_sample(SampledSpectrum::constant(1.0), p, 1.0);
+        film.add_sample(SampledSpectrum::constant(3.0), p, 3.0);
+
+        assert_relative_eq!(film.pixel_value(p), SampledSpectrum::constant(2.5));
+        // A pixel without samples is black.
+        assert!(film.pixel_value(PixelCoord::new(0, 0)).is_black());
+    }
+
+    #[test]
+    fn test_srgb_encoding() {
+        use crate::camera::film::srgb_8bit;
+
+        assert_eq!(srgb_8bit(0.0), 0);
+        assert_eq!(srgb_8bit(1.0), 255);
+        // Linear 0.5 is about 0.735 in sRGB, brighter than 128.
+        assert_eq!(srgb_8bit(0.5), 188);
+        // Out-of-range values are clamped.
+        assert_eq!(srgb_8bit(-0.3), 0);
+        assert_eq!(srgb_8bit(7.0), 255);
+    }
+
+    #[test]
+    fn test_image_has_the_film_layout() {
+        let mut film = Film::new(3, 2);
+        film.add_sample(
+            SampledSpectrum::new([1.0, 0.0, 0.0]),
+            PixelCoord::new(2, 1),
+            1.0,
+        );
+        let image = film.to_image();
+
+        assert_eq!(image.dimensions(), (3, 2));
+        assert_eq!(image.get_pixel(2, 1).0, [255, 0, 0]);
+        assert_eq!(image.get_pixel(0, 0).0, [0, 0, 0]);
     }
 }
