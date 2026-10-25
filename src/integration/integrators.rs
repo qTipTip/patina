@@ -3,14 +3,28 @@ use crate::{
         Camera, CameraSample,
         film::{Film, PixelCoord},
     },
-    math::{PatinaRay3f, RenderSpace},
+    math::{PatinaFloat, PatinaRay3f, RenderSpace},
+    primitive::{Aggregate, PrimitiveIntersection},
     sampling::traits::Sampler,
     spectrum::SampledSpectrum,
 };
 
-trait Integrator {
-    // Incident light
+pub trait Integrator {
+    /// The scene`s primitives.
+    fn aggregate(&self) -> &Aggregate;
+
+    /// The radiance arriving at the ray's origin from the direction it points in.
     fn li(&self, ray: &PatinaRay3f<RenderSpace>, sampler: &mut dyn Sampler) -> SampledSpectrum;
+
+    /// The closest hit along the ray in [0, t_max], with t_max = infinity if not given (pbrt's
+    /// Integrator::Intersect).
+    fn intersect(
+        &self,
+        ray: &PatinaRay3f<RenderSpace>,
+        t_max: Option<PatinaFloat>,
+    ) -> Option<PrimitiveIntersection<'_>> {
+        self.aggregate().intersect(ray, t_max)
+    }
 }
 
 fn evaluate_pixel_sample(
