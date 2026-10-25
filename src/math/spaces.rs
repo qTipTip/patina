@@ -27,3 +27,7 @@ pub enum NdcSpace {}
 /// Pixel coordinates on the film: [0, width] x [0, height], with y pointing down.
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum RasterSpace {}
+/// The local frame at a point on a surface, used by BSDFs. The shading normal is +z, and x and y
+/// lie in the tangent plane. Angles to the normal are then simply the z-value.
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum ShadingSpace {}

@@ -1,3 +1,4 @@
+pub mod film;
 mod projective;
 mod traits;
 

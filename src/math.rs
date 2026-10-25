@@ -1,4 +1,5 @@
 pub(crate) mod bounding_boxes;
+pub(crate) mod frame;
 pub(crate) mod matrices;
 pub(crate) mod normals;
 pub(crate) mod points;
@@ -13,6 +14,7 @@ pub(crate) mod vectors;
 pub use bounding_boxes::{
     Bounds2f, Bounds2i, Bounds3f, Bounds3i, bounds2::Bounds2, bounds3::Bounds3,
 };
+pub use frame::Frame;
 pub use matrices::{Matrix4, SquareMatrix};
 pub use normals::{
     PatinaNorm2f, PatinaNorm2i, PatinaNorm3f, PatinaNorm3i, normal2::Normal2, normal3::Normal3,
@@ -22,7 +24,8 @@ pub use points::{
 };
 pub use rays::{ray2::PatinaRay2f, ray3::PatinaRay3f};
 pub use spaces::{
-    CameraSpace, NdcSpace, ObjectSpace, RasterSpace, RenderSpace, ScreenSpace, WorldSpace,
+    CameraSpace, NdcSpace, ObjectSpace, RasterSpace, RenderSpace, ScreenSpace, ShadingSpace,
+    WorldSpace,
 };
 pub use transforms::{Apply, Transform};
 pub use tuples::{TupleLength, TypeNormal, TypePoint, TypeVector, tuple2::Tuple2, tuple3::Tuple3};
