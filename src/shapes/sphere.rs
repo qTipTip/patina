@@ -8,7 +8,9 @@ use crate::{
     shapes::Shape,
 };
 
-use super::{ShapeIntersection, ShapeSample, ShapeSampleContext, SurfaceInteraction};
+use super::{
+    QuadraticIntersection, ShapeIntersection, ShapeSample, ShapeSampleContext, SurfaceInteraction,
+};
 
 /// A sphere is sweeped out using polar coordinates around the origin (in object space). A
 /// transformation (render_from_object/object_from_render) is used to place the sphere in render
@@ -199,14 +201,6 @@ impl Sphere {
             time,
         }
     }
-}
-
-// The result of a ray-sphere intersection in object space. pbrt calls this QuadricIntersection, as
-// it's shared by the quadric shapes (spheres, cylinders, disks).
-struct QuadraticIntersection {
-    t_hit: PatinaFloat,
-    p_object: PatinaPoint3f<ObjectSpace>,
-    phi: PatinaFloat,
 }
 
 #[allow(unused_variables)]

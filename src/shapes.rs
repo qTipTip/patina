@@ -1,11 +1,13 @@
 #![allow(dead_code)]
+pub(crate) mod disk;
 pub(crate) mod sphere;
 
+pub use disk::Disk;
 pub use sphere::Sphere;
 
 use crate::math::{
-    Bounds3f, PatinaFloat, PatinaNorm3f, PatinaPoint2f, PatinaPoint3f, PatinaRay3f, PatinaVec3f,
-    RenderSpace,
+    Bounds3f, ObjectSpace, PatinaFloat, PatinaNorm3f, PatinaPoint2f, PatinaPoint3f, PatinaRay3f,
+    PatinaVec3f, RenderSpace,
 };
 
 /// The local geometry at a ray-surface hit, in render space. A minimal version of pbrt's
@@ -50,6 +52,14 @@ impl SurfaceInteraction {
             self.p + offset
         }
     }
+}
+
+// The result of a ray intersection with a quadric shape (sphere, disk), in object space. pbrt calls
+// this QuadricIntersection. The shape turns it into a SurfaceInteraction in render space.
+pub(crate) struct QuadraticIntersection {
+    pub(crate) t_hit: PatinaFloat,
+    pub(crate) p_object: PatinaPoint3f<ObjectSpace>,
+    pub(crate) phi: PatinaFloat,
 }
 
 pub struct ShapeIntersection {
