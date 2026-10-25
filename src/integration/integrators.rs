@@ -1,24 +1,38 @@
 use crate::{
-    camera::{Camera, RenderingSpace},
-    math::PatinaRay3f,
-    sampling::traits::Sampler,
+    camera::{Camera, CameraSample, film::Film}, math::{PatinaFloat, PatinaPoint2f, PatinaPoint2i, PatinaRay3f, RenderSpace}, sampling::traits::Sampler,
 };
 
 // TODO: Figure out where to put the sampler / light / sampledspectrum.
 struct Light {}
-struct SampledSpectrum {}
+pub struct SampledSpectrum {}
 
 trait Integrator {
     // Incident light
-    fn li(&self, ray: &PatinaRay3f<RenderingSpace>) -> SampledSpectrum;
-    // Given a pixel, generate a ray using the camera and the sampler, calls the li-method, then
-    // stores the contribution to the camera film.
-    // fn evaluate_pixel_sample(&self) -> {
-    // }
+    fn li(&self, ray: &PatinaRay3f<RenderSpace>, sampler: &mut dyn Sampler) -> SampledSpectrum;
+}
+
+fn evaluate_pixel_sample(
+    integrator: &impl Integrator,
+    camera: &impl Camera,
+    sampler: &mut impl Sampler,
+    p_pixel: PatinaPoint2i,
+    film: &mut Film,
+) {
+    // Given a pixel (x, y), creates an offset in [0, 1), so we get an arbitrary point within the
+    // pixel (so to speak).
+    let u = sampler.get_pixel_2d();
+    let p_film = PatinaPoint2f::new(p_pixel.x as PatinaFloat + u.x, p_pixel.y as PatinaFloat + u.y):
+    let sample = CameraSample::new(p_film, p_film, sampler.get_1d(), 1.0);
+    
+    // Generate a ray from the sample
+    if let Some(ray) = camera.generate_ray(&sample) {
+        // Compute the light contribution along the ray and add it to the film
+        let l = integrator.li(&ray, sampler);
+        film.add_sample(l, p_pixel, 1.0);
+    }
 }
 
 struct RayIntegrator {
     camera: Box<dyn Camera>,
     sampler: Box<dyn Sampler>,
-    lights: Vec<Light>,
 }
