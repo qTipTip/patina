@@ -1,6 +1,6 @@
 use crate::{
     camera::{Camera, CameraSample, film::Film},
-    math::{PatinaFloat, PatinaPoint2f, PatinaPoint2i, PatinaRay3f, RenderSpace},
+    math::{PatinaFloat, PatinaPoint2f, PatinaRay3f, RenderSpace, points::PatinaPoint2u},
     sampling::traits::Sampler,
     spectrum::SampledSpectrum,
 };
@@ -17,7 +17,7 @@ fn evaluate_pixel_sample(
     integrator: &impl Integrator,
     camera: &impl Camera,
     sampler: &mut impl Sampler,
-    p_pixel: PatinaPoint2i,
+    p_pixel: PatinaPoint2u,
     film: &mut Film,
 ) {
     // Given a pixel (x, y), creates an offset in [0, 1), so we get an arbitrary point within the
